@@ -1,100 +1,100 @@
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 1,'Eula','Lane','eula.lane@jigrormo.ye','(762) 526-5961','1954-08-17','Insurance Clerk','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 2,'Barry','Rodriquez','barry.rodriquez@zun.mm','(267) 955-5124','2013-08-17','Mortarman','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 3,'Eugenia','Selvi','eugenia.selvi@capfad.vn','(680) 368-2192','1973-08-02','Beer Coil Cleaner','External',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 4,'Alejandro','Miles','alejandro.miles@dec.bn','(281) 301-2039','2013-09-19','Scale Attendant','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 5,'Cora','Tesi','cora.tesi@bivo.yt','(600) 616-7955','1971-11-17','Clinical Audiologist','Supervisor',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 6,'Marguerite','Ishii','marguerite.ishii@judbilo.gn','(882) 813-1374','1937-08-14','Parking Meter Collector','Supervisor',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 7,'Mildred','Jacobs','mildred.jacobs@joraf.wf','(642) 665-1763','1967-03-19','Business Unit Manager','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 8,'Gene','Goodman','gene.goodman@kem.tl','(383) 458-2132','2010-01-27','Technical Communicator','External',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 9,'Lettie','Bennett','lettie.bennett@odeter.bb','(769) 335-6771','1959-04-03','Correctional Officer Sergeant','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 10,'Mabel','Leach','mabel.leach@lisohuje.vi','(803) 586-8035','1946-03-10','Food Chemist','Supervisor',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 11,'Jordan','Miccinesi','jordan.miccinesi@duod.gy','(531) 919-2280','1982-04-21','Signals Intelligence/Electronic Warfare Chief','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 12,'Marie','Parkes','marie.parkes@nowufpus.ph','(814) 667-8937','1943-02-20','Language Pathologist','External',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 13,'Rose','Gray','rose.gray@kagu.hr','(713) 311-8766','1958-02-19','Wildlife Officer','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 14,'Garrett','Stokes','garrett.stokes@fef.bg','(381) 421-2371','2008-11-30','Bindery Machine Operator','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 15,'Barbara','Matthieu','barbara.matthieu@derwogi.jm','(940) 463-7299','1929-11-26','Instructional Aide','External',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 16,'Jean','Rhodes','jean.rhodes@wehovuce.gu','(777) 435-9570','1949-05-05','Clinical Psychiatrist','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 17,'Jack','Romoli','jack.romoli@zamum.bw','(517) 393-9630','1975-03-01','Mortician Investigator','Supervisor',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 18,'Pearl','Holden','pearl.holden@dunebuh.cr','(711) 904-3669','1949-06-26','Rod Buster Helper','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 19,'Belle','Montero','belle.montero@repiwid.si','(935) 404-4792','1932-07-19','Classroom Aide','External',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 20,'Olive','Molina','olive.molina@razuppa.ga','(935) 267-8492','1934-01-29','Traditional Chinese Herbalist','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 21,'Minerva','Todd','minerva.todd@kulmenim.ad','(763) 948-4815','1950-07-02','Electronic Drafter','Supervisor',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 22,'Bobby','Pearson','bobby.pearson@ib.kg','(238) 240-2561','2014-11-24','Vault Teller','Worker',true)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 23,'Larry','Ciappi','larry.ciappi@ba.lk','(410) 257-1723','1995-12-10','Fire Sprinkler Installer','Supervisor',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 24,'Ronnie','Salucci','ronnie.salucci@tohhij.lv','(566) 726-3346','1974-06-13','Brewery Pumper','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 25,'Walter','Grossi','walter.grossi@tuvo.sa','(416) 906-7221','1987-08-01','Kitchen Chef','External',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 26,'Frances','Koopmans','frances.koopmans@foga.tw','(611) 712-1562','1966-09-22','Medical Esthetician','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 27,'Frances','Fujimoto','frances.fujimoto@uswuzzub.jp','(919) 887-8542','1936-02-26','Auto Tire Worker','Supervisor',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 28,'Olivia','Vidal','olivia.vidal@hivwerip.vc','(982) 684-7650','1933-06-05','Semi-Truck Driver','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 29,'Edna','Henry','edna.henry@gugusu.rw','(811) 931-8202','1947-04-19','Command And Control','External',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 30,'Lydia','Brun','lydia.brun@zedekak.md','(927) 400-3928','1929-06-01','Drywall Hanger','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 31,'Jay','Blake','jay.blake@ral.mk','(365) 345-1498','2009-06-19','Real Property Evaluator','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 32,'Isabel','Serafini','isabel.serafini@turuhu.bh','(656) 968-9869','1973-06-27','Human Performance Professor','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 33,'Rebecca','Carter','rebecca.carter@omjo.et','(739) 612-6585','1959-01-14','V/Stol Landing Signal Officer','External',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 34,'Maurice','Fabbrini','maurice.fabbrini@rig.bh','(485) 521-2687','1992-11-19','Air Control/Anti-Air Warfare Officer','Supervisor',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 35,'Ollie','Turnbull','ollie.turnbull@sicewap.org','(835) 620-3330','1944-07-16','General Superintendent','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 36,'Jerry','Hopkins','jerry.hopkins@fo.mh','(211) 851-5960','2014-08-10','Child Protective Services Social Worker','External',true)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 37,'Nora','Lyons','nora.lyons@gegijap.na','(811) 311-5257','1945-05-24','Lens Grinder and Polisher','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 38,'Anne','Weiß','anne.weiß@kuvesa.pe','(843) 836-3759','1940-12-10','Civil Engineering Professor','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 39,'Louise','Gauthier','louise.gauthier@lapahu.mt','(913) 235-1856','1930-03-22','Mobile Home Servicer','Supervisor',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 40,'Lloyd','Fani','lloyd.fani@zev.ru','(467) 487-7239','1992-02-24','Floor Refinisher','Supervisor',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 41,'Maud','Dunn','maud.dunn@nabeaga.ni','(724) 340-3634','1955-05-18','Senior Sales Associate','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 42,'Henry','Gigli','henry.gigli@kaot.ps','(413) 229-8428','1988-07-20','Tile Designer','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 43,'Virgie','Werner','virgie.werner@tawuctuj.cf','(886) 292-9749','1941-08-29','Econometrics Professor','Supervisor',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 44,'Gregory','Cozzi','gregory.cozzi@eh.ru','(418) 472-1239','1994-06-22','Basketball Player','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 45,'Lucinda','Gil','lucinda.gil@fajjusuz.kr','(961) 233-3461','1934-06-13','Indirect Fire Infantryman','External',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 46,'Gertrude','Verbeek','gertrude.verbeek@pave.cc','(605) 226-4037','1964-06-26','Licensed Esthetician','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 47,'Mattie','Graham','mattie.graham@ispaviw.gt','(719) 765-1705','1957-04-24','Antisubmarine Warfare Intelligence Officer','Supervisor',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 48,'Bryan','Shaw','bryan.shaw@ha.ee','(232) 228-5539','2018-12-19','Research Assistant','Manager',true)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 49,'Essie','Adams','essie.adams@iliat.cw','(768) 554-8377','1958-06-30','Cigar Roller','External',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 50,'Gary','Osborne','gary.osborne@do.ga','(311) 731-7079','2009-04-18','Customer Support Representative','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 51,'Richard','Silva','richard.silva@wi.lc','(207) 554-6244','2014-11-28','Programmer','Manager',true)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 52,'Dustin','Pestelli','dustin.pestelli@iwage.la','(558) 913-2855','1978-04-03','Global Engineering Manager','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 53,'Henrietta','Hilton','henrietta.hilton@joopoju.pn','(832) 759-6654','1944-01-26','Telegraph and Teletype Operator','External',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 54,'Francisco','Giordano','francisco.giordano@gojawu.tn','(482) 736-8079','1988-07-04','Hairpiece Stylist','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 55,'Cynthia','Sardi','cynthia.sardi@afigoh.mm','(677) 345-2680','1973-12-23','Tobacco Buyer','External',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 56,'Lula','Testi','lula.testi@benom.tj','(610) 374-7581','1971-10-20','Marine Steamfitter','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 57,'Bess','Lucas','bess.lucas@jevakbe.cd','(982) 583-8067','1929-03-30','Attending Anesthesiologist','Supervisor',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 58,'Linnie','Driessen','linnie.driessen@darhow.tr','(680) 266-3167','1967-12-29','Certified Indoor Environmentalist','External',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 59,'Eva','Tesi','eva.tesi@dupid.cf','(611) 955-4652','1971-11-10','Land Management Forester','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 60,'Augusta','Sakai','augusta.sakai@comouc.ee','(940) 714-8088','1936-08-17','Digital Proofing and Platemaker','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 61,'Mathilda','Schwarz','mathilda.schwarz@igunisi.ao','(868) 481-5125','1941-12-11','Public Health Veterinarian','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 62,'Joe','Riley','joe.riley@pe.vu','(225) 395-2772','2017-05-21','Statement Processor','External',true)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 63,'Leon','McGee','leon.mcgee@puk.se','(365) 837-6888','2011-03-07','Computer Applications Developer','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 64,'Florence','Viviani','florence.viviani@vegub.no','(606) 352-8734','1969-12-28','African History Professor','Supervisor',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 65,'Lee','Miceli','lee.miceli@rucwi.pf','(555) 800-7339','1982-04-02','Gastroenterology Professor','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 66,'Celia','Sodi','celia.sodi@agijit.iq','(657) 357-3671','1973-01-23','Laboratory Animal Caretaker','External',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 67,'Aaron','Misuri','aaron.misuri@loolu.lu','(523) 789-5485','1981-12-25','Water Pump Installer','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 68,'Fanny','Parkinson','fanny.parkinson@tupwovali.cw','(766) 966-7387','1949-10-06','Orthopedic Cast Specialist','Supervisor',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 69,'Phoebe','Vitale','phoebe.vitale@hidge.fo','(672) 613-2954','1970-02-06','Budget Coordinator','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 70,'Edith','Brennan','edith.brennan@liowci.ir','(803) 549-9387','1948-07-18','Railroad Engineer','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 71,'Jeremy','Marilli','jeremy.marilli@vesa.pf','(526) 435-1819','1984-01-21','Chief Projectionist','External',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 72,'Kathryn','Huet','kathryn.huet@wupikdoh.by','(937) 855-5936','1927-07-10','Telecasting Engineer','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 73,'Lelia','Matsuo','lelia.matsuo@dajsiphaj.az','(960) 335-6192','1935-07-21','Drama Therapist','Supervisor',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 74,'Virginia','Woods','virginia.woods@soofpe.ht','(735) 809-2611','1955-04-28','General Superintendent','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 75,'Sally','Aoki','sally.aoki@aruzusjas.tc','(857) 797-7918','1937-06-29','Technical Communicator','External',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 76,'Isabelle','de Ridder','isabelle.deridder@ufeco.in','(659) 331-1543','1963-04-15','Leisure Studies Professor','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 77,'Rosie','Murphy','rosie.murphy@uneehi.id','(759) 639-8597','1958-10-16','Air Conditioning Service Technician','Supervisor',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 78,'Lou','Meyer','lou.meyer@hahinaba.gm','(942) 352-4854','1929-07-11','Business Unit Manager','External',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 79,'Rodney','Love','rodney.love@zun.ph','(247) 867-8287','2012-11-04','Job Estimator','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 80,'Kenneth','Bianchini','kenneth.bianchini@jo.ws','(302) 793-9936','2001-10-27','Correctional Officer Sergeant','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 81,'Essie','Dietrich','essie.dietrich@goltuefo.mn','(861) 740-6628','1939-06-29','Parking Meter Collector','Supervisor',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 82,'Leila','Simon','leila.simon@lupuwuzo.gw','(953) 866-9992','1931-03-26','Signals Intelligence/Electronic Warfare Chief','External',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 83,'Eva','Pierre','eva.pierre@reduzris.ee','(915) 491-8384','1928-04-06','Clinical Psychiatrist','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 84,'Landon','Moretti','landon.moretti@pubsav.sk','(584) 909-6235','1981-07-10','Wildlife Officer','Supervisor',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 85,'Mittie','Sardi','mittie.sardi@lullip.nf','(673) 849-4256','1973-12-18','Food Chemist','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 86,'Corey','McDaniel','corey.mcdaniel@aba.tc','(268) 208-9643','2013-02-21','Advanced Foreign Counterintelligence Specialist (Afcs)','Supervisor',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 87,'Hester','Stein','hester.stein@kettujwo.eu','(873) 489-6641','1939-12-15','Forest Fire Officer','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 88,'Danny','Lowe','danny.lowe@ju.sd','(243) 974-5539','2014-03-29','Catalogue Illustrator','External',true)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 89,'Lillie','Winter','lillie.winter@vioburez.vi','(816) 699-1291','1946-02-21','Knife Grinder','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 90,'Brandon','Borchi','brandon.borchi@ig.al','(319) 401-1090','2000-12-13','Neuropsychiatrist','Supervisor',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 91,'Isaac','Bernardi','isaac.bernardi@omu.bj','(359) 691-6408','2002-05-26','Bottle Packer','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 92,'Clyde','Crawford','clyde.crawford@luw.dz','(273) 892-4646','2019-05-29','Special Education Kindergarten Teacher','External',true)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 93,'Paul','Sherman','paul.sherman@pi.cf','(304) 610-2881','2008-11-04','Commercial Art Instructor','Worker',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 94,'Craig','Russell','craig.russell@zu.nz','(237) 969-2900','2020-09-01','Ferryboat Captain','Supervisor',true)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 95,'John','Sutton','john.sutton@ag.ee','(207) 424-6468','2013-11-13','School Social Worker','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 96,'Francisco','Formigli','francisco.formigli@fopav.tn','(481) 661-8179','1990-10-28','Joint Terminal Attack Controller','External',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 97,'Gary','Baker','gary.baker@ji.cf','(212) 510-3444','2022-11-17','VP Sales','Worker',true)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 98,'Earl','Giovannoni','earl.giovannoni@lojet.ge','(433) 862-3076','1988-03-27','Auto Service Station Attendant','Manager',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 99,'Helen','Zanieri','helen.zanieri@ukve.tn','(619) 506-4452','1969-08-09','Healthcare Social Worker','External',false)
-insert into sample_person(version, id,first_name,last_name,email,phone,date_of_birth,occupation,role,important) values (1, 100,'Agnes','Toccafondi','agnes.toccafondi@viipo.ae','(616) 688-6883','1971-08-29','Comedian','External',false)
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 1, 42, 41, '1679561505000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 2, 18, 26, '1686141950000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 3, 38, 55, '1709473975000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 4, 73, 62, '1681788940000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 5, 92, 18, '1692370879000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 6, 83, 24, '1690081241000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 7, 69, 11, '1692294904000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 8, 23, 35, '1694433762000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 9, 80, 47, '1695449647000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 10, 96, 55, '1691569677000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 11, 39, 66, '1702888872000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 12, 65, 82, '1700377931000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 13, 64, 58, '1702544333000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 14, 82, 69, '1681308999000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 15, 14, 99, '1698237652000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 16, 58, 92, '1708349396000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 17, 89, 14, '1690345064000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 18, 39, 76, '1680099481000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 19, 88, 37, '1682205463000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 20, 26, 65, '1694819133000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 21, 57, 57, '1691636028000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 22, 69, 22, '1699009243000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 23, 19, 26, '1703018598000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 24, 69, 27, '1702848850000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 25, 70, 94, '1704228451000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 26, 23, 98, '1698685948000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 27, 22, 6, '1686988517000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 28, 70, 5, '1701122839000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 29, 31, 36, '1710534831000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 30, 28, 75, '1707792747000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 31, 18, 38, '1694443284000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 32, 93, 81, '1683302846000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 33, 91, 56, '1697003075000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 34, 84, 76, '1695995736000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 35, 94, 44, '1705380876000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 36, 92, 56, '1709723254000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 37, 15, 74, '1692597113000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 38, 22, 11, '1709314934000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 39, 100, 66, '1704125052000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 40, 59, 12, '1682574743000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 41, 99, 14, '1693425660000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 42, 17, 58, '1709583393000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 43, 3, 13, '1695406139000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 44, 32, 40, '1708329622000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 45, 66, 35, '1694714247000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 46, 39, 90, '1702663561000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 47, 86, 38, '1707087582000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 48, 57, 51, '1699483169000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 49, 49, 69, '1687658661000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 50, 89, 7, '1699337084000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 51, 95, 70, '1696448862000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 52, 64, 73, '1711085562000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 53, 96, 27, '1684648683000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 54, 48, 35, '1683784419000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 55, 37, 31, '1682456675000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 56, 37, 27, '1709939042000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 57, 74, 68, '1704704064000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 58, 36, 39, '1701661075000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 59, 90, 8, '1706725106000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 60, 67, 61, '1698966640000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 61, 39, 33, '1698254811000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 62, 45, 1, '1681908392000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 63, 78, 97, '1694258537000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 64, 83, 6, '1684243787000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 65, 92, 75, '1706671645000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 66, 10, 99, '1710127665000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 67, 56, 22, '1706762855000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 68, 9, 54, '1699470122000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 69, 31, 15, '1690249955000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 70, 18, 39, '1686435591000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 71, 36, 4, '1680957013000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 72, 76, 16, '1702492284000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 73, 57, 32, '1690473952000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 74, 94, 88, '1689560597000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 75, 14, 77, '1694841282000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 76, 86, 13, '1694788146000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 77, 92, 11, '1688288463000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 78, 79, 60, '1702328513000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 79, 30, 97, '1701519268000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 80, 93, 77, '1701510041000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 81, 21, 15, '1684023849000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 82, 53, 99, '1706256822000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 83, 11, 79, '1702802038000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 84, 86, 57, '1697193908000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 85, 84, 95, '1692677273000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 86, 69, 17, '1705258205000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 87, 97, 76, '1696334477000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 88, 12, 4, '1702770883000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 89, 97, 21, '1702811615000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 90, 55, 9, '1708208450000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 91, 30, 61, '1696493922000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 92, 74, 86, '1691443333000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 93, 6, 78, '1700364862000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 94, 36, 95, '1680563012000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 95, 65, 86, '1692334855000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 96, 80, 19, '1705374090000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 97, 3, 24, '1693728003000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 98, 89, 41, '1694823847000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (1, 99, 15, 62, '1685472483000');
+insert into Sample_Input (version, id, ZoneACons, ZoneBCons, timestamp) values (2, 100, 12, 48, '1695363484000');
