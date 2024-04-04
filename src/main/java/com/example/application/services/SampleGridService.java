@@ -1,7 +1,7 @@
 package com.example.application.services;
 
-import com.example.application.data.SampleInput;
-import com.example.application.data.SampleInputRepository;
+import com.example.application.data.GridInput;
+import com.example.application.data.GridInputRepository;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,19 +9,19 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 @Service
-public class SamplePersonService {
+public class SampleGridService {
 
-    private final SampleInputRepository repository;
+    private final GridInputRepository repository;
 
-    public SamplePersonService(SampleInputRepository repository) {
+    public SampleGridService(GridInputRepository repository) {
         this.repository = repository;
     }
 
-    public Optional<SampleInput> get(Long id) {
+    public Optional<GridInput> get(Long id) {
         return repository.findById(id);
     }
 
-    public SampleInput update(SampleInput entity) {
+    public GridInput update(GridInput entity) {
         return repository.save(entity);
     }
 
@@ -29,11 +29,11 @@ public class SamplePersonService {
         repository.deleteById(id);
     }
 
-    public Page<SampleInput> list(Pageable pageable) {
+    public Page<GridInput> list(Pageable pageable) {
         return repository.findAll(pageable);
     }
 
-    public Page<SampleInput> list(Pageable pageable, Specification<SampleInput> filter) {
+    public Page<GridInput> list(Pageable pageable, Specification<GridInput> filter) {
         return repository.findAll(filter, pageable);
     }
 

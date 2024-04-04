@@ -4,9 +4,9 @@ package com.example.application.data;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface SampleInputRepository
+public interface GridOutputRepository
         extends
-            JpaRepository<SampleInput, Long>,
-            JpaSpecificationExecutor<SampleInput> {
+            JpaRepository<GridOutput, Long>,
+            JpaSpecificationExecutor<GridOutput> {
 
 }
