@@ -5,10 +5,19 @@ import jakarta.persistence.Entity;
 @Entity
 public class GridInputAnnotated extends AbstractEntity {
 
-    private Long ZoneACons;
-    private Long ZoneBCons;
+    private String recordId;
+    private Long consA;
+    private Long consB;
     private long timestamp;
     private String polynomial;
+
+    public String getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(String recordId) {
+        this.recordId = recordId;
+    }
 
     public String getPolynomial() {
         return polynomial;
@@ -18,20 +27,20 @@ public class GridInputAnnotated extends AbstractEntity {
         this.polynomial = polynomial;
     }
 
-    public Long getZoneACons() {
-        return ZoneACons;
+    public Long getConsA() {
+        return consA;
     }
 
-    public void setZoneACons(Long zoneACons) {
-        ZoneACons = zoneACons;
+    public void setConsA(Long consA) {
+        this.consA = consA;
     }
 
-    public Long getZoneBCons() {
-        return ZoneBCons;
+    public Long getConsB() {
+        return consB;
     }
 
-    public void setZoneBCons(Long zoneBCons) {
-        ZoneBCons = zoneBCons;
+    public void setConsB(Long consB) {
+        this.consB = consB;
     }
 
     public long getTimestamp() {

@@ -9,9 +9,18 @@ import java.util.List;
 public class GridInput extends AbstractEntity implements EventBean<Long> {
 
     private String Cursor;
-    private Long ZoneACons;
-    private Long ZoneBCons;
+    private String recordId;
+    private Long consA;
+    private Long consB;
     private long timestamp;
+
+    public String getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(String recordId) {
+        this.recordId = recordId;
+    }
 
     public String getCursor() {
         return Cursor;
@@ -21,20 +30,20 @@ public class GridInput extends AbstractEntity implements EventBean<Long> {
         Cursor = cursor;
     }
 
-    public Long getZoneACons() {
-        return ZoneACons;
+    public Long getConsA() {
+        return consA;
     }
 
-    public void setZoneACons(Long zoneACons) {
-        ZoneACons = zoneACons;
+    public void setConsA(Long consA) {
+        this.consA = consA;
     }
 
-    public Long getZoneBCons() {
-        return ZoneBCons;
+    public Long getConsB() {
+        return consB;
     }
 
-    public void setZoneBCons(Long zoneBCons) {
-        ZoneBCons = zoneBCons;
+    public void setConsB(Long consB) {
+        this.consB = consB;
     }
 
     public long getTimestamp() {
@@ -49,11 +58,11 @@ public class GridInput extends AbstractEntity implements EventBean<Long> {
     public Long getValue(String attributeName) {
         switch (attributeName){
             case "consA":
-                return this.ZoneACons;
+                return this.consA;
             case "consB":
-                return this.ZoneBCons;
+                return this.consB;
             default:
-                return this.ZoneACons;
+                return this.consA;
         }
     }
 
@@ -64,7 +73,7 @@ public class GridInput extends AbstractEntity implements EventBean<Long> {
 
     @Override
     public Long getValue() {
-        return this.ZoneACons;
+        return this.consA;
     }
 
     @Override
@@ -81,8 +90,8 @@ public class GridInput extends AbstractEntity implements EventBean<Long> {
     public String toString() {
         return "GridInput{" +
                 "Cursor='" + Cursor + '\'' +
-                ", ZoneACons=" + ZoneACons +
-                ", ZoneBCons=" + ZoneBCons +
+                ", ZoneACons=" + consA +
+                ", ZoneBCons=" + consB +
                 ", timestamp=" + timestamp +
                 '}';
     }

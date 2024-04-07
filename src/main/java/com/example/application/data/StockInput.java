@@ -6,9 +6,18 @@ import jakarta.persistence.Entity;
 public class StockInput extends AbstractEntity {
 
     private String Cursor;
+    private String recordId;
     private String name;
     private Integer dollars;
     private long timestamp;
+
+    public String getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(String recordId) {
+        this.recordId = recordId;
+    }
 
     public String getCursor() {
         return Cursor;

@@ -17,14 +17,11 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.Uses;
-import com.vaadin.flow.component.grid.ColumnPathRenderer;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H6;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
@@ -33,15 +30,12 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.event.SortEvent;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
-import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
-import com.vaadin.flow.theme.material.Material;
 import org.apache.commons.configuration.ConfigurationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -278,8 +272,9 @@ public class MyViewView extends Composite<VerticalLayout> {
         inputAnnotatedGrid.getStyle().set("flex-grow", "1");
         inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("version"));
         inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("id"));
-        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("zoneACons"));
-        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("zoneBCons"));
+        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("consA"));
+        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("timestamp"));
+        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("consB"));
 
         Grid<GridOutput> outputResultGrid = new Grid<>(GridOutput.class);
         outputResultGrid.setWidth("100%");
@@ -350,14 +345,22 @@ public class MyViewView extends Composite<VerticalLayout> {
                     @Override
                     public GridInputAnnotated apply(ConsistencyAnnotatedRecord<EventBean<Long>> eventBeanConsistencyAnnotatedRecord) {
                         GridInputAnnotated gridInputAnnotated = new GridInputAnnotated();
-                        gridInputAnnotated.setZoneACons(eventBeanConsistencyAnnotatedRecord.getWrappedRecord().getValue("consA"));
-                        gridInputAnnotated.setZoneBCons(eventBeanConsistencyAnnotatedRecord.getWrappedRecord().getValue("consB"));
+                        gridInputAnnotated.setRecordId(((GridInput)eventBeanConsistencyAnnotatedRecord.getWrappedRecord()).getRecordId());
+                        gridInputAnnotated.setConsA(eventBeanConsistencyAnnotatedRecord.getWrappedRecord().getValue("consA"));
+                        gridInputAnnotated.setConsB(eventBeanConsistencyAnnotatedRecord.getWrappedRecord().getValue("consB"));
                         gridInputAnnotated.setTimestamp(eventBeanConsistencyAnnotatedRecord.getWrappedRecord().getTime());
                         gridInputAnnotated.setPolynomial(eventBeanConsistencyAnnotatedRecord.getPolynomial().toString());
                         return gridInputAnnotated;
                     }
                 }).collect(Collectors.toList());
                 inputAnnotatedGrid.setItems(collect1);
+                List<Grid.Column<GridInputAnnotated>> sgab = Arrays.asList(inputAnnotatedGrid.getColumnByKey("recordId"),
+//                        inputAnnotatedGrid.getColumnByKey("timestamp"),
+                        inputAnnotatedGrid.getColumnByKey("polynomial"));
+                inputAnnotatedGrid.getColumnByKey("recordId").setWidth("50px");
+//                inputAnnotatedGrid.getColumnByKey("timestamp").setWidth("5%");
+                inputAnnotatedGrid.setColumnOrder(sgab);
+
 
 
                 inputAnnotatedGrid.getDataProvider().refreshAll();
@@ -468,9 +471,9 @@ public class MyViewView extends Composite<VerticalLayout> {
         mainRow.setFlexGrow(1.0, leftColumn);
         leftColumn.addClassName(Gap.XSMALL);
         leftColumn.addClassName(Padding.XSMALL);
-        leftColumn.setWidth("15%");
+        leftColumn.setWidth("20%");
 //        leftColumn.setMinWidth("250px");
-        leftColumn.setHeight("100%");
+        leftColumn.setHeight("80%");
         leftColumn.setJustifyContentMode(JustifyContentMode.START);
         leftColumn.setAlignItems(Alignment.START);
         leftColumn.setAlignSelf(Alignment.CENTER, basicGrid);
@@ -489,7 +492,7 @@ public class MyViewView extends Composite<VerticalLayout> {
         centralColumn.setHeightFull();
         mainRow.setFlexGrow(1.0, centralColumn);
         centralColumn.setPadding(false);
-        centralColumn.setWidth("40%");
+        centralColumn.setWidth("30%");
         centralColumn.setHeight("80%");
         upperCentralRow.setWidthFull();
         centralColumn.setFlexGrow(1.0, upperCentralRow);
@@ -522,7 +525,7 @@ public class MyViewView extends Composite<VerticalLayout> {
         rightColumn.setHeightFull();
         mainRow.setFlexGrow(1.0, rightColumn);
         rightColumn.addClassName(Padding.XSMALL);
-        rightColumn.setWidth("45%");
+        rightColumn.setWidth("30%");
 //        rightColumn.setMinWidth("80%");
         rightColumn.setHeight("100%");
         tabSheetRight.setWidth("95%");
@@ -866,8 +869,8 @@ public class MyViewView extends Composite<VerticalLayout> {
 
             // Calculate total consumption for each window
             for (GridInputAnnotated consumption : gridConsumptions) {
-                totalConsA += consumption.getZoneACons();
-                totalConsB += consumption.getZoneBCons();
+                totalConsA += consumption.getConsA();
+                totalConsB += consumption.getConsB();
                 timestamp = Math.max(consumption.getTimestamp(), timestamp);
             }
 
@@ -971,16 +974,18 @@ public class MyViewView extends Composite<VerticalLayout> {
                     .stream());
     }
 
-    public GridInput createGridRecord(long ts, long consA, long consB){
+    public GridInput createGridRecord(String recordId, long ts, long consA, long consB){
         GridInput gridInput = new GridInput();
+        gridInput.setRecordId(recordId);
         gridInput.setTimestamp(ts);
-        gridInput.setZoneACons((long) consA);
-        gridInput.setZoneBCons((long) consB);
+        gridInput.setConsA((long) consA);
+        gridInput.setConsB((long) consB);
         return gridInput;
     }
 
-    public StockInput createStockRecord(long ts, String name, int dollars){
+    public StockInput createStockRecord(long ts, String name, int dollars, String recordId){
         StockInput stockInput = new StockInput();
+        stockInput.setRecordId(recordId);
         stockInput.setTimestamp(ts);
         stockInput.setDollars(dollars);
         stockInput.setName(name);
@@ -994,28 +999,37 @@ public class MyViewView extends Composite<VerticalLayout> {
             inputGridList = new ArrayList<>();
             inputGridListActual = new ArrayList<>();
 
-            GridInput firstGridRecord = createGridRecord(0, 8, 2);
+            GridInput firstGridRecord = createGridRecord("r_"+0, 0, 8, 2);
 //            firstGridRecord.setCursor(">");
             inputGridList.add(firstGridRecord);
-            inputGridList.add(createGridRecord(1, 8, 2));
-            inputGridList.add(createGridRecord(2, 8, 2));
-            inputGridList.add(createGridRecord(3, 8, 2));
-            inputGridList.add(createGridRecord(4, 5, 5));
-            inputGridList.add(createGridRecord(5, 3, 7));
-            inputGridList.add(createGridRecord(6, 1, 10));
-            inputGridList.add(createGridRecord(7, 0, 10));
+            inputGridList.add(createGridRecord("r_"+1, 1, 8, 2));
+            inputGridList.add(createGridRecord("r_"+2, 2, 8, 2));
+            inputGridList.add(createGridRecord("r_"+3, 3, 8, 2));
+            inputGridList.add(createGridRecord("r_"+4, 4, 5, 5));
+            inputGridList.add(createGridRecord("r_"+5, 5, 3, 7));
+            inputGridList.add(createGridRecord("r_"+6, 6, 1, 10));
+            inputGridList.add(createGridRecord("r_"+7, 7, 0, 10));
             Random random = new Random(0L);
             for (int i = 1; i < 20; i++) {
-                inputGridList.add(createGridRecord(7+i, random.nextInt(0, 11), random.nextInt(0, 11)));
+                inputGridList.add(createGridRecord("r_"+(7+i), 7+i, random.nextInt(0, 11), random.nextInt(0, 11)));
             }
 
 //            grid.addColumn(String.valueOf(VaadinIcon.BOLT.create()));
+
             grid.removeColumn(grid.getColumnByKey("id"));
             grid.removeColumn(grid.getColumnByKey("version"));
             grid.removeColumn(grid.getColumnByKey("label"));
             grid.removeColumn(grid.getColumnByKey("time"));
             grid.removeColumn(grid.getColumnByKey("value"));
             grid.removeColumn(grid.getColumnByKey("cursor"));
+//            grid.setSortableColumns("recordId", "timestamp", "consA", "consB");
+
+
+            List<Grid.Column> strings = Arrays.asList(grid.getColumnByKey("recordId"),
+                    grid.getColumnByKey("timestamp"), grid.getColumnByKey("consA"),
+                    grid.getColumnByKey("consB"));
+            grid.setColumnOrder(strings);
+
 
             grid.setItems(inputGridList);
         }
@@ -1028,17 +1042,22 @@ public class MyViewView extends Composite<VerticalLayout> {
 
             stockInputArrayList = new ArrayList<>();
 
-            StockInput stockRecord = createStockRecord(0, strings.get(randomName.nextInt(0, 3)), randomDollars.nextInt(0, 100));
+            StockInput stockRecord = createStockRecord(0, strings.get(randomName.nextInt(0, 3)), randomDollars.nextInt(0, 100), "r_0");
             stockRecord.setCursor(">");
             stockInputArrayList.add(stockRecord);
             for (int i = 1; i < 40; i++) {
-                stockInputArrayList.add(createStockRecord(i, strings.get(randomName.nextInt(0, 3)), randomDollars.nextInt(0, 100)));
+                stockInputArrayList.add(createStockRecord(i, strings.get(randomName.nextInt(0, 3)), randomDollars.nextInt(0, 100), "r_"+i));
             }
 
-            grid.setItems(stockInputArrayList);
+
             grid.removeColumn(grid.getColumnByKey("id"));
             grid.removeColumn(grid.getColumnByKey("version"));
             grid.removeColumn(grid.getColumnByKey("cursor"));
+
+            List<Grid.Column> strings3 = Arrays.asList(grid.getColumnByKey("recordId"),
+                    grid.getColumnByKey("timestamp"), grid.getColumnByKey("name"), grid.getColumnByKey("dollars"));
+            grid.setColumnOrder(strings3);
+            grid.setItems(stockInputArrayList);
         }
 
         else {

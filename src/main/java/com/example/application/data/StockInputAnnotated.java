@@ -6,9 +6,18 @@ import jakarta.persistence.Entity;
 public class StockInputAnnotated extends AbstractEntity {
 
     private String name;
+    private String recordId;
     private Integer dollars;
     private long timestamp;
     private String polynomial;
+
+    public String getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(String recordId) {
+        this.recordId = recordId;
+    }
 
     public String getName() {
         return name;
