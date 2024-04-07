@@ -804,8 +804,8 @@ public class MyViewView extends Composite<VerticalLayout> {
 
     private void setConstraintScenario(String scenario, VerticalLayout constraintEditor) {
         if (scenario.equals("Electric Grid")){
-            extracted(constraintEditor, "ZoneACons");
-            extracted(constraintEditor, "ZoneBCons");
+            extracted(constraintEditor, "consA");
+            extracted(constraintEditor, "consB");
 
         }else if (scenario.equals("Stock")){
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -829,8 +829,8 @@ public class MyViewView extends Composite<VerticalLayout> {
             horizontalLayout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
             constraintEditor.add(horizontalLayout);
         }else {
-            extracted(constraintEditor, "ZoneACons");
-            extracted(constraintEditor, "ZoneBCons");
+            extracted(constraintEditor, "consA");
+            extracted(constraintEditor, "consB");
         }
     }
 
