@@ -37,6 +37,8 @@ import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
 import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.vaadin.addons.visjs.network.main.Edge;
@@ -61,6 +63,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
@@ -381,6 +385,8 @@ public class MyViewView extends Composite<VerticalLayout> {
 
                     outputAnnotatedMap.get(key).add(tmp);
 
+                    windowEndTimestamp+=2;
+                    windowTimestampStartNew+=2;
                     while (windowTimestampStartNew <= tmp.getTimestamp() && windowEndTimestamp > tmp.getTimestamp()) {
                         key = new Window(windowTimestampStartNew, windowEndTimestamp);
                         outputAnnotatedMap.computeIfAbsent(key, new Function<Window, List<GridInputAnnotated>>() {
@@ -396,54 +402,48 @@ public class MyViewView extends Composite<VerticalLayout> {
                     }
                 }
 
-                Map<Window, GridOutput> outputAnnotatedMap1 = calculatePercentages(outputAnnotatedMap);
+                Map<Window, Pair<GridOutput, GridOutputAnnotated>> outputAnnotatedMap1 = calculatePercentages(outputAnnotatedMap);
 
-                outputResultGrid.setItems(outputAnnotatedMap1.values().stream().sorted(new Comparator<GridOutput>() {
+                List<Pair<GridOutput, GridOutputAnnotated>> collect2 = outputAnnotatedMap1.values().stream().sorted(new Comparator<Pair<GridOutput, GridOutputAnnotated>>() {
                     @Override
-                    public int compare(GridOutput o1, GridOutput o2) {
-                        return Integer.compare(Integer.parseInt(String.valueOf(o1.getWin().charAt(1))), Integer.parseInt(String.valueOf(o2.getWin().charAt(1))));
+                    public int compare(Pair<GridOutput, GridOutputAnnotated> o1, Pair<GridOutput, GridOutputAnnotated> o2) {
+                        return Integer.compare(Integer.parseInt(String.valueOf(o1.getKey().getWin().charAt(1))), Integer.parseInt(String.valueOf(o2.getKey().getWin().charAt(1))));
+                    }
+                }).toList();
+
+
+
+                outputResultGrid.setItems(collect2.stream().map(new Function<Pair<GridOutput, GridOutputAnnotated>, GridOutput>() {
+                    @Override
+                    public GridOutput apply(Pair<GridOutput, GridOutputAnnotated> gridOutputGridOutputAnnotatedPair) {
+                        return gridOutputGridOutputAnnotatedPair.getKey();
                     }
                 }).collect(Collectors.toList()));
 
 
                 outputResultGrid.getDataProvider().refreshAll();
 
-                GridOutputAnnotated gridOutputAnnotated = new GridOutputAnnotated();
-                gridOutputAnnotated.setWin("[0,5)");
-                gridOutputAnnotated.setPolynomial("1*SC1_3^1*SC2_3^1");
-                gridOutputAnnotated.setSimplifiedPolynomial("1");
-                gridOutputAnnotated.setDegree(2);
-                gridOutputAnnotated.setVariablesCardinality(2);
-
-                GridOutputAnnotated gridOutputAnnotated1 = new GridOutputAnnotated();
-                gridOutputAnnotated1.setWin("[2,7)");
-                gridOutputAnnotated1.setPolynomial("2*SC1_3^1*SC2_3^1+1*SC2_5^1*SC1_3^1*SC2_3^2*SC2_4^1");
-                gridOutputAnnotated1.setSimplifiedPolynomial("1*SC2_5^1*SC2_3^1*SC2_4^1");
-                gridOutputAnnotated1.setDegree(5);
-                gridOutputAnnotated1.setVariablesCardinality(4);
-
-                GridOutputAnnotated gridOutputAnnotated2 = new GridOutputAnnotated();
-                gridOutputAnnotated2.setWin("[4,9)");
-                gridOutputAnnotated2.setPolynomial("2*SC1_3^1*SC2_3^1+1*SC2_5^1*SC1_3^1*SC2_3^2*SC2_4^1");
-                gridOutputAnnotated2.setSimplifiedPolynomial("1*SC2_5^1*SC2_3^1*SC2_4^1");
-                gridOutputAnnotated2.setDegree(5);
-                gridOutputAnnotated2.setVariablesCardinality(8);
-
-                GridOutputAnnotated gridOutputAnnotated3 = new GridOutputAnnotated();
-                gridOutputAnnotated3.setWin("[6,11)");
-                gridOutputAnnotated3.setPolynomial("1*SC2_5^1*SC1_3^1*SC2_3^2*SC2_4^1");
-                gridOutputAnnotated3.setSimplifiedPolynomial("1*SC2_5^1*SC2_3^1*SC2_4^1");
-                gridOutputAnnotated3.setDegree(5);
-                gridOutputAnnotated3.setVariablesCardinality(4);
+                
 
 
-                List<GridOutputAnnotated> gridOutputAnnotateds = Arrays.asList(gridOutputAnnotated, gridOutputAnnotated1, gridOutputAnnotated2, gridOutputAnnotated3);
 
-                outputAnnotatedGrid.setItems(gridOutputAnnotateds);
+                outputAnnotatedGrid.setItems(collect2.stream().map(new Function<Pair<GridOutput, GridOutputAnnotated>, GridOutputAnnotated>() {
+                    @Override
+                    public GridOutputAnnotated apply(Pair<GridOutput, GridOutputAnnotated> gridOutputGridOutputAnnotatedPair) {
+                        return gridOutputGridOutputAnnotatedPair.getValue();
+                    }
+                }).collect(Collectors.toList()));
                 outputAnnotatedGrid.getColumnByKey("win").setWidth("10%");
+                outputAnnotatedGrid.getDataProvider().refreshAll();
 
-                outputQuantifiedGrid.setItems(gridOutputAnnotateds);
+                outputQuantifiedGrid.setItems(collect2.stream().map(new Function<Pair<GridOutput, GridOutputAnnotated>, GridOutputAnnotated>() {
+                    @Override
+                    public GridOutputAnnotated apply(Pair<GridOutput, GridOutputAnnotated> gridOutputGridOutputAnnotatedPair) {
+                        return gridOutputGridOutputAnnotatedPair.getValue();
+                    }
+                }).collect(Collectors.toList()));
                 outputQuantifiedGrid.recalculateColumnWidths();
+                outputQuantifiedGrid.getDataProvider().refreshAll();
 
 
             } else {
@@ -858,20 +858,28 @@ public class MyViewView extends Composite<VerticalLayout> {
         constraintEditor.add(horizontalLayout);
     }
 
-    public Map<Window, GridOutput> calculatePercentages(Map<Window, List<GridInputAnnotated>> map) {
-        Map<Window, GridOutput> result = new HashMap<>();
+    public Map<Window, Pair<GridOutput, GridOutputAnnotated>> calculatePercentages(Map<Window, List<GridInputAnnotated>> map) {
+        Map<Window, Pair<GridOutput, GridOutputAnnotated>> result = new HashMap<>();
 
         for (Map.Entry<Window, List<GridInputAnnotated>> entry : map.entrySet()) {
             List<GridInputAnnotated> gridConsumptions = entry.getValue();
             double totalConsA = 0;
             double totalConsB = 0;
             long timestamp = 0;
+            StringBuilder stringBuilder = new StringBuilder();
 
+            boolean firstPlus = false;
             // Calculate total consumption for each window
             for (GridInputAnnotated consumption : gridConsumptions) {
                 totalConsA += consumption.getConsA();
                 totalConsB += consumption.getConsB();
                 timestamp = Math.max(consumption.getTimestamp(), timestamp);
+
+                if (!firstPlus){
+                    firstPlus = true;
+                } else stringBuilder.append("+");
+
+                stringBuilder.append(consumption.getPolynomial());
             }
 
             // Calculate percentages
@@ -879,14 +887,25 @@ public class MyViewView extends Composite<VerticalLayout> {
             double percentageConsA = (totalConsA / total) * 100;
             double percentageConsB = (totalConsB / total) * 100;
 
-            // Create GridOutputAnnotated object
+            // Create GridOutput object
             GridOutput percentageResult = new GridOutput();
             percentageResult.setWin(entry.getKey().toString());
             percentageResult.setPercA((long) percentageConsA);
             percentageResult.setPercB((long) percentageConsB);
             percentageResult.setTimestamp(timestamp);
+
+            // Create GridOutputAnnotated object
+            GridOutputAnnotated percentageResultAnn = new GridOutputAnnotated();
+            percentageResultAnn.setWin(entry.getKey().toString());
+            percentageResultAnn.setPercA((long) percentageConsA);
+            percentageResultAnn.setPercB((long) percentageConsB);
+            percentageResultAnn.setTimestamp(timestamp);
+            percentageResultAnn.setPolynomial(stringBuilder.toString());
+            percentageResultAnn.setVariablesCardinality(detectNumVariables(stringBuilder.toString()));
+            percentageResultAnn.setDegree(detectDegree(stringBuilder.toString()));
+            percentageResultAnn.setSimplifiedPolynomial(simplifyPolynomial(stringBuilder.toString()));
             // Put result in the map
-            result.put(entry.getKey(), percentageResult);
+            result.put(entry.getKey(), new ImmutablePair<>(percentageResult, percentageResultAnn));
         }
 
         return result;
@@ -959,6 +978,69 @@ public class MyViewView extends Composite<VerticalLayout> {
         }
         return -1; // Integer value not found
     }
+
+    public int detectDegree(String polynomialString) {
+
+        String[] split = polynomialString.split("\\+");
+
+        Pattern pattern = Pattern.compile("\\^([0-9]+)");
+        int degree = 0;
+        int[] degrees = new int[split.length];
+        for (int i = 0; i < split.length; i++){
+            Matcher matcher = pattern.matcher(polynomialString);
+            while (matcher.find())
+                degree += Integer.parseInt(matcher.group(1));
+            degrees[i] = degree;
+            degree = 0;
+        }
+
+        int maxDegree = -1;
+        for (int j : degrees) {
+            if (j > maxDegree) {
+                maxDegree = j;
+            }
+        }
+
+        return maxDegree;
+    }
+
+    public int detectNumVariables(String polynomialString) {
+        Pattern pattern = Pattern.compile("SC\\d+_\\d+");
+        Matcher matcher = pattern.matcher(polynomialString);
+        int numVariables = 0;
+        while (matcher.find()) {
+            numVariables++;
+        }
+        return numVariables;
+    }
+
+    public String simplifyPolynomial(String polynomialString) {
+
+        String[] split = polynomialString.split("\\+");
+
+
+        Pattern pattern =  Pattern.compile("\\*SC1_(\\d+)\\^(\\d+)\\*SC2_\\1\\^(\\d+)");
+        for (int i = 0; i < split.length; i++) {
+            Matcher matcher = pattern.matcher(split[i]);
+            while (matcher.find())
+                split[i] = matcher.replaceAll("");
+        }
+
+//        String simplifiedPolynomial = polynomialString.replaceAll("\\+?\\d+\\/\\d+SC\\d+_\\d+", "");
+//        return simplifiedPolynomial.replaceAll("(?<!\\^)SC\\d+_\\d+", "");
+
+        StringBuilder stringBuilder = new StringBuilder();
+        boolean firstPlus = false;
+        for (String tmp : split
+             ) {
+            if (firstPlus)
+                stringBuilder.append("+");
+            else firstPlus = true;
+            stringBuilder.append(tmp);
+        }
+        return  stringBuilder.toString();
+    }
+
 
     private void setGridSampleData(Grid grid, String scenario) {
         if (scenario.equals("Electric Grid"))
