@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Bean;
  *
  */
 @SpringBootApplication
-@Theme(value = "inkstream")
+@Theme(value = "playtowin")
 public class Application implements AppShellConfigurator {
 
     public static void main(String[] args) {

@@ -4,8 +4,8 @@
     <modelVersion>4.0.0</modelVersion>
     <!-- Project from https://start.vaadin.com/project/1ad80d0f-7870-4764-b455-2205afaf1591 -->
     <groupId>com.example.application</groupId>
-    <artifactId>inkstream</artifactId>
-    <name>inkstream</name>
+    <artifactId>playtowin</artifactId>
+    <name>playtowin</name>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
@@ -95,7 +95,7 @@
         <dependency>
             <groupId>org.vaadin.addons.visjs.network</groupId>
             <artifactId>vis-network-vaadin</artifactId>
-            <version>2.0.2</version>
+            <version>1.0.2</version>
         </dependency>
         <dependency>
             <groupId>com.github.streamreasoning.rsp4j</groupId>

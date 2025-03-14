@@ -172,22 +172,31 @@ public class MyViewView extends Composite<VerticalLayout> {
 
 
         ComboBox<String> selectConstraintType = new ComboBox<>();
-        selectConstraintType.setLabel("Constraint Type");
-        selectConstraintType.setItems("Primary Key", "Speed Constraint");
-        selectConstraintType.setValue("Primary Key");
+        selectConstraintType.setLabel("Window Type");
+        selectConstraintType.setItems("Time-based", "Session", "Frames:Threshold", "Frames:Delta", "Frames:Aggregate");
+        selectConstraintType.setValue("Time-based");
         HorizontalLayout constraintSelectorLayout = new HorizontalLayout();
-        TextField range = new TextField();
-        selectConstraintType.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<ComboBox<String>, String>>) event -> {
-            if (!(event.getOldValue().equals("Speed Constraint")) && (event.getValue().equals("Speed Constraint"))) {
-                range.setLabel("Range");
-                constraintSelectorLayout.addComponentAtIndex(1, range);
-                constraintSelectorLayout.setVerticalComponentAlignment(Alignment.END, range);
-            } else if (!(event.getValue().equals("Speed Constraint")) && (event.getOldValue().equals("Speed Constraint"))) {
-                constraintSelectorLayout.remove(range);
-            }
+
+        TextField threshold = new TextField();
+        threshold.setLabel("Threshold");
+
+        ComboBox<String> selectAggregate = new ComboBox<>();
+        selectAggregate.setLabel("Aggregate");
+
+        selectAggregate.setItems("count", "sum", "avg", "max", "min");
+        selectAggregate.setValue("count");
+        selectAggregate.addValueChangeListener(event -> {
             Notification.show(event.getValue());
         });
 
+        ComboBox<String> selectOp = new ComboBox<>();
+        selectOp.setLabel("Comparator");
+
+        selectOp.setItems("<", ">", "=", ">=", "<=");
+        selectOp.setValue("<");
+        selectOp.addValueChangeListener(event -> {
+            Notification.show(event.getValue());
+        });
 
         ComboBox<String> selectAttribute = new ComboBox<>();
         selectAttribute.setLabel("On Attribute");
@@ -200,6 +209,60 @@ public class MyViewView extends Composite<VerticalLayout> {
         selectAttribute.addValueChangeListener(event -> {
             Notification.show(event.getValue());
         });
+
+        TextField size = new TextField();
+        size.setLabel("Size");
+
+        TextField slide = new TextField();
+        slide.setLabel("Slide");
+
+        TextField timeout = new TextField();
+        timeout.setLabel("Timeout");
+
+        selectConstraintType.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<ComboBox<String>, String>>) event -> {
+            int index = 1;
+
+            if (!(event.getOldValue().equals("Frames:Aggregate")) && (event.getValue().startsWith("Frames:Aggregate"))) {
+                constraintSelectorLayout.addComponentAtIndex(index++, selectAggregate);
+                constraintSelectorLayout.setVerticalComponentAlignment(Alignment.END, selectAggregate);
+            } else if (!(event.getValue().equals("Frames:Aggregate")) && (event.getOldValue().equals("Frames:Aggregate"))) {
+                constraintSelectorLayout.remove(selectAggregate);
+            }
+            if (!(event.getOldValue().startsWith("Frames")) && (event.getValue().startsWith("Frames"))) {
+                constraintSelectorLayout.addComponentAtIndex(index++, selectAttribute);
+                constraintSelectorLayout.setVerticalComponentAlignment(Alignment.END, selectAttribute);
+                constraintSelectorLayout.addComponentAtIndex(index++, selectOp);
+                constraintSelectorLayout.setVerticalComponentAlignment(Alignment.END, selectOp);
+                constraintSelectorLayout.addComponentAtIndex(index, threshold);
+                constraintSelectorLayout.setVerticalComponentAlignment(Alignment.END, threshold);
+            } else if (!(event.getValue().startsWith("Frames")) && (event.getOldValue().startsWith("Frames"))) {
+                constraintSelectorLayout.remove(threshold);
+                constraintSelectorLayout.remove(selectAttribute);
+                constraintSelectorLayout.remove(selectOp);
+            }
+
+            if (!(event.getOldValue().equals("Time-based")) && (event.getValue().equals("Time-based"))) {
+                constraintSelectorLayout.addComponentAtIndex(index++, size);
+                constraintSelectorLayout.setVerticalComponentAlignment(Alignment.END, size);
+                constraintSelectorLayout.addComponentAtIndex(index, slide);
+                constraintSelectorLayout.setVerticalComponentAlignment(Alignment.END, slide);
+            } else if (!(event.getValue().equals("Time-based")) && (event.getOldValue().equals("Time-based"))) {
+                constraintSelectorLayout.remove(size);
+                constraintSelectorLayout.remove(slide);
+            }
+
+            if (!(event.getOldValue().equals("Session")) && (event.getValue().equals("Session"))) {
+                constraintSelectorLayout.addComponentAtIndex(index++, timeout);
+                constraintSelectorLayout.setVerticalComponentAlignment(Alignment.END, timeout);
+            } else if (!(event.getValue().equals("Session")) && (event.getOldValue().equals("Session"))) {
+                constraintSelectorLayout.remove(timeout);
+            }
+
+            Notification.show(event.getValue());
+        });
+
+
+
         Button constraintCreatorButton = new Button();
 
 
@@ -222,13 +285,19 @@ public class MyViewView extends Composite<VerticalLayout> {
 
                 //String Building Based on the constraint
                 StringBuilder text = new StringBuilder();
-                text.append(constraintTypeValue).append(" set on Attribute ").append(selectAttribute.getValue());
+                text.append(constraintTypeValue);
 
 
                 try {
-                    if (constraintTypeValue.equals("Speed Constraint")) {
-                        int i = Integer.parseInt(range.getValue());
-                        text.append(" with Range ").append(i);
+                    if (constraintTypeValue.equals("Frames:Aggregate")) {
+                        text.append(" on aggregate ").append(selectAggregate.getValue());
+                    }
+                    if (constraintTypeValue.startsWith("Frames")){
+                        text.append(" over Attribute ").append(selectAttribute.getValue()).append(" ").append(selectOp.getValue()).append(" ").append(threshold.getValue());
+                    } else if (constraintTypeValue.equals("Time-based")){
+                        text.append(" with Size ").append(size.getValue()).append(" and Slide ").append(slide.getValue());
+                    } else if (constraintTypeValue.equals("Session")){
+                        text.append(" with Timeout ").append(timeout.getValue());
                     }
                     horizontalLayout.add(removeButton);
                     horizontalLayout.setVerticalComponentAlignment(Alignment.CENTER, removeButton);
@@ -243,7 +312,7 @@ public class MyViewView extends Composite<VerticalLayout> {
         });
 
         constraintCreatorButton.setText("Add");
-        constraintSelectorLayout.add(selectConstraintType, selectAttribute);
+        constraintSelectorLayout.add(selectConstraintType, size, slide);
         constraintSelectorLayout.add(constraintCreatorButton);
 
         constraintSelectorLayout.setAlignItems(Alignment.START);
@@ -255,7 +324,11 @@ public class MyViewView extends Composite<VerticalLayout> {
         setConstraintScenario(scenario, constraintEditor);
 
         VerticalLayout rightColumn = new VerticalLayout();
-        TabSheet tabSheetRight = new TabSheet();
+
+
+        TabSheet tabSheetUpperRight = new TabSheet();
+        TabSheet tabSheetBottomRight = new TabSheet();
+
         TabSheet tabSheet3 = new TabSheet();
 
         Button buttonNext = new Button();
@@ -287,7 +360,10 @@ public class MyViewView extends Composite<VerticalLayout> {
         outputResultGrid.removeColumn(outputResultGrid.getColumnByKey("version"));
         outputResultGrid.removeColumn(outputResultGrid.getColumnByKey("id"));
 
-        tabSheetRight.add("Results", outputResultGrid);
+
+        tabSheetUpperRight.add("Graph", snapshotGraphSolo);
+
+        tabSheetBottomRight.add("Results", outputResultGrid);
 
 
         Grid<GridOutputAnnotated> outputAnnotatedGrid = new Grid<>(GridOutputAnnotated.class);
@@ -304,7 +380,7 @@ public class MyViewView extends Composite<VerticalLayout> {
         outputAnnotatedGrid.removeColumn(outputAnnotatedGrid.getColumnByKey("variablesCardinality"));
 
 
-        tabSheetRight.add("Annotations", outputAnnotatedGrid);
+        tabSheetBottomRight.add("Annotations", outputAnnotatedGrid);
 
         Grid<GridOutputAnnotated> outputQuantifiedGrid = new Grid<>(GridOutputAnnotated.class);
         outputQuantifiedGrid.setWidth("100%");
@@ -318,7 +394,7 @@ public class MyViewView extends Composite<VerticalLayout> {
         outputQuantifiedGrid.removeColumn(outputQuantifiedGrid.getColumnByKey("polynomial"));
 
 
-        tabSheetRight.add("Quantification", outputQuantifiedGrid);
+        tabSheetBottomRight.add("Quantification", outputQuantifiedGrid);
 
 
         buttonNext.addClickListener(buttonClickEvent -> {
@@ -372,7 +448,7 @@ public class MyViewView extends Composite<VerticalLayout> {
 
                 Map<Window, List<GridInputAnnotated>> outputAnnotatedMap = new HashMap<>();
                 for (GridInputAnnotated tmp : collect1
-                     ) {
+                ) {
                     long windowTimestampStartNew = (long) Math.max(0, Math.ceil(((double)tmp.getTimestamp()-5)/2)*2);
                     long windowEndTimestamp = windowTimestampStartNew + 5;
                     Window key = new Window(windowTimestampStartNew, windowEndTimestamp);
@@ -423,7 +499,7 @@ public class MyViewView extends Composite<VerticalLayout> {
 
                 outputResultGrid.getDataProvider().refreshAll();
 
-                
+
 
 
 
@@ -508,8 +584,8 @@ public class MyViewView extends Composite<VerticalLayout> {
 
 
 
-        upperCentralTabSheet.add("Graph", snapshotGraphSolo);
-        upperCentralTabSheet.add("Polynomials", inputAnnotatedGrid);
+//        upperCentralTabSheet.add("Graph", snapshotGraphSolo);
+//        upperCentralTabSheet.add("Polynomials", inputAnnotatedGrid);
 
 
         bottomCentralColumn.setWidthFull();
@@ -528,11 +604,13 @@ public class MyViewView extends Composite<VerticalLayout> {
         rightColumn.setWidth("30%");
 //        rightColumn.setMinWidth("80%");
         rightColumn.setHeight("100%");
-        tabSheetRight.setWidth("95%");
-        tabSheetRight.setHeight("100%");
+        tabSheetBottomRight.setWidth("95%");
+        tabSheetBottomRight.setHeight("100%");
+        tabSheetUpperRight.setWidth("100%");
+        tabSheetUpperRight.setHeight("100%");
         tabSheet3.setWidth("100%");
         tabSheet3.setHeight("100%");
-//        setTabSheetSampleData(tabSheetRight);
+//        setTabSheetSampleData(tabSheetUpperRight);
 
 
 
@@ -742,35 +820,49 @@ public class MyViewView extends Composite<VerticalLayout> {
 
         mainRow.add(centralColumn);
         centralColumn.add(upperCentralRow);
-        upperCentralRow.add(upperCentralTabSheet);
-        centralColumn.add(bottomCentralColumn);
-        bottomCentralColumn.add(tabSheet3);
+//        upperCentralRow.add(upperCentralTabSheet);
+        centralColumn.add(tabSheet3);
+        upperCentralRow.add(tabSheet3);
         mainRow.add(rightColumn);
 
 
-        HorizontalLayout horizontalLayout1 = new HorizontalLayout();
-        horizontalLayout1.setHeightFull();
-        horizontalLayout1.setWidthFull();
-        horizontalLayout1.add(tabSheetRight);
+        HorizontalLayout upperRightHorizontalLayout = new HorizontalLayout();
+        HorizontalLayout bottomRightHorizontalLayout = new HorizontalLayout();
+//        upperRightHorizontalLayout.setHeightFull();
+//        upperRightHorizontalLayout.setWidthFull();
+        upperRightHorizontalLayout.add(tabSheetUpperRight);
+        bottomRightHorizontalLayout.add(tabSheetBottomRight);
 
 
 
         StreamResource streamResource1 = new StreamResource("time_dir.png",
                 () -> getClass().getResourceAsStream("/time_dir.png"));
         Image cdcd1 = new Image(streamResource1, "cdcd1");
-        VerticalLayout verticalLayout1 = new VerticalLayout();
-        verticalLayout1.setWidth("10%");
-        verticalLayout1.setHeightFull();
+        VerticalLayout verticalUpperRightLayout = new VerticalLayout();
+        VerticalLayout verticalBottomRightLayout = new VerticalLayout();
 
-        verticalLayout1.add(new Text("time"));
-        verticalLayout1.add(cdcd1);
+        verticalBottomRightLayout.setWidth("10%");
+        verticalBottomRightLayout.setHeightFull();
+
+//        verticalUpperRightLayout.setWidth("10%");
+//        verticalUpperRightLayout.setHeightFull();
+
+        verticalBottomRightLayout.add(new Text("time"));
+        verticalBottomRightLayout.add(cdcd1);
         cdcd1.setWidthFull();
         cdcd1.setHeightFull();
 
-        horizontalLayout1.add(verticalLayout1);
-        rightColumn.add(horizontalLayout1);
-        horizontalLayout1.setWidthFull();
-        horizontalLayout1.setHeightFull();
+//        upperRightHorizontalLayout.add(verticalUpperRightLayout);
+        rightColumn.add(upperRightHorizontalLayout);
+        upperRightHorizontalLayout.setWidthFull();
+        upperRightHorizontalLayout.setHeight("50%");
+
+        bottomRightHorizontalLayout.add(verticalBottomRightLayout);
+        rightColumn.add(bottomRightHorizontalLayout);
+        bottomRightHorizontalLayout.setWidthFull();
+        bottomRightHorizontalLayout.setHeight("50%");
+
+
         rightColumn.setWidth("25%");
         rightColumn.setHeight("80%");
         getContent().add(bottomRow);
@@ -804,8 +896,8 @@ public class MyViewView extends Composite<VerticalLayout> {
 
     private void setConstraintScenario(String scenario, VerticalLayout constraintEditor) {
         if (scenario.equals("Electric Grid")){
-            extracted(constraintEditor, "consA");
-            extracted(constraintEditor, "consB");
+            extracted(constraintEditor, "5", "5");
+            extracted(constraintEditor, "7",  "7");
 
         }else if (scenario.equals("Stock")){
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -820,7 +912,7 @@ public class MyViewView extends Composite<VerticalLayout> {
 
             //String Building Based on the constraint
             StringBuilder text = new StringBuilder();
-            text.append("Primary Key").append(" set on Attribute ").append("name");
+            text.append("Time-based Window").append(" with size 5 and slide 5");
 
             horizontalLayout.add(removeButton);
             horizontalLayout.setVerticalComponentAlignment(Alignment.CENTER, removeButton);
@@ -829,12 +921,12 @@ public class MyViewView extends Composite<VerticalLayout> {
             horizontalLayout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
             constraintEditor.add(horizontalLayout);
         }else {
-            extracted(constraintEditor, "consA");
-            extracted(constraintEditor, "consB");
+            extracted(constraintEditor, "5", "5");
+            extracted(constraintEditor, "7",  "7");
         }
     }
 
-    private void extracted(VerticalLayout constraintEditor, String attribute) {
+    private void extracted(VerticalLayout constraintEditor, String size, String slide) {
         HorizontalLayout horizontalLayout = new HorizontalLayout();
         Button removeButton = new Button();
         removeButton.setText("X");
@@ -847,8 +939,8 @@ public class MyViewView extends Composite<VerticalLayout> {
 
         //String Building Based on the constraint
         StringBuilder text = new StringBuilder();
-        text.append("Speed Constraint").append(" set on Attribute ").append(attribute)
-        .append(" with Range ").append(2);
+        text.append("Time-based Window").append(" with size ").append(size)
+                .append(" and slide ").append(slide);
 
         horizontalLayout.add(removeButton);
         horizontalLayout.setVerticalComponentAlignment(Alignment.CENTER, removeButton);
@@ -1032,7 +1124,7 @@ public class MyViewView extends Composite<VerticalLayout> {
         StringBuilder stringBuilder = new StringBuilder();
         boolean firstPlus = false;
         for (String tmp : split
-             ) {
+        ) {
             if (firstPlus)
                 stringBuilder.append("+");
             else firstPlus = true;
@@ -1173,7 +1265,7 @@ public class MyViewView extends Composite<VerticalLayout> {
         if (node.getConnectedNodes().isEmpty())
             return;
         for (ConsistencyNode<?> tmp: node.getConnectedNodes()
-             ) {
+        ) {
 
             if (nodes.stream().noneMatch(node1 -> node1.getId().equals(getNodeId(tmp)))){
                 Node e1 = new Node(getNodeId(tmp), "r_" + ((GridInput) tmp.getConsistencyAnnotatedRecord().getWrappedRecord()).getTimestamp());
