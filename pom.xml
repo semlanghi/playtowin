@@ -95,7 +95,7 @@
         <dependency>
             <groupId>org.vaadin.addons.visjs.network</groupId>
             <artifactId>vis-network-vaadin</artifactId>
-            <version>1.0.2</version>
+            <version>2.0.2</version>
         </dependency>
         <dependency>
             <groupId>com.github.streamreasoning.rsp4j</groupId>
