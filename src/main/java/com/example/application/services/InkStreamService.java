@@ -1,13 +1,14 @@
+/*
 package com.example.application.services;
 
 import com.example.application.inkstream.EventQuery;
 import com.example.application.inkstream.EventStream;
 import com.example.application.inkstream.YasperEvent;
 import com.example.application.inkstream.annotation.*;
-import com.example.application.inkstream.cgraph.ConsistencyGraph;
+import com.example.application.polyflow.cgraph.ConsistencyGraph;
 import com.example.application.inkstream.constraint.SpeedConstraintLongValueAttributeFactory;
-import com.example.application.inkstream.record.ConsistencyAnnotatedRecord;
-import com.example.application.inkstream.record.EventBean;
+import com.example.application.polyflow.datatypes.ConsistencyAnnotatedRecord;
+import com.example.application.polyflow.datatypes.EventBean;
 import org.apache.commons.configuration.ConfigurationException;
 import org.springframework.stereotype.Service;
 import org.streamreasoning.rsp4j.api.engine.config.EngineConfiguration;
@@ -35,7 +36,7 @@ public class InkStreamService {
 
     public InkStreamService() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, ConfigurationException {
         //Load engine configuration from yasper/target/classes/csparql.properties
-        ec = new EngineConfiguration("/Users/samuelelanghi/Documents/projects/inkstreamui/src/main/resources/default.properties");
+        ec = new EngineConfiguration("/home/ale/University/playtowin/src/main/resources/default.properties");
         outputStream = new LinkedList<>();
     }
 
@@ -67,27 +68,6 @@ public class InkStreamService {
 
         ContinuousQueryExecution<EventBean<Long>, Relation<EventBean<Long>>, AnnotatedRelation<EventBean<Long>>, ConsistencyAnnotatedRecord<EventBean<Long>>> cqe = sr.register(id);
 
-
-//        longR2RConsistencyAnnotator = new R2RConsistencyAnnotator<>(5, 2, new SpeedConstraintLongValueFactory(0.5, 0.5));
-//        ContinuousQueryExecution<EventBean<Long>, Relation<EventBean<Long>>, AnnotatedRelation<EventBean<Long>>, ConsistencyAnnotatedRecord<EventBean<Long>>> cqe = yasperEvent.register(id);
-
-
-
-//        EventBean<Long> event1 = new SimpleEvent(34, 1);
-//        EventBean<Long> event2 = new SimpleEvent(34, 2);
-//        EventBean<Long> event3 = new SimpleEvent(34, 3);
-//        EventBean<Long> event4 = new SimpleEvent(34, 4);
-//        EventBean<Long> event5 = new SimpleEvent(34, 5);
-//        EventBean<Long> event6 = new SimpleEvent(34, 6);
-//
-//
-//        eventStream.put(event1, 1);
-//        eventStream.put(event2, 2);
-//        eventStream.put(event3, 3);
-//        eventStream.put(event4, 4);
-//        eventStream.put(event5, 5);
-//        eventStream.put(event6, 6);
-
         cqe.outstream().addConsumer((ConsistencyAnnotatedRecord<EventBean<Long>> arg, long ts) -> {
             outputStream.add(0, arg);
         });
@@ -112,3 +92,4 @@ public class InkStreamService {
         return outputStream;
     }
 }
+*/

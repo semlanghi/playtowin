@@ -1,13 +1,14 @@
 package com.example.application.views.myview;
 
 import com.example.application.data.*;
-import com.example.application.inkstream.annotation.Window;
-import com.example.application.inkstream.cgraph.ConsistencyGraph;
-import com.example.application.inkstream.cgraph.ConsistencyGraphImpl;
-import com.example.application.inkstream.cgraph.ConsistencyNode;
-import com.example.application.inkstream.record.ConsistencyAnnotatedRecord;
-import com.example.application.inkstream.record.EventBean;
-import com.example.application.services.InkStreamService;
+import com.example.application.polyflow.cgraph.ConsistencyGraph;
+import com.example.application.polyflow.cgraph.ConsistencyGraphImpl;
+import com.example.application.polyflow.cgraph.ConsistencyNode;
+import com.example.application.polyflow.datatypes.EventBean;
+import com.example.application.polyflow.datatypes.GridInputWindowed;
+import com.example.application.polyflow.datatypes.GridOutputWindowed;
+import com.example.application.polyflow.datatypes.Table;
+import com.example.application.services.PolyflowService;
 import com.example.application.services.SampleGridService;
 import com.example.application.services.SampleStockService;
 import com.example.application.views.MainLayout;
@@ -37,8 +38,6 @@ import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
 import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.vaadin.addons.visjs.network.main.Edge;
@@ -62,7 +61,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -85,10 +83,10 @@ public class MyViewView extends Composite<VerticalLayout> {
     private HorizontalLayout upperCentralRow;
     private Class<?> sampleOutputClass;
     private Class<?> sampleInputClass;
-    private List<GridInput> inputGridList;
-    private List<GridInput> inputGridListActual;
-    private List<GridOutput> outputGridList;
-    private List<GridInputAnnotated> inputAnnotatedGridList;
+    private List<GridInputWindowed> inputGridList;
+    private List<GridInputWindowed> inputGridListActual;
+    private List<GridInputWindowed> outputGridList;
+    private List<GridInputWindowed> inputAnnotatedGridList;
     private List<GridOutputAnnotated> outputAnnotatedGridList;
     private List<GridOutputQuantified> outputQuantifiedGridList;
     private List<StockInput> stockInputArrayList;
@@ -106,7 +104,7 @@ public class MyViewView extends Composite<VerticalLayout> {
         selectScenarios.setItems("Electric Grid", "Stock", "GPS", "Movie Reviews");
         selectScenarios.setValue("Electric Grid");
         sampleOutputClass = GridOutput.class;
-        sampleInputClass = GridInput.class;
+        sampleInputClass = GridInputWindowed.class;
 
 
 
@@ -122,7 +120,7 @@ public class MyViewView extends Composite<VerticalLayout> {
                             "FROM Consumption [RANGE 5 minutes SLIDE 2 minutes]\n" +
                             "WHERE consA >= 0 AND consB >= 0";
                     sampleOutputClass = GridOutput.class;
-                    sampleInputClass = GridInput.class;
+                    sampleInputClass = GridInputWindowed.class;
                     loadPage(selectScenarios, event.getValue());
 
 
@@ -343,7 +341,7 @@ public class MyViewView extends Composite<VerticalLayout> {
         List<Edge> edges = new ArrayList<>();
 
 
-        Grid<GridInputAnnotated> inputAnnotatedGrid = new Grid<>(GridInputAnnotated.class);
+        Grid<GridOutputWindowed> inputAnnotatedGrid = new Grid<>(GridOutputWindowed.class);
         inputAnnotatedGrid.setWidth("100%");
         inputAnnotatedGrid.setHeight("100%");
         inputAnnotatedGrid.getStyle().set("flex-grow", "1");
@@ -380,7 +378,7 @@ public class MyViewView extends Composite<VerticalLayout> {
         outputAnnotatedGrid.removeColumn(outputAnnotatedGrid.getColumnByKey("variablesCardinality"));
 
 
-        tabSheetBottomRight.add("Annotations", outputAnnotatedGrid);
+        tabSheetBottomRight.add("Annotations", inputAnnotatedGrid);
 
         Grid<GridOutputAnnotated> outputQuantifiedGrid = new Grid<>(GridOutputAnnotated.class);
         outputQuantifiedGrid.setWidth("100%");
@@ -399,127 +397,49 @@ public class MyViewView extends Composite<VerticalLayout> {
 
         buttonNext.addClickListener(buttonClickEvent -> {
 
-            if (inkStreamService.isRegistered()) {
+            if (polyflowService.isRegistered()) {
                 Notification.show("Inserting Next Event.");
 
                 if (counterInput!=0){
-                    GridInput prevGridInput = inputGridListActual.get(counterInput-1);
+                    GridInputWindowed prevGridInput = inputGridListActual.get(counterInput-1);
                     prevGridInput.setCursor("");
                 }
 
-                GridInput gridInput = inputGridList.get(counterInput++);
+                GridInputWindowed gridInput = inputGridList.get(counterInput++);
                 gridInput.setCursor(">");
                 inputGridListActual.add(gridInput);
                 basicGrid.getDataProvider().refreshAll();
-                EventBean eventBean = gridInput;
-                inkStreamService.nextEvent(eventBean);
+                polyflowService.nextEvent(gridInput);
 
 
-                ConsistencyGraph currentGraph = inkStreamService.getCurrentGraph();
 
-                updateSnapshotGraphFromContent(snapshotGraphSolo, nodes, edges, (ConsistencyGraphImpl) currentGraph);
+                //ConsistencyGraph currentGraph = polyflowService.getCurrentGraph();
 
-                List<ConsistencyAnnotatedRecord<EventBean<Long>>> nextOutput = inkStreamService.getNextOutput();
+                //updateSnapshotGraphFromContent(snapshotGraphSolo, nodes, edges, (ConsistencyGraphImpl) currentGraph);
 
-                List<GridInputAnnotated> collect1 = inkStreamService.getNextOutput().stream().map(new Function<ConsistencyAnnotatedRecord<EventBean<Long>>, GridInputAnnotated>() {
-                    @Override
-                    public GridInputAnnotated apply(ConsistencyAnnotatedRecord<EventBean<Long>> eventBeanConsistencyAnnotatedRecord) {
-                        GridInputAnnotated gridInputAnnotated = new GridInputAnnotated();
-                        gridInputAnnotated.setRecordId(((GridInput)eventBeanConsistencyAnnotatedRecord.getWrappedRecord()).getRecordId());
-                        gridInputAnnotated.setConsA(eventBeanConsistencyAnnotatedRecord.getWrappedRecord().getValue("consA"));
-                        gridInputAnnotated.setConsB(eventBeanConsistencyAnnotatedRecord.getWrappedRecord().getValue("consB"));
-                        gridInputAnnotated.setTimestamp(eventBeanConsistencyAnnotatedRecord.getWrappedRecord().getTime());
-                        gridInputAnnotated.setPolynomial(eventBeanConsistencyAnnotatedRecord.getPolynomial().toString());
-                        return gridInputAnnotated;
-                    }
+                List<GridInputWindowed> nextOutput = polyflowService.getNextOutput();
+                List<GridOutputWindowed> actualOutput =  nextOutput.stream().map(el->{
+                    GridOutputWindowed g = new GridOutputWindowed();
+                    g.setIntervalId(el.getIntervalId());
+                    g.setConsA(el.getConsA());
+                    g.setConsB(el.getConsB());
+                    g.setOperatorId(el.getOperatorId());
+                    g.setTimestamp(el.getTimestamp());
+                    g.setRecordId(el.getRecordId());
+                    return g;
                 }).collect(Collectors.toList());
-                inputAnnotatedGrid.setItems(collect1);
-                List<Grid.Column<GridInputAnnotated>> sgab = Arrays.asList(inputAnnotatedGrid.getColumnByKey("recordId"),
-//                        inputAnnotatedGrid.getColumnByKey("timestamp"),
-                        inputAnnotatedGrid.getColumnByKey("polynomial"));
+
+                inputAnnotatedGrid.setItems(actualOutput);
+                List<Grid.Column<GridOutputWindowed>> sgab = Arrays.asList(
+                        inputAnnotatedGrid.getColumnByKey("recordId"),
+                        inputAnnotatedGrid.getColumnByKey("operatorId"),
+                        inputAnnotatedGrid.getColumnByKey("intervalId"));
+
                 inputAnnotatedGrid.getColumnByKey("recordId").setWidth("50px");
-//                inputAnnotatedGrid.getColumnByKey("timestamp").setWidth("5%");
                 inputAnnotatedGrid.setColumnOrder(sgab);
 
 
-
                 inputAnnotatedGrid.getDataProvider().refreshAll();
-
-
-                Map<Window, List<GridInputAnnotated>> outputAnnotatedMap = new HashMap<>();
-                for (GridInputAnnotated tmp : collect1
-                ) {
-                    long windowTimestampStartNew = (long) Math.max(0, Math.ceil(((double)tmp.getTimestamp()-5)/2)*2);
-                    long windowEndTimestamp = windowTimestampStartNew + 5;
-                    Window key = new Window(windowTimestampStartNew, windowEndTimestamp);
-                    outputAnnotatedMap.computeIfAbsent(key, new Function<Window, List<GridInputAnnotated>>() {
-                        @Override
-                        public List<GridInputAnnotated> apply(Window window) {
-                            return new LinkedList<>();
-                        }
-                    });
-
-                    outputAnnotatedMap.get(key).add(tmp);
-
-                    windowEndTimestamp+=2;
-                    windowTimestampStartNew+=2;
-                    while (windowTimestampStartNew <= tmp.getTimestamp() && windowEndTimestamp > tmp.getTimestamp()) {
-                        key = new Window(windowTimestampStartNew, windowEndTimestamp);
-                        outputAnnotatedMap.computeIfAbsent(key, new Function<Window, List<GridInputAnnotated>>() {
-                            @Override
-                            public List<GridInputAnnotated> apply(Window window) {
-                                return new LinkedList<>();
-                            }
-                        });
-
-                        outputAnnotatedMap.get(key).add(tmp);
-                        windowEndTimestamp+=2;
-                        windowTimestampStartNew+=2;
-                    }
-                }
-
-                Map<Window, Pair<GridOutput, GridOutputAnnotated>> outputAnnotatedMap1 = calculatePercentages(outputAnnotatedMap);
-
-                List<Pair<GridOutput, GridOutputAnnotated>> collect2 = outputAnnotatedMap1.values().stream().sorted(new Comparator<Pair<GridOutput, GridOutputAnnotated>>() {
-                    @Override
-                    public int compare(Pair<GridOutput, GridOutputAnnotated> o1, Pair<GridOutput, GridOutputAnnotated> o2) {
-                        return Integer.compare(Integer.parseInt(String.valueOf(o1.getKey().getWin().charAt(1))), Integer.parseInt(String.valueOf(o2.getKey().getWin().charAt(1))));
-                    }
-                }).toList();
-
-
-
-                outputResultGrid.setItems(collect2.stream().map(new Function<Pair<GridOutput, GridOutputAnnotated>, GridOutput>() {
-                    @Override
-                    public GridOutput apply(Pair<GridOutput, GridOutputAnnotated> gridOutputGridOutputAnnotatedPair) {
-                        return gridOutputGridOutputAnnotatedPair.getKey();
-                    }
-                }).collect(Collectors.toList()));
-
-
-                outputResultGrid.getDataProvider().refreshAll();
-
-
-
-
-
-                outputAnnotatedGrid.setItems(collect2.stream().map(new Function<Pair<GridOutput, GridOutputAnnotated>, GridOutputAnnotated>() {
-                    @Override
-                    public GridOutputAnnotated apply(Pair<GridOutput, GridOutputAnnotated> gridOutputGridOutputAnnotatedPair) {
-                        return gridOutputGridOutputAnnotatedPair.getValue();
-                    }
-                }).collect(Collectors.toList()));
-                outputAnnotatedGrid.getColumnByKey("win").setWidth("10%");
-                outputAnnotatedGrid.getDataProvider().refreshAll();
-
-                outputQuantifiedGrid.setItems(collect2.stream().map(new Function<Pair<GridOutput, GridOutputAnnotated>, GridOutputAnnotated>() {
-                    @Override
-                    public GridOutputAnnotated apply(Pair<GridOutput, GridOutputAnnotated> gridOutputGridOutputAnnotatedPair) {
-                        return gridOutputGridOutputAnnotatedPair.getValue();
-                    }
-                }).collect(Collectors.toList()));
-                outputQuantifiedGrid.recalculateColumnWidths();
-                outputQuantifiedGrid.getDataProvider().refreshAll();
 
 
             } else {
@@ -765,7 +685,7 @@ public class MyViewView extends Composite<VerticalLayout> {
                 try {
                     Notification.show("Registered Query.");
                     basicGrid.setItems(inputGridListActual);
-                    inkStreamService.register(scenario);
+                    polyflowService.register(scenario);
                 } catch (ConfigurationException e) {
                     e.printStackTrace();
                 } catch (InvocationTargetException e) {
@@ -950,58 +870,6 @@ public class MyViewView extends Composite<VerticalLayout> {
         constraintEditor.add(horizontalLayout);
     }
 
-    public Map<Window, Pair<GridOutput, GridOutputAnnotated>> calculatePercentages(Map<Window, List<GridInputAnnotated>> map) {
-        Map<Window, Pair<GridOutput, GridOutputAnnotated>> result = new HashMap<>();
-
-        for (Map.Entry<Window, List<GridInputAnnotated>> entry : map.entrySet()) {
-            List<GridInputAnnotated> gridConsumptions = entry.getValue();
-            double totalConsA = 0;
-            double totalConsB = 0;
-            long timestamp = 0;
-            StringBuilder stringBuilder = new StringBuilder();
-
-            boolean firstPlus = false;
-            // Calculate total consumption for each window
-            for (GridInputAnnotated consumption : gridConsumptions) {
-                totalConsA += consumption.getConsA();
-                totalConsB += consumption.getConsB();
-                timestamp = Math.max(consumption.getTimestamp(), timestamp);
-
-                if (!firstPlus){
-                    firstPlus = true;
-                } else stringBuilder.append("+");
-
-                stringBuilder.append(consumption.getPolynomial());
-            }
-
-            // Calculate percentages
-            double total = totalConsA + totalConsB;
-            double percentageConsA = (totalConsA / total) * 100;
-            double percentageConsB = (totalConsB / total) * 100;
-
-            // Create GridOutput object
-            GridOutput percentageResult = new GridOutput();
-            percentageResult.setWin(entry.getKey().toString());
-            percentageResult.setPercA((long) percentageConsA);
-            percentageResult.setPercB((long) percentageConsB);
-            percentageResult.setTimestamp(timestamp);
-
-            // Create GridOutputAnnotated object
-            GridOutputAnnotated percentageResultAnn = new GridOutputAnnotated();
-            percentageResultAnn.setWin(entry.getKey().toString());
-            percentageResultAnn.setPercA((long) percentageConsA);
-            percentageResultAnn.setPercB((long) percentageConsB);
-            percentageResultAnn.setTimestamp(timestamp);
-            percentageResultAnn.setPolynomial(stringBuilder.toString());
-            percentageResultAnn.setVariablesCardinality(detectNumVariables(stringBuilder.toString()));
-            percentageResultAnn.setDegree(detectDegree(stringBuilder.toString()));
-            percentageResultAnn.setSimplifiedPolynomial(simplifyPolynomial(stringBuilder.toString()));
-            // Put result in the map
-            result.put(entry.getKey(), new ImmutablePair<>(percentageResult, percentageResultAnn));
-        }
-
-        return result;
-    }
 
     public String findWordAfterAttribute(String input) {
         int attributeIndex = input.indexOf("Attribute");
@@ -1148,8 +1016,8 @@ public class MyViewView extends Composite<VerticalLayout> {
                     .stream());
     }
 
-    public GridInput createGridRecord(String recordId, long ts, long consA, long consB){
-        GridInput gridInput = new GridInput();
+    public GridInputWindowed createGridRecord(String recordId, long ts, long consA, long consB){
+        GridInputWindowed gridInput = new GridInputWindowed();
         gridInput.setRecordId(recordId);
         gridInput.setTimestamp(ts);
         gridInput.setConsA((long) consA);
@@ -1173,7 +1041,7 @@ public class MyViewView extends Composite<VerticalLayout> {
             inputGridList = new ArrayList<>();
             inputGridListActual = new ArrayList<>();
 
-            GridInput firstGridRecord = createGridRecord("r_"+0, 0, 8, 2);
+            GridInputWindowed firstGridRecord = createGridRecord("r_"+0, 0, 8, 2);
 //            firstGridRecord.setCursor(">");
             inputGridList.add(firstGridRecord);
             inputGridList.add(createGridRecord("r_"+1, 1, 8, 2));
@@ -1192,10 +1060,12 @@ public class MyViewView extends Composite<VerticalLayout> {
 
             grid.removeColumn(grid.getColumnByKey("id"));
             grid.removeColumn(grid.getColumnByKey("version"));
-            grid.removeColumn(grid.getColumnByKey("label"));
-            grid.removeColumn(grid.getColumnByKey("time"));
-            grid.removeColumn(grid.getColumnByKey("value"));
+            //grid.removeColumn(grid.getColumnByKey("label"));
+            //grid.removeColumn(grid.getColumnByKey("time"));
+            //grid.removeColumn(grid.getColumnByKey("value"));
             grid.removeColumn(grid.getColumnByKey("cursor"));
+            grid.removeColumn(grid.getColumnByKey("intervalId"));
+            grid.removeColumn(grid.getColumnByKey("operatorId"));
 //            grid.setSortableColumns("recordId", "timestamp", "consA", "consB");
 
 
@@ -1252,17 +1122,17 @@ public class MyViewView extends Composite<VerticalLayout> {
     private SampleStockService sampleStockService;
 
     @Autowired()
-    private InkStreamService inkStreamService;
+    private PolyflowService polyflowService;
 
 
-    private String getNodeId(ConsistencyNode<?> tmp){
+    /*private String getNodeId(ConsistencyNode<?> tmp){
         return "r_"+((GridInput)tmp.getConsistencyAnnotatedRecord().getWrappedRecord()).getTimestamp() + "_" + tmp.getConstraint().getDescription().split("_")[0];
-    }
+    }*/
 
     private void updateNode(ConsistencyNode<?> node, List<Node> nodes, List<Edge> edges){
 
 
-        if (node.getConnectedNodes().isEmpty())
+       /* if (node.getConnectedNodes().isEmpty())
             return;
         for (ConsistencyNode<?> tmp: node.getConnectedNodes()
         ) {
@@ -1305,12 +1175,12 @@ public class MyViewView extends Composite<VerticalLayout> {
                 } else edges.add(e);
             }
 
-        }
+        }*/
     }
 
     private void updateSnapshotGraphFromContent(NetworkDiagram snapshotGraph, List<Node> nodes, List<Edge> edges, ConsistencyGraphImpl consistencyGraph) {
 
-        nodes.clear();
+        /*nodes.clear();
         edges.clear();
 
 
@@ -1347,7 +1217,7 @@ public class MyViewView extends Composite<VerticalLayout> {
                 });
 
         snapshotGraph.setNodes(nodes);
-        snapshotGraph.setEdges(edges);
+        snapshotGraph.setEdges(edges);*/
 
     }
 
