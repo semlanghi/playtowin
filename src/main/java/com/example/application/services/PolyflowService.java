@@ -75,7 +75,7 @@ public class PolyflowService {
             StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> s2r_1 = new S2RHopping(
                     Tick.TIME_DRIVEN,
                     instance,
-                    "hopping_1",
+                    "TW1",
                     contentFactory,
                     report,
                     3,
@@ -84,13 +84,13 @@ public class PolyflowService {
             StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> s2r_2 = new S2RHopping(
                     Tick.TIME_DRIVEN,
                     instance,
-                    "hopping_2",
+                    "TW2",
                     contentFactory,
                     report,
                     3,
                     1);
 
-            R2RCustom r2r = new R2RCustom(List.of("hopping_1", "hopping_2"), "result");
+            R2RCustom r2r = new R2RCustom(List.of("TW1", "TW2"), "result");
             ContinuousProgram<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>, GridInputWindowed> cp = new ContinuousProgramImpl<>();
             Task<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>, GridInputWindowed> task = new CustomTask<>("1");
             RelationToStreamOperator<List<GridInputWindowed>, GridInputWindowed> r2sOp = new R2SCustom();

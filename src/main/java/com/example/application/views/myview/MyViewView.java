@@ -1,13 +1,10 @@
 package com.example.application.views.myview;
 
 import com.example.application.data.*;
-import com.example.application.polyflow.cgraph.ConsistencyGraph;
 import com.example.application.polyflow.cgraph.ConsistencyGraphImpl;
 import com.example.application.polyflow.cgraph.ConsistencyNode;
-import com.example.application.polyflow.datatypes.EventBean;
 import com.example.application.polyflow.datatypes.GridInputWindowed;
 import com.example.application.polyflow.datatypes.GridOutputWindowed;
-import com.example.application.polyflow.datatypes.Table;
 import com.example.application.services.PolyflowService;
 import com.example.application.services.SampleGridService;
 import com.example.application.services.SampleStockService;
@@ -28,6 +25,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
@@ -47,6 +45,7 @@ import org.vaadin.addons.visjs.network.options.Interaction;
 import org.vaadin.addons.visjs.network.options.Options;
 import org.vaadin.addons.visjs.network.options.edges.ArrowHead;
 import org.vaadin.addons.visjs.network.options.edges.Arrows;
+import org.vaadin.addons.visjs.network.options.edges.Edges;
 import org.vaadin.addons.visjs.network.util.Shape;
 //import org.vaadin.addons.visjs.network.main.Edge;
 //import org.vaadin.addons.visjs.network.main.NetworkDiagram;
@@ -76,9 +75,9 @@ import java.util.stream.Collectors;
 public class MyViewView extends Composite<VerticalLayout> {
 
     private HorizontalLayout mainRow;
-    private String query = "SELECT percent(consA,consB),percent(consB,consA),ts\n" +
-            "FROM Consumption [RANGE 5 minutes SLIDE 2 minutes]\n" +
-            "WHERE consA >= 0 AND consB >= 0";
+//    private String query = "SELECT percent(consA,consB),percent(consB,consA),ts\n" +
+//            "FROM Consumption [RANGE 5 minutes SLIDE 2 minutes]\n" +
+//            "WHERE consA >= 0 AND consB >= 0";
     private HorizontalLayout bottomRow;
     private HorizontalLayout upperCentralRow;
     private Class<?> sampleOutputClass;
@@ -116,9 +115,9 @@ public class MyViewView extends Composite<VerticalLayout> {
             switch (event.getValue()) {
                 case "Electric Grid":
 
-                    this.query = "SELECT percent(consA,consB),percent(consB,consA), max(ts)\n" +
-                            "FROM Consumption [RANGE 5 minutes SLIDE 2 minutes]\n" +
-                            "WHERE consA >= 0 AND consB >= 0";
+//                    this.query = "SELECT percent(consA,consB),percent(consB,consA), max(ts)\n" +
+//                            "FROM Consumption [RANGE 5 minutes SLIDE 2 minutes]\n" +
+//                            "WHERE consA >= 0 AND consB >= 0";
                     sampleOutputClass = GridOutput.class;
                     sampleInputClass = GridInputWindowed.class;
                     loadPage(selectScenarios, event.getValue());
@@ -129,9 +128,9 @@ public class MyViewView extends Composite<VerticalLayout> {
                     sampleOutputClass = StockOutput.class;
                     sampleInputClass = StockInput.class;
 
-                    this.query = "SELECT name, avg(value), max(ts)\n" +
-                            "FROM Stock [RANGE 5 minutes SLIDE 2 minutes]\n" +
-                            "WHERE name = Apple";
+//                    this.query = "SELECT name, avg(value), max(ts)\n" +
+//                            "FROM Stock [RANGE 5 minutes SLIDE 2 minutes]\n" +
+//                            "WHERE name = Apple";
                     loadPage(selectScenarios, event.getValue());
                     break;
                 default: loadPage(selectScenarios, "Electric Grid");
@@ -140,6 +139,16 @@ public class MyViewView extends Composite<VerticalLayout> {
 
 
         loadPage(selectScenarios, "Electric Grid");
+    }
+
+    private String getWindowAbbrev(String windowDescr){
+        if (windowDescr.contains("Time")){
+            return "TW";
+        } else if (windowDescr.contains("Session")){
+            return "SW";
+        } else if (windowDescr.contains("Frames")){
+           return "F" + windowDescr.split(":")[1].substring(0, 3);
+        } return   null;
     }
 
     private void loadPage(ComboBox<String> selectScenarios, String scenario) {
@@ -162,18 +171,18 @@ public class MyViewView extends Composite<VerticalLayout> {
         VerticalLayout centralColumn = new VerticalLayout();
         TabSheet upperCentralTabSheet = new TabSheet();
         VerticalLayout bottomCentralColumn = new VerticalLayout();
-        TextArea queryEditor = new TextArea();
-        queryEditor.setValue(query);
-        VerticalLayout constraintEditor = new VerticalLayout();
-        constraintEditor.setHeightFull();
-        constraintEditor.setWidthFull();
+//        TextArea queryEditor = new TextArea();
+//        queryEditor.setValue(query);
+        VerticalLayout windowEditor = new VerticalLayout();
+        windowEditor.setHeightFull();
+        windowEditor.setWidthFull();
 
 
-        ComboBox<String> selectConstraintType = new ComboBox<>();
-        selectConstraintType.setLabel("Window Type");
-        selectConstraintType.setItems("Time-based", "Session", "Frames:Threshold", "Frames:Delta", "Frames:Aggregate");
-        selectConstraintType.setValue("Time-based");
-        HorizontalLayout constraintSelectorLayout = new HorizontalLayout();
+        ComboBox<String> selectWindowType = new ComboBox<>();
+        selectWindowType.setLabel("Window Type");
+        selectWindowType.setItems("Time-based", "Session", "Frames:Threshold", "Frames:Delta", "Frames:Aggregate");
+        selectWindowType.setValue("Time-based");
+        HorizontalLayout windowSelectorLayout = new HorizontalLayout();
 
         TextField threshold = new TextField();
         threshold.setLabel("Threshold");
@@ -217,43 +226,43 @@ public class MyViewView extends Composite<VerticalLayout> {
         TextField timeout = new TextField();
         timeout.setLabel("Timeout");
 
-        selectConstraintType.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<ComboBox<String>, String>>) event -> {
+        selectWindowType.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<ComboBox<String>, String>>) event -> {
             int index = 1;
 
             if (!(event.getOldValue().equals("Frames:Aggregate")) && (event.getValue().startsWith("Frames:Aggregate"))) {
-                constraintSelectorLayout.addComponentAtIndex(index++, selectAggregate);
-                constraintSelectorLayout.setVerticalComponentAlignment(Alignment.END, selectAggregate);
+                windowSelectorLayout.addComponentAtIndex(index++, selectAggregate);
+                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, selectAggregate);
             } else if (!(event.getValue().equals("Frames:Aggregate")) && (event.getOldValue().equals("Frames:Aggregate"))) {
-                constraintSelectorLayout.remove(selectAggregate);
+                windowSelectorLayout.remove(selectAggregate);
             }
             if (!(event.getOldValue().startsWith("Frames")) && (event.getValue().startsWith("Frames"))) {
-                constraintSelectorLayout.addComponentAtIndex(index++, selectAttribute);
-                constraintSelectorLayout.setVerticalComponentAlignment(Alignment.END, selectAttribute);
-                constraintSelectorLayout.addComponentAtIndex(index++, selectOp);
-                constraintSelectorLayout.setVerticalComponentAlignment(Alignment.END, selectOp);
-                constraintSelectorLayout.addComponentAtIndex(index, threshold);
-                constraintSelectorLayout.setVerticalComponentAlignment(Alignment.END, threshold);
+                windowSelectorLayout.addComponentAtIndex(index++, selectAttribute);
+                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, selectAttribute);
+                windowSelectorLayout.addComponentAtIndex(index++, selectOp);
+                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, selectOp);
+                windowSelectorLayout.addComponentAtIndex(index, threshold);
+                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, threshold);
             } else if (!(event.getValue().startsWith("Frames")) && (event.getOldValue().startsWith("Frames"))) {
-                constraintSelectorLayout.remove(threshold);
-                constraintSelectorLayout.remove(selectAttribute);
-                constraintSelectorLayout.remove(selectOp);
+                windowSelectorLayout.remove(threshold);
+                windowSelectorLayout.remove(selectAttribute);
+                windowSelectorLayout.remove(selectOp);
             }
 
             if (!(event.getOldValue().equals("Time-based")) && (event.getValue().equals("Time-based"))) {
-                constraintSelectorLayout.addComponentAtIndex(index++, size);
-                constraintSelectorLayout.setVerticalComponentAlignment(Alignment.END, size);
-                constraintSelectorLayout.addComponentAtIndex(index, slide);
-                constraintSelectorLayout.setVerticalComponentAlignment(Alignment.END, slide);
+                windowSelectorLayout.addComponentAtIndex(index++, size);
+                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, size);
+                windowSelectorLayout.addComponentAtIndex(index, slide);
+                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, slide);
             } else if (!(event.getValue().equals("Time-based")) && (event.getOldValue().equals("Time-based"))) {
-                constraintSelectorLayout.remove(size);
-                constraintSelectorLayout.remove(slide);
+                windowSelectorLayout.remove(size);
+                windowSelectorLayout.remove(slide);
             }
 
             if (!(event.getOldValue().equals("Session")) && (event.getValue().equals("Session"))) {
-                constraintSelectorLayout.addComponentAtIndex(index++, timeout);
-                constraintSelectorLayout.setVerticalComponentAlignment(Alignment.END, timeout);
+                windowSelectorLayout.addComponentAtIndex(index++, timeout);
+                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, timeout);
             } else if (!(event.getValue().equals("Session")) && (event.getOldValue().equals("Session"))) {
-                constraintSelectorLayout.remove(timeout);
+                windowSelectorLayout.remove(timeout);
             }
 
             Notification.show(event.getValue());
@@ -261,65 +270,148 @@ public class MyViewView extends Composite<VerticalLayout> {
 
 
 
-        Button constraintCreatorButton = new Button();
+        Button windowCreatorButton = new Button();
 
 
+        List<WindowRowSummary> windowRowSummaries = new ArrayList<>();
 
-
-        constraintCreatorButton.addClickListener(new ComponentEventListener<ClickEvent<Button>>() {
+        windowCreatorButton.addClickListener(new ComponentEventListener<ClickEvent<Button>>() {
             @Override
             public void onComponentEvent(ClickEvent<Button> buttonClickEvent) {
                 HorizontalLayout horizontalLayout = new HorizontalLayout();
                 Button removeButton = new Button();
+                WindowRowSummary windowRowSummary = new WindowRowSummary();
                 removeButton.setText("X");
                 removeButton.addSingleClickListener(new ComponentEventListener<ClickEvent<Button>>() {
                     @Override
                     public void onComponentEvent(ClickEvent<Button> buttonClickEvent) {
-                        constraintEditor.remove(horizontalLayout);
+                        windowEditor.remove(horizontalLayout);
+                        windowRowSummaries.remove(windowRowSummary);
                     }
                 });
 
-                String constraintTypeValue = selectConstraintType.getValue();
+                String windowTypeValue = selectWindowType.getValue();
+                windowRowSummary.setName(getWindowAbbrev(windowTypeValue));
 
-                //String Building Based on the constraint
+                //String Building Based on the window
                 StringBuilder text = new StringBuilder();
-                text.append(constraintTypeValue);
+                text.append(windowTypeValue);
 
 
                 try {
-                    if (constraintTypeValue.equals("Frames:Aggregate")) {
+                    if (windowTypeValue.equals("Frames:Aggregate")) {
                         text.append(" on aggregate ").append(selectAggregate.getValue());
-                    }
-                    if (constraintTypeValue.startsWith("Frames")){
+                        windowRowSummary.setAttribute(selectAggregate.getValue()+"("+selectAttribute.getValue()+")");
+                    } else if (windowTypeValue.startsWith("Frames")){
                         text.append(" over Attribute ").append(selectAttribute.getValue()).append(" ").append(selectOp.getValue()).append(" ").append(threshold.getValue());
-                    } else if (constraintTypeValue.equals("Time-based")){
+                        windowRowSummary.setAttribute(selectAttribute.getValue());
+                        windowRowSummary.setOperator(selectOp.getValue());
+                        windowRowSummary.setRange(Long.parseLong(threshold.getValue()));
+                    } else if (windowTypeValue.equals("Time-based")){
                         text.append(" with Size ").append(size.getValue()).append(" and Slide ").append(slide.getValue());
-                    } else if (constraintTypeValue.equals("Session")){
+                        windowRowSummary.setSize(Long.parseLong(size.getValue()));
+                        windowRowSummary.setSlide(Long.parseLong(slide.getValue()));
+                    } else if (windowTypeValue.equals("Session")){
                         text.append(" with Timeout ").append(timeout.getValue());
+                        windowRowSummary.setTimeout(Long.parseLong(timeout.getValue()));
                     }
                     horizontalLayout.add(removeButton);
                     horizontalLayout.setVerticalComponentAlignment(Alignment.CENTER, removeButton);
                     String text1 = text.toString();
                     horizontalLayout.add(text1);
                     horizontalLayout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
-                    constraintEditor.add(horizontalLayout);
+                    windowEditor.add(horizontalLayout);
+                    windowRowSummaries.add(windowRowSummary);
                 } catch (NumberFormatException e) {
-                    Notification.show("No Constraint Created, Range invalid.");
+                    Notification.show("No Window Created, Range invalid.");
                 }
             }
         });
 
-        constraintCreatorButton.setText("Add");
-        constraintSelectorLayout.add(selectConstraintType, size, slide);
-        constraintSelectorLayout.add(constraintCreatorButton);
 
-        constraintSelectorLayout.setAlignItems(Alignment.START);
+        TabSheet tabSheet3 = new TabSheet();
+        tabSheet3.add("Windows", windowEditor);
 
-        constraintEditor.add(constraintSelectorLayout);
-        constraintEditor.setAlignItems(Alignment.START);
-        constraintSelectorLayout.setVerticalComponentAlignment(Alignment.END, constraintCreatorButton);
 
-        setConstraintScenario(scenario, constraintEditor);
+//        HashMap<String, Integer> windowCounter = new HashMap<>();
+//
+//        for (WindowRowSummary windowRowSummary : windowRowSummaries) {
+//            String windowType = windowRowSummary.getName().replaceAll("\\d", "");
+//
+//            windowCounter.putIfAbsent(windowType, 1);
+//            windowRowSummary.setName(windowType +"_"+windowCounter.get(windowRowSummary.getName()));
+//            windowCounter.put(windowType, windowCounter.get(windowType)+1);
+//        }
+
+        //Summary Tab
+        HorizontalLayout summaryLayout = new HorizontalLayout();
+        VerticalLayout summaryWindows = new VerticalLayout();
+
+        TextArea queryPerspective = new TextArea();
+        tabSheet3.add("Summary", summaryLayout);
+
+        Grid<WindowRowSummary> summaryWindowGrid = new Grid<>(WindowRowSummary.class);
+
+
+        
+
+        summaryWindowGrid.setItems(windowRowSummaries);
+        summaryWindowGrid.setHeightFull();
+        summaryWindowGrid.setWidthFull();
+        summaryWindows.add(summaryWindowGrid, queryPerspective);
+        
+        summaryWindowGrid.addItemClickListener(event -> {
+            WindowRowSummary item = event.getItem();
+            queryPerspective.setValue(item.getQuery());
+        });
+        summaryLayout.add(summaryWindows);//, summaryQuery);
+
+        summaryLayout.setHeightFull();
+        summaryLayout.setWidthFull();
+        summaryWindows.setWidth("100%");
+        summaryWindows.setHeightFull();
+
+        queryPerspective.setLabel("Query Perspective");
+        queryPerspective.setHeight("100%");
+        queryPerspective.setWidth("100%");
+
+
+
+        tabSheet3.addSelectedChangeListener(new ComponentEventListener<TabSheet.SelectedChangeEvent>() {
+            @Override
+            public void onComponentEvent(TabSheet.SelectedChangeEvent selectedChangeEvent) {
+                if (selectedChangeEvent.getSelectedTab().getLabel().equals("Summary")){
+                    HashMap<String, Integer> windowCounter = new HashMap<>();
+
+                    for (WindowRowSummary windowRowSummary : windowRowSummaries) {
+                        String windowType = windowRowSummary.getName().replaceAll("\\d", "");
+
+                        windowCounter.putIfAbsent(windowType, 1);
+                        windowRowSummary.setName(windowType+windowCounter.get(windowType));
+                        windowCounter.put(windowType, windowCounter.get(windowType)+1);
+                    }
+
+                    summaryWindowGrid.setItems(windowRowSummaries);
+                    summaryWindowGrid.getDataProvider().refreshAll();
+                }
+
+            }
+        });
+
+
+        windowCreatorButton.setText("Add");
+        windowSelectorLayout.add(selectWindowType, size, slide);
+        windowSelectorLayout.add(windowCreatorButton);
+
+        windowSelectorLayout.setAlignItems(Alignment.START);
+
+        windowEditor.add(windowSelectorLayout);
+        windowEditor.setAlignItems(Alignment.START);
+        windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, windowCreatorButton);
+
+//        setWindowScenario(scenario, windowEditor);
+
+        Button windowButton = new Button();
 
         VerticalLayout rightColumn = new VerticalLayout();
 
@@ -327,72 +419,93 @@ public class MyViewView extends Composite<VerticalLayout> {
         TabSheet tabSheetUpperRight = new TabSheet();
         TabSheet tabSheetBottomRight = new TabSheet();
 
-        TabSheet tabSheet3 = new TabSheet();
 
-        Button buttonNext = new Button();
+
+        Map<String,Grid> resultGrids = new HashMap<>();
+        Grid<GridOutputWindowed> inputAnnotatedGrid = getGridOutputWindowedGrid();
+
+        tabSheetBottomRight.add("Results", inputAnnotatedGrid);
+
+
+
+        Map<String,NetworkDiagram> graphs = new HashMap<>();
 
         NetworkDiagram snapshotGraphSolo =
                 new NetworkDiagram(Options.builder().withWidth("100%").withHeight("100%")
                         .withInteraction(Interaction.builder().withMultiselect(true).build()).build());
+        tabSheetUpperRight.add("Window State", snapshotGraphSolo);
+
+
+        windowButton.setText("Windows");
+        bottomRow.setAlignSelf(Alignment.CENTER, windowButton);
+        windowButton.setWidth("min-content");
+        windowButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+//        queryButton.setText("Query");
+        windowButton.addClickListener(new ComponentEventListener<ClickEvent<Button>>() {
+            @Override
+            public void onComponentEvent(ClickEvent<Button> buttonClickEvent) {
+                try {
+                    Notification.show("Registered Windows.");
+                    basicGrid.setItems(inputGridListActual);
+                    polyflowService.register(scenario);
+
+                    if (tabSheetUpperRight.getTabAt(0).getLabel().equals("Window State")){
+                        tabSheetUpperRight.remove(0);
+                    }
+
+                    if (tabSheetBottomRight.getTabAt(0).getLabel().equals("Results")){
+                        tabSheetBottomRight.remove(0);
+                    }
+
+                    for (NetworkDiagram diagram: graphs.values()){
+                        tabSheetUpperRight.remove(diagram.getParent().get());
+                    }
+
+                    for (Grid d: resultGrids.values()){
+                        tabSheetBottomRight.remove(d.getParent().get());
+                    }
+
+                    graphs.clear();
+                    resultGrids.clear();
+
+                    for (WindowRowSummary windowRowSummary : windowRowSummaries) {
+
+                        Tab tabRes = new Tab(windowRowSummary.name+" Results");
+                        Grid<GridOutputWindowed> resultGrid = getGridOutputWindowedGrid();
+                        tabSheetBottomRight.add(tabRes, resultGrid);
+                        resultGrids.put(windowRowSummary.name, resultGrid);
+
+                        Tab tab = new Tab(windowRowSummary.name+" State");
+                        NetworkDiagram snapshotGraphSoloLocal =
+                                new NetworkDiagram(Options.builder().withWidth("100%").withHeight("100%")
+                                        .withInteraction(Interaction.builder().withMultiselect(true).build()).build());
+                        tabSheetUpperRight.add(tab, snapshotGraphSoloLocal);
+                        graphs.put(windowRowSummary.name, snapshotGraphSoloLocal);
+                    }
+
+                } catch (ConfigurationException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                } catch (NoSuchMethodException e) {
+                    e.printStackTrace();
+                } catch (InstantiationException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
 
 
-        List<Node> nodes = new ArrayList<>();
-        List<Edge> edges = new ArrayList<>();
 
 
-        Grid<GridOutputWindowed> inputAnnotatedGrid = new Grid<>(GridOutputWindowed.class);
-        inputAnnotatedGrid.setWidth("100%");
-        inputAnnotatedGrid.setHeight("100%");
-        inputAnnotatedGrid.getStyle().set("flex-grow", "1");
-        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("version"));
-        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("id"));
-        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("consA"));
-        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("timestamp"));
-        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("consB"));
-
-        Grid<GridOutput> outputResultGrid = new Grid<>(GridOutput.class);
-        outputResultGrid.setWidth("100%");
-        outputResultGrid.setHeight("100%");
-        outputResultGrid.getStyle().set("flex-grow", "0");
-        outputResultGrid.removeColumn(outputResultGrid.getColumnByKey("version"));
-        outputResultGrid.removeColumn(outputResultGrid.getColumnByKey("id"));
+        Button buttonNext = new Button();
 
 
-        tabSheetUpperRight.add("Graph", snapshotGraphSolo);
-
-        tabSheetBottomRight.add("Results", outputResultGrid);
 
 
-        Grid<GridOutputAnnotated> outputAnnotatedGrid = new Grid<>(GridOutputAnnotated.class);
-        outputAnnotatedGrid.setWidth("100%");
-        outputAnnotatedGrid.setHeight("100%");
-        outputAnnotatedGrid.getStyle().set("flex-grow", "0");
-        outputAnnotatedGrid.removeColumn(outputAnnotatedGrid.getColumnByKey("version"));
-        outputAnnotatedGrid.removeColumn(outputAnnotatedGrid.getColumnByKey("id"));
-        outputAnnotatedGrid.removeColumn(outputAnnotatedGrid.getColumnByKey("percA"));
-        outputAnnotatedGrid.removeColumn(outputAnnotatedGrid.getColumnByKey("percB"));
-        outputAnnotatedGrid.removeColumn(outputAnnotatedGrid.getColumnByKey("timestamp"));
-        outputAnnotatedGrid.removeColumn(outputAnnotatedGrid.getColumnByKey("degree"));
-        outputAnnotatedGrid.removeColumn(outputAnnotatedGrid.getColumnByKey("simplifiedPolynomial"));
-        outputAnnotatedGrid.removeColumn(outputAnnotatedGrid.getColumnByKey("variablesCardinality"));
-
-
-        tabSheetBottomRight.add("Annotations", inputAnnotatedGrid);
-
-        Grid<GridOutputAnnotated> outputQuantifiedGrid = new Grid<>(GridOutputAnnotated.class);
-        outputQuantifiedGrid.setWidth("100%");
-        outputQuantifiedGrid.setHeight("100%");
-        outputQuantifiedGrid.getStyle().set("flex-grow", "0");
-        outputQuantifiedGrid.removeColumn(outputQuantifiedGrid.getColumnByKey("version"));
-        outputQuantifiedGrid.removeColumn(outputQuantifiedGrid.getColumnByKey("id"));
-        outputQuantifiedGrid.removeColumn(outputQuantifiedGrid.getColumnByKey("percA"));
-        outputQuantifiedGrid.removeColumn(outputQuantifiedGrid.getColumnByKey("percB"));
-        outputQuantifiedGrid.removeColumn(outputQuantifiedGrid.getColumnByKey("timestamp"));
-        outputQuantifiedGrid.removeColumn(outputQuantifiedGrid.getColumnByKey("polynomial"));
-
-
-        tabSheetBottomRight.add("Quantification", outputQuantifiedGrid);
 
 
         buttonNext.addClickListener(buttonClickEvent -> {
@@ -429,17 +542,32 @@ public class MyViewView extends Composite<VerticalLayout> {
                     return g;
                 }).collect(Collectors.toList());
 
-                inputAnnotatedGrid.setItems(actualOutput);
-                List<Grid.Column<GridOutputWindowed>> sgab = Arrays.asList(
-                        inputAnnotatedGrid.getColumnByKey("recordId"),
-                        inputAnnotatedGrid.getColumnByKey("operatorId"),
-                        inputAnnotatedGrid.getColumnByKey("intervalId"));
+//                inputAnnotatedGrid.setItems(actualOutput);
 
-                inputAnnotatedGrid.getColumnByKey("recordId").setWidth("50px");
-                inputAnnotatedGrid.setColumnOrder(sgab);
+                for (String windowName : resultGrids.keySet()) {
+                    Grid<GridOutputWindowed> resultGrid = resultGrids.get(windowName);
 
+                    List<Grid.Column<GridOutputWindowed>> sgab = Arrays.asList(
+                            resultGrid.getColumnByKey("recordId"),
+                            resultGrid.getColumnByKey("operatorId"),
+                            resultGrid.getColumnByKey("intervalId"));
 
-                inputAnnotatedGrid.getDataProvider().refreshAll();
+                    resultGrid.getColumnByKey("recordId").setWidth("50px");
+                    resultGrid.setColumnOrder(sgab);
+
+                    //ERRORE TAB NON E PARENT DI GRID
+                    resultGrid.setItems(actualOutput.stream().filter(el -> el.getOperatorId()
+                            .equals((tabSheetBottomRight.getTab(resultGrid)).getLabel().split(" ")[0])).collect(Collectors.toList()));
+
+                    resultGrid.getDataProvider().refreshAll();
+                }
+
+                for (String windowName : graphs.keySet()) {
+                    NetworkDiagram diagram = graphs.get(windowName);
+
+                    updateWindowState(diagram, actualOutput.stream().filter(el -> el.getOperatorId()
+                            .equals((tabSheetUpperRight.getTab(diagram)).getLabel().split(" ")[0])).collect(Collectors.toList()));
+                }
 
 
             } else {
@@ -449,8 +577,8 @@ public class MyViewView extends Composite<VerticalLayout> {
 
         Button buttonPrimary2 = new Button();
         Button buttonPrimary3 = new Button();
-        Button buttonPrimary4 = new Button();
-        Button queryButton = new Button();
+
+//        Button queryButton = new Button();
         Button buttonPrimary6 = new Button();
         Button buttonPrimary7 = new Button();
         H6 h6 = new H6();
@@ -515,9 +643,9 @@ public class MyViewView extends Composite<VerticalLayout> {
         bottomCentralColumn.setHeight("50%");
         bottomCentralColumn.setJustifyContentMode(JustifyContentMode.END);
         bottomCentralColumn.setAlignItems(Alignment.CENTER);
-        bottomCentralColumn.setAlignSelf(Alignment.CENTER, queryEditor);
-        queryEditor.setWidth("100%");
-        queryEditor.setHeight("100%");
+//        bottomCentralColumn.setAlignSelf(Alignment.CENTER, queryEditor);
+//        queryEditor.setWidth("100%");
+//        queryEditor.setHeight("100%");
         rightColumn.setHeightFull();
         mainRow.setFlexGrow(1.0, rightColumn);
         rightColumn.addClassName(Padding.XSMALL);
@@ -533,119 +661,6 @@ public class MyViewView extends Composite<VerticalLayout> {
 //        setTabSheetSampleData(tabSheetUpperRight);
 
 
-
-
-
-
-
-
-
-//        setTabSheetSampleData(tabSheet3);
-
-        tabSheet3.add("Constraints", constraintEditor);
-        tabSheet3.add("Query", queryEditor);
-
-        //Summary Tab
-        HorizontalLayout summaryLayout = new HorizontalLayout();
-        VerticalLayout summaryConstraints = new VerticalLayout();
-        tabSheet3.add("Summary", summaryLayout);
-
-        Grid<ConstraintRowSummary> summaryConstraintGrid = new Grid<>(ConstraintRowSummary.class);
-        HashMap<String, Integer> constraintCounter = new HashMap<>();
-        List<ConstraintRowSummary> constraintRowSummaries = new ArrayList<>();
-        summaryConstraintGrid.setItems(constraintRowSummaries);
-        summaryConstraintGrid.setHeightFull();
-        summaryConstraintGrid.setWidthFull();
-
-
-
-
-        for (int i = 1; i < constraintEditor.getComponentCount(); i++) {
-            String constraintDescr = ((Text) ((HorizontalLayout) constraintEditor.getComponentAt(i)).getComponentAt(1)).getText();
-            int rangeConstraint = 0;
-            String attConstraint;
-            String abbrevConstraintType;
-            if (constraintDescr.contains("Speed")){
-
-                constraintCounter.putIfAbsent("SC", 1);
-                abbrevConstraintType = "SC"+constraintCounter.get("SC");
-                constraintCounter.put("SC", constraintCounter.get("SC")+1);
-                rangeConstraint = findInteger(constraintDescr);
-                attConstraint = findWordAfterAttribute(constraintDescr);
-                constraintRowSummaries.add(new ConstraintRowSummary(abbrevConstraintType, rangeConstraint, attConstraint));
-                summaryConstraintGrid.getDataProvider().refreshAll();
-            } else if (constraintDescr.contains("Primary Key")){
-                constraintCounter.putIfAbsent("PK", 1);
-                abbrevConstraintType = "PK"+constraintCounter.get("PK");
-                constraintCounter.put("PK", constraintCounter.get("PK")+1);
-                attConstraint = findWordAfterAttribute(constraintDescr);
-                constraintRowSummaries.add(new ConstraintRowSummary(abbrevConstraintType, rangeConstraint, attConstraint));
-                summaryConstraintGrid.getDataProvider().refreshAll();
-            }
-
-        }
-        summaryConstraints.add(summaryConstraintGrid);
-
-        VerticalLayout summaryQuery = new VerticalLayout();
-        TextArea textField = new TextArea();
-        textField.setSizeFull();
-        textField.setValue(query);
-
-        summaryQuery.add(textField);
-
-        textField.setReadOnly(true);
-
-
-
-
-
-        summaryLayout.add(summaryConstraints, summaryQuery);
-
-        summaryLayout.setHeightFull();
-        summaryLayout.setWidthFull();
-        summaryConstraints.setWidth("50%");
-        summaryConstraints.setHeightFull();
-        summaryQuery.setHeightFull();
-        summaryQuery.setWidth("50%");
-        textField.setWidth("100%");
-        textField.setHeight("100%");
-
-
-        tabSheet3.addSelectedChangeListener(new ComponentEventListener<TabSheet.SelectedChangeEvent>() {
-            @Override
-            public void onComponentEvent(TabSheet.SelectedChangeEvent selectedChangeEvent) {
-                if (selectedChangeEvent.getSelectedTab().getLabel().equals("Summary")){
-                    HashMap<String, Integer> constraintCounter = new HashMap<>();
-                    List<ConstraintRowSummary> constraintRowSummaries = new ArrayList<>();
-                    summaryConstraintGrid.setItems(constraintRowSummaries);
-                    for (int i = 1; i < constraintEditor.getComponentCount(); i++) {
-                        String constraintDescr = ((Text) ((HorizontalLayout) constraintEditor.getComponentAt(i)).getComponentAt(1)).getText();
-                        int rangeConstraint = 0;
-                        String attConstraint;
-                        String abbrevConstraintType;
-                        if (constraintDescr.contains("Speed")){
-
-                            constraintCounter.putIfAbsent("SC", 1);
-                            abbrevConstraintType = "SC"+constraintCounter.get("SC");
-                            constraintCounter.put("SC", constraintCounter.get("SC")+1);
-                            rangeConstraint = findInteger(constraintDescr);
-                            attConstraint = findWordAfterAttribute(constraintDescr);
-                            constraintRowSummaries.add(new ConstraintRowSummary(abbrevConstraintType, rangeConstraint, attConstraint));
-                            summaryConstraintGrid.getDataProvider().refreshAll();
-                        } else if (constraintDescr.contains("Primary Key")){
-                            constraintCounter.putIfAbsent("PK", 1);
-                            abbrevConstraintType = "PK"+constraintCounter.get("PK");
-                            constraintCounter.put("PK", constraintCounter.get("PK")+1);
-                            attConstraint = findWordAfterAttribute(constraintDescr);
-                            constraintRowSummaries.add(new ConstraintRowSummary(abbrevConstraintType, rangeConstraint, attConstraint));
-                            summaryConstraintGrid.getDataProvider().refreshAll();
-                        }
-
-                    }
-                }
-
-            }
-        });
 
         mainRow.setWidthFull();
         mainRow.setHeightFull();
@@ -668,40 +683,10 @@ public class MyViewView extends Composite<VerticalLayout> {
         bottomRow.setAlignSelf(Alignment.CENTER, buttonPrimary3);
         buttonPrimary3.setWidth("min-content");
         buttonPrimary3.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        buttonPrimary4.setText("Constraints");
-        buttonPrimary4.addClickListener(new ComponentEventListener<ClickEvent<Button>>() {
-            @Override
-            public void onComponentEvent(ClickEvent<Button> buttonClickEvent) {
-                Notification.show("Constraints Registered.");
-            }
-        });
-        bottomRow.setAlignSelf(Alignment.CENTER, buttonPrimary4);
-        buttonPrimary4.setWidth("min-content");
-        buttonPrimary4.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        queryButton.setText("Query");
-        queryButton.addClickListener(new ComponentEventListener<ClickEvent<Button>>() {
-            @Override
-            public void onComponentEvent(ClickEvent<Button> buttonClickEvent) {
-                try {
-                    Notification.show("Registered Query.");
-                    basicGrid.setItems(inputGridListActual);
-                    polyflowService.register(scenario);
-                } catch (ConfigurationException e) {
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
-                    e.printStackTrace();
-                } catch (NoSuchMethodException e) {
-                    e.printStackTrace();
-                } catch (InstantiationException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        bottomRow.setAlignSelf(Alignment.CENTER, queryButton);
-        queryButton.setWidth("min-content");
-        queryButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+//        bottomRow.setAlignSelf(Alignment.CENTER, queryButton);
+//        queryButton.setWidth("min-content");
+//        queryButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         buttonPrimary6.setText("LLM");
         bottomRow.setAlignSelf(Alignment.CENTER, buttonPrimary6);
         buttonPrimary6.setWidth("min-content");
@@ -710,7 +695,7 @@ public class MyViewView extends Composite<VerticalLayout> {
         bottomRow.setAlignSelf(Alignment.CENTER, buttonPrimary7);
         buttonPrimary7.setWidth("min-content");
         buttonPrimary7.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        h6.setText("Samuele Langhi, Angela Bonifati, Riccardo Tommasini");
+        h6.setText("Alessandro Ferri, Mauro Fama, Samuele Langhi, Riccardo Tommasini, Angela Bonifati");
         bottomRow.setAlignSelf(Alignment.CENTER, h6);
         h6.setWidth("max-content");
         getContent().add(mainRow);
@@ -789,11 +774,26 @@ public class MyViewView extends Composite<VerticalLayout> {
         bottomRow.add(buttonNext);
 //        bottomRow.add(buttonPrimary2);
         bottomRow.add(buttonPrimary3);
-        bottomRow.add(buttonPrimary4);
-        bottomRow.add(queryButton);
+        bottomRow.add(windowButton);
+//        bottomRow.add(queryButton);
         bottomRow.add(buttonPrimary6);
         bottomRow.add(buttonPrimary7);
         bottomRow.add(h6);
+    }
+
+
+
+    private static Grid<GridOutputWindowed> getGridOutputWindowedGrid() {
+        Grid<GridOutputWindowed> inputAnnotatedGrid = new Grid<>(GridOutputWindowed.class);
+        inputAnnotatedGrid.setWidth("100%");
+        inputAnnotatedGrid.setHeight("100%");
+        inputAnnotatedGrid.getStyle().set("flex-grow", "1");
+        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("version"));
+        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("id"));
+        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("consA"));
+        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("timestamp"));
+        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("consB"));
+        return inputAnnotatedGrid;
     }
 
     public static int findTimestamp(String input) {
@@ -814,10 +814,10 @@ public class MyViewView extends Composite<VerticalLayout> {
         return -1;
     }
 
-    private void setConstraintScenario(String scenario, VerticalLayout constraintEditor) {
+    private void setWindowScenario(String scenario, VerticalLayout windowEditor) {
         if (scenario.equals("Electric Grid")){
-            extracted(constraintEditor, "5", "5");
-            extracted(constraintEditor, "7",  "7");
+            extracted(windowEditor, "5", "5");
+            extracted(windowEditor, "7",  "7");
 
         }else if (scenario.equals("Stock")){
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -826,11 +826,11 @@ public class MyViewView extends Composite<VerticalLayout> {
             removeButton.addSingleClickListener(new ComponentEventListener<ClickEvent<Button>>() {
                 @Override
                 public void onComponentEvent(ClickEvent<Button> buttonClickEvent) {
-                    constraintEditor.remove(horizontalLayout);
+                    windowEditor.remove(horizontalLayout);
                 }
             });
 
-            //String Building Based on the constraint
+            //String Building Based on the window
             StringBuilder text = new StringBuilder();
             text.append("Time-based Window").append(" with size 5 and slide 5");
 
@@ -839,25 +839,25 @@ public class MyViewView extends Composite<VerticalLayout> {
             String text1 = text.toString();
             horizontalLayout.add(text1);
             horizontalLayout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
-            constraintEditor.add(horizontalLayout);
+            windowEditor.add(horizontalLayout);
         }else {
-            extracted(constraintEditor, "5", "5");
-            extracted(constraintEditor, "7",  "7");
+            extracted(windowEditor, "5", "5");
+            extracted(windowEditor, "7",  "7");
         }
     }
 
-    private void extracted(VerticalLayout constraintEditor, String size, String slide) {
+    private void extracted(VerticalLayout windowEditor, String size, String slide) {
         HorizontalLayout horizontalLayout = new HorizontalLayout();
         Button removeButton = new Button();
         removeButton.setText("X");
         removeButton.addSingleClickListener(new ComponentEventListener<ClickEvent<Button>>() {
             @Override
             public void onComponentEvent(ClickEvent<Button> buttonClickEvent) {
-                constraintEditor.remove(horizontalLayout);
+                windowEditor.remove(horizontalLayout);
             }
         });
 
-        //String Building Based on the constraint
+        //String Building Based on the window
         StringBuilder text = new StringBuilder();
         text.append("Time-based Window").append(" with size ").append(size)
                 .append(" and slide ").append(slide);
@@ -867,7 +867,7 @@ public class MyViewView extends Composite<VerticalLayout> {
         String text1 = text.toString();
         horizontalLayout.add(text1);
         horizontalLayout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
-        constraintEditor.add(horizontalLayout);
+        windowEditor.add(horizontalLayout);
     }
 
 
@@ -887,15 +887,70 @@ public class MyViewView extends Composite<VerticalLayout> {
     }
 
 
-    public class ConstraintRowSummary {
+    public class WindowRowSummary {
         private String name;
-        private Integer range;
         private String attribute;
+        private String operator;
+        private long range;
+        private long size;
+        private long slide;
+        private long timeout;
 
-        public ConstraintRowSummary(String name, Integer range, String attribute) {
+        public String getOperator() {
+            return operator;
+        }
+
+        public void setOperator(String operator) {
+            this.operator = operator;
+        }
+
+        public long getSize() {
+            return size;
+        }
+
+        public void setSize(long size) {
+            this.size = size;
+        }
+
+        public long getSlide() {
+            return slide;
+        }
+
+        public void setSlide(long slide) {
+            this.slide = slide;
+        }
+
+        public long getTimeout() {
+            return timeout;
+        }
+
+        public void setTimeout(long timeout) {
+            this.timeout = timeout;
+        }
+
+        public WindowRowSummary() {
+        }
+
+        public WindowRowSummary(String name, String attribute, String operator, Long range) {
             this.name = name;
-            this.range = range;
             this.attribute = attribute;
+            this.operator = operator;
+            this.range = range;
+        }
+
+        public WindowRowSummary(String name, Long timeout) {
+            this.name = name;
+            this.timeout = timeout;
+            this.attribute = "ND";
+            this.operator = "ND";
+        }
+
+        public WindowRowSummary(String name, Long size, Long slide) {
+            this.name = name;
+            this.size = size;
+            this.slide = slide;
+            this.attribute = "ND";
+            this.operator = "ND";
         }
 
         public String getName() {
@@ -906,100 +961,91 @@ public class MyViewView extends Composite<VerticalLayout> {
             this.name = name;
         }
 
-        public Integer getRange() {
+        public long getRange() {
             return range;
         }
 
-        public void setRange(Integer range) {
+        public void setRange(long range) {
             this.range = range;
         }
 
         public String getAttribute() {
-            return attribute;
+            if (this.name.contains("F"))
+                return attribute;
+            else return "nd";
         }
 
         public void setAttribute(String attribute) {
             this.attribute = attribute;
         }
+
+        public String getQuery() {
+            StringBuilder query = new StringBuilder();
+
+            query.append("SELECT *\n" +
+                    "FROM");
+            if (this.name.contains("TW"))
+                query.append(" HOP(TABLE Stream, DESCRIPTOR(ts), INTERVAL '" + size + "' minutes, INTERVAL '" + slide + "' minutes)");
+            else if (this.name.contains("SW"))
+                query.append(" SESSION(TABLE Stream, DESCRIPTOR(ts), INTERVAL '" + timeout + "' minutes)");
+            else if (this.name.contains("F"))
+                query.append(" FRAMES(TABLE Stream, DESCRIPTOR(ts), " + attribute + " " + operator + " " + range);
+
+            return query.toString();
+        }
     }
 
-    public int findInteger(String input) {
-        int start = input.lastIndexOf("Range ");
+
+
+    public Long findSize(String input) {
+        int start = input.lastIndexOf("Size ");
         if (start != -1) {
             start += 6; // Move to the beginning of the integer value
             int end = input.length(); // Find the end of the integer value
             if (end != -1) {
                 try {
-                    return Integer.parseInt(input.substring(start, end));
+                    return Long.parseLong(input.substring(start, end));
                 } catch (NumberFormatException e) {
                     System.err.println("Error parsing integer value.");
                 }
             }
         }
-        return -1; // Integer value not found
+        return (long) -1; // Integer value not found
     }
 
-    public int detectDegree(String polynomialString) {
-
-        String[] split = polynomialString.split("\\+");
-
-        Pattern pattern = Pattern.compile("\\^([0-9]+)");
-        int degree = 0;
-        int[] degrees = new int[split.length];
-        for (int i = 0; i < split.length; i++){
-            Matcher matcher = pattern.matcher(polynomialString);
-            while (matcher.find())
-                degree += Integer.parseInt(matcher.group(1));
-            degrees[i] = degree;
-            degree = 0;
-        }
-
-        int maxDegree = -1;
-        for (int j : degrees) {
-            if (j > maxDegree) {
-                maxDegree = j;
+    public Long findSlide(String input) {
+        int start = input.lastIndexOf("Slide ");
+        if (start != -1) {
+            start += 6; // Move to the beginning of the integer value
+            int end = input.length(); // Find the end of the integer value
+            if (end != -1) {
+                try {
+                    return Long.parseLong(input.substring(start, end));
+                } catch (NumberFormatException e) {
+                    System.err.println("Error parsing integer value.");
+                }
             }
         }
-
-        return maxDegree;
+        return (long) -1; // Integer value not found
     }
 
-    public int detectNumVariables(String polynomialString) {
-        Pattern pattern = Pattern.compile("SC\\d+_\\d+");
-        Matcher matcher = pattern.matcher(polynomialString);
-        int numVariables = 0;
-        while (matcher.find()) {
-            numVariables++;
+    public Long findTimeout(String input) {
+        int start = input.lastIndexOf("Timeout ");
+        if (start != -1) {
+            start += 6; // Move to the beginning of the integer value
+            int end = input.length(); // Find the end of the integer value
+            if (end != -1) {
+                try {
+                    return Long.parseLong(input.substring(start, end));
+                } catch (NumberFormatException e) {
+                    System.err.println("Error parsing integer value.");
+                }
+            }
         }
-        return numVariables;
+        return (long) -1; // Integer value not found
     }
 
-    public String simplifyPolynomial(String polynomialString) {
 
-        String[] split = polynomialString.split("\\+");
-
-
-        Pattern pattern =  Pattern.compile("\\*SC1_(\\d+)\\^(\\d+)\\*SC2_\\1\\^(\\d+)");
-        for (int i = 0; i < split.length; i++) {
-            Matcher matcher = pattern.matcher(split[i]);
-            while (matcher.find())
-                split[i] = matcher.replaceAll("");
-        }
-
-//        String simplifiedPolynomial = polynomialString.replaceAll("\\+?\\d+\\/\\d+SC\\d+_\\d+", "");
-//        return simplifiedPolynomial.replaceAll("(?<!\\^)SC\\d+_\\d+", "");
-
-        StringBuilder stringBuilder = new StringBuilder();
-        boolean firstPlus = false;
-        for (String tmp : split
-        ) {
-            if (firstPlus)
-                stringBuilder.append("+");
-            else firstPlus = true;
-            stringBuilder.append(tmp);
-        }
-        return  stringBuilder.toString();
-    }
 
 
     private void setGridSampleData(Grid grid, String scenario) {
@@ -1125,108 +1171,39 @@ public class MyViewView extends Composite<VerticalLayout> {
     private PolyflowService polyflowService;
 
 
-    /*private String getNodeId(ConsistencyNode<?> tmp){
-        return "r_"+((GridInput)tmp.getConsistencyAnnotatedRecord().getWrappedRecord()).getTimestamp() + "_" + tmp.getConstraint().getDescription().split("_")[0];
-    }*/
+    private void updateWindowState(NetworkDiagram snapshotGraph, List<GridOutputWindowed> results) {
 
-    private void updateNode(ConsistencyNode<?> node, List<Node> nodes, List<Edge> edges){
+        List<Edge> edges = new ArrayList<>();
+        Map<String, Node> nodes = new HashMap<>();
 
+        results.forEach(result -> {
+            Node eRecord;
+            if (!nodes.keySet().contains(result.getRecordId())){
+                eRecord = new Node(result.getRecordId(), result.getRecordId());
+                eRecord.setShape(Shape.diamond);
+                eRecord.setColor("lightblue");
+                eRecord.setLabelHighlightBold(true);
+                nodes.put(result.getRecordId(), eRecord);
+            } else eRecord = nodes.get(result.getRecordId());
 
-       /* if (node.getConnectedNodes().isEmpty())
-            return;
-        for (ConsistencyNode<?> tmp: node.getConnectedNodes()
-        ) {
+            Node eWindow;
+            if (!nodes.keySet().contains(result.getIntervalId())) {
+                eWindow = new Node(result.getIntervalId(), result.getIntervalId());
+                eWindow.setShape(Shape.ellipse);
+                eWindow.setColor("lightgreen");
+                eWindow.setLabelHighlightBold(true);
+                nodes.put(result.getIntervalId(), eWindow);
+            } else eWindow = nodes.get(result.getIntervalId());
 
-            if (nodes.stream().noneMatch(node1 -> node1.getId().equals(getNodeId(tmp)))){
-                Node e1 = new Node(getNodeId(tmp), "r_" + ((GridInput) tmp.getConsistencyAnnotatedRecord().getWrappedRecord()).getTimestamp());
-                Edge e = new Edge(getNodeId(node), getNodeId(tmp));
-                e1.setColor("lightgrey");
-                e1.setShape(Shape.diamond);
-                e1.setLabelHighlightBold(true);
-                e.setColor("black");
-//                if (tmp.getConstraint().getDescription().contains("SC2")){
-//                   e1.setColor("red");
-//                   e.setColor("red");
-//                }
-                e.setArrows(new Arrows(new ArrowHead()));
-                e.setLabel(tmp.getConstraint().getDescription().split("_")[0]);
-                nodes.add(e1);
-                if (getNodeId(node).equals("r_6_SC2") &&  getNodeId(tmp).equals("r_2_SC2")){
-                    if (!setLocal){
-                        edges.add(e);
-                        setLocal = true;
-                    }
-                } else edges.add(e);
-
-                updateNode(tmp, nodes, edges);
-            } else {
-                Edge e = new Edge(getNodeId(node), getNodeId(tmp));
-                e.setColor("black");
-//                if (tmp.getConstraint().getDescription().contains("SC2")){
-//                    e.setColor("red");
-//                }
-                e.setArrows(new Arrows(new ArrowHead()));
-                e.setLabel(tmp.getConstraint().getDescription().split("_")[0]);
-                if (getNodeId(node).equals("r_6_SC2") &&  getNodeId(tmp).equals("r_2_SC2")){
-                    if (!setLocal){
-                        edges.add(e);
-                        setLocal = true;
-                    }
-                } else edges.add(e);
-            }
-
-        }*/
-    }
-
-    private void updateSnapshotGraphFromContent(NetworkDiagram snapshotGraph, List<Node> nodes, List<Edge> edges, ConsistencyGraphImpl consistencyGraph) {
-
-        /*nodes.clear();
-        edges.clear();
-
-
-
-        List<ConsistencyNode> rootNodes = consistencyGraph.getRootNodes();
-        Optional<ConsistencyNode> max = rootNodes.stream().max(new Comparator<ConsistencyNode>() {
-            @Override
-            public int compare(ConsistencyNode o1, ConsistencyNode o2) {
-                return Long.compare(((GridInput) o1.getConsistencyAnnotatedRecord().getWrappedRecord()).getTimestamp(),
-                        ((GridInput) o2.getConsistencyAnnotatedRecord().getWrappedRecord()).getTimestamp());
-            }
+            Edge e = new Edge(eRecord, eWindow);
+            e.setArrows(new Arrows(new ArrowHead()));
+            edges.add(e);
         });
 
-        long maxTime = ((GridInput) max.get().getConsistencyAnnotatedRecord().getWrappedRecord()).getTimestamp();
 
-        rootNodes
-                .forEach(new Consumer<ConsistencyNode>() {
-                    @Override
-                    public void accept(ConsistencyNode consistencyNode) {
-                        Node e = new Node(getNodeId(consistencyNode), "r_" + ((GridInput) consistencyNode.getConsistencyAnnotatedRecord().getWrappedRecord()).getTimestamp());
-                        e.setShape(Shape.diamond);
-                        if (((GridInput) consistencyNode.getConsistencyAnnotatedRecord().getWrappedRecord()).getTimestamp() == maxTime){
-                            e.setColor("lightblue");
-                        }else{
-                            e.setColor("lightgreen");
-                        }
 
-                        e.setLabelHighlightBold(true);
-
-                        nodes.add(e);
-
-                        updateNode(consistencyNode, nodes, edges);
-                    }
-                });
-
-        snapshotGraph.setNodes(nodes);
-        snapshotGraph.setEdges(edges);*/
-
+        snapshotGraph.setNodes(nodes.values());
+        snapshotGraph.setEdges(edges);
     }
 
-
-
-
-    private void setTabSheetSampleData(TabSheet tabSheet) {
-        tabSheet.add("Dashboard", new Div(new Text("This is the Dashboard tab content")));
-        tabSheet.add("Payment", new Div(new Text("This is the Payment tab content")));
-        tabSheet.add("Shipping", new Div(new Text("This is the Shipping tab content")));
-    }
 }
