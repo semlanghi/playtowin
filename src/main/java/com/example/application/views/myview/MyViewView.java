@@ -1098,8 +1098,10 @@ public class MyViewView extends Composite<VerticalLayout> {
             inputGridList.add(createGridRecord("r_"+6, 6, 1, 10));
             inputGridList.add(createGridRecord("r_"+7, 7, 0, 10));
             Random random = new Random(0L);
+            int curr_ts = 7;
             for (int i = 1; i < 20; i++) {
-                inputGridList.add(createGridRecord("r_"+(7+i), 7+i, random.nextInt(0, 11), random.nextInt(0, 11)));
+                curr_ts +=random.nextInt(0, 5);
+                inputGridList.add(createGridRecord("r_"+(7+i), curr_ts, random.nextInt(0, 11), random.nextInt(0, 11)));
             }
 
 //            grid.addColumn(String.valueOf(VaadinIcon.BOLT.create()));

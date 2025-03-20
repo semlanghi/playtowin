@@ -8,6 +8,7 @@ import com.example.application.polyflow.CustomTask;
 import com.example.application.polyflow.content.factories.AccumulatorFactory;
 import com.example.application.polyflow.datatypes.GridInputWindowed;
 import com.example.application.polyflow.datatypes.GridInputWindowed;
+import com.example.application.polyflow.operators.AggregateFrame;
 import com.example.application.polyflow.operators.R2RCustom;
 import com.example.application.polyflow.operators.R2SCustom;
 import com.example.application.polyflow.operators.S2RHopping;
@@ -72,7 +73,7 @@ public class PolyflowService {
             report.add(new Always());
 
             ContentFactory<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> contentFactory = new AccumulatorFactory();
-            StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> s2r_1 = new S2RHopping(
+            /*StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> s2r_1 = new S2RHopping(
                     Tick.TIME_DRIVEN,
                     instance,
                     "TW1",
@@ -88,15 +89,26 @@ public class PolyflowService {
                     contentFactory,
                     report,
                     3,
+                    1);*/
+            StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> s2r = new AggregateFrame(
+                    Tick.TIME_DRIVEN,
+                    instance,
+                    "TW1",
+                    contentFactory,
+                    report,
+                    3,
+                    2,
                     1);
 
-            R2RCustom r2r = new R2RCustom(List.of("TW1", "TW2"), "result");
+
+            R2RCustom r2r = new R2RCustom(List.of("TW1"), "result");
             ContinuousProgram<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>, GridInputWindowed> cp = new ContinuousProgramImpl<>();
             Task<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>, GridInputWindowed> task = new CustomTask<>("1");
             RelationToStreamOperator<List<GridInputWindowed>, GridInputWindowed> r2sOp = new R2SCustom();
             task = task
-                    .addS2ROperator(s2r_1, inputStream)
-                    .addS2ROperator(s2r_2, inputStream)
+                    /*.addS2ROperator(s2r_1, inputStream)
+                    .addS2ROperator(s2r_2, inputStream)*/
+                    .addS2ROperator(s2r, inputStream)
                     .addR2ROperator(r2r)
                     .addR2SOperator(r2sOp)
                     .addSDS(new SDSDefault<>())
