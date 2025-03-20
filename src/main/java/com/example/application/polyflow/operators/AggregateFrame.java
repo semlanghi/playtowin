@@ -66,6 +66,9 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
         this.aggregation_function = aggregation_function;
         this.frame_parameter = frame_parameter;
         this.context = new Context(-1, 0, false, 0);
+
+        this.active_content = cf.createEmpty();
+        this.active_window = new WindowImpl(0, 0);
     }
 
 

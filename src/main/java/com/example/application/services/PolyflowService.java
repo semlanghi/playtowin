@@ -90,7 +90,7 @@ public class PolyflowService {
                     report,
                     3,
                     1);*/
-            StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> s2r = new AggregateFrame(
+            StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> s2r_1 = new AggregateFrame(
                     Tick.TIME_DRIVEN,
                     instance,
                     "TW1",
@@ -100,15 +100,24 @@ public class PolyflowService {
                     2,
                     1);
 
+            StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> s2r_2 = new AggregateFrame(
+                    Tick.TIME_DRIVEN,
+                    instance,
+                    "TW2",
+                    contentFactory,
+                    report,
+                    0,
+                    32,
+                    1);
 
-            R2RCustom r2r = new R2RCustom(List.of("TW1"), "result");
+
+            R2RCustom r2r = new R2RCustom(List.of("TW1", "TW2"), "result");
             ContinuousProgram<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>, GridInputWindowed> cp = new ContinuousProgramImpl<>();
             Task<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>, GridInputWindowed> task = new CustomTask<>("1");
             RelationToStreamOperator<List<GridInputWindowed>, GridInputWindowed> r2sOp = new R2SCustom();
             task = task
-                    /*.addS2ROperator(s2r_1, inputStream)
-                    .addS2ROperator(s2r_2, inputStream)*/
-                    .addS2ROperator(s2r, inputStream)
+                    .addS2ROperator(s2r_1, inputStream)
+                    .addS2ROperator(s2r_2, inputStream)
                     .addR2ROperator(r2r)
                     .addR2SOperator(r2sOp)
                     .addSDS(new SDSDefault<>())
