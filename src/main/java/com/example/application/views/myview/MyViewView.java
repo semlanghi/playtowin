@@ -1,8 +1,6 @@
 package com.example.application.views.myview;
 
 import com.example.application.data.*;
-import com.example.application.polyflow.cgraph.ConsistencyGraphImpl;
-import com.example.application.polyflow.cgraph.ConsistencyNode;
 import com.example.application.polyflow.datatypes.GridInputWindowed;
 import com.example.application.polyflow.datatypes.GridOutputWindowed;
 import com.example.application.services.PolyflowService;
@@ -16,7 +14,6 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H6;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.Icon;
@@ -45,7 +42,6 @@ import org.vaadin.addons.visjs.network.options.Interaction;
 import org.vaadin.addons.visjs.network.options.Options;
 import org.vaadin.addons.visjs.network.options.edges.ArrowHead;
 import org.vaadin.addons.visjs.network.options.edges.Arrows;
-import org.vaadin.addons.visjs.network.options.edges.Edges;
 import org.vaadin.addons.visjs.network.util.Shape;
 //import org.vaadin.addons.visjs.network.main.Edge;
 //import org.vaadin.addons.visjs.network.main.NetworkDiagram;
@@ -59,9 +55,6 @@ import org.vaadin.addons.visjs.network.util.Shape;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
@@ -80,6 +73,7 @@ public class MyViewView extends Composite<VerticalLayout> {
 //            "WHERE consA >= 0 AND consB >= 0";
     private HorizontalLayout bottomRow;
     private HorizontalLayout upperCentralRow;
+    private HorizontalLayout bottomCentralRow;
     private Class<?> sampleOutputClass;
     private Class<?> sampleInputClass;
     private List<GridInputWindowed> inputGridList;
@@ -97,6 +91,7 @@ public class MyViewView extends Composite<VerticalLayout> {
 
         mainRow = new HorizontalLayout();
         upperCentralRow = new HorizontalLayout();
+        bottomCentralRow = new HorizontalLayout();
         bottomRow = new HorizontalLayout();
         ComboBox<String> selectScenarios = new ComboBox<>();
         selectScenarios.setLabel("Scenario");
@@ -170,9 +165,29 @@ public class MyViewView extends Composite<VerticalLayout> {
 
         VerticalLayout centralColumn = new VerticalLayout();
         TabSheet upperCentralTabSheet = new TabSheet();
+        bottomCentralRow = new HorizontalLayout();
         VerticalLayout bottomCentralColumn = new VerticalLayout();
-//        TextArea queryEditor = new TextArea();
-//        queryEditor.setValue(query);
+        bottomCentralRow.add(bottomCentralColumn);
+        bottomCentralColumn.setWidthFull();
+        bottomCentralColumn.setHeightFull();
+
+        ComboBox<String> queryEditor = new ComboBox<>();
+
+        Map<String,String> nexMarkQueries = getNexMarkQueries();
+        TextArea queryEditorText = new TextArea();
+
+        queryEditorText.setSizeFull();
+
+        bottomCentralColumn.add(queryEditor);
+        bottomCentralColumn.add(queryEditorText);
+        queryEditor.setItems(nexMarkQueries.keySet());
+        queryEditor.setValue("Query 1");
+        queryEditorText.setValue(nexMarkQueries.get("Query 1"));
+
+        queryEditor.addValueChangeListener(event -> {
+            String query = nexMarkQueries.get(event.getValue());
+            queryEditorText.setValue(query);
+        });
         VerticalLayout windowEditor = new VerticalLayout();
         windowEditor.setHeightFull();
         windowEditor.setWidthFull();
@@ -183,6 +198,7 @@ public class MyViewView extends Composite<VerticalLayout> {
         selectWindowType.setItems("Time-based", "Session", "Frames:Threshold", "Frames:Delta", "Frames:Aggregate");
         selectWindowType.setValue("Time-based");
         HorizontalLayout windowSelectorLayout = new HorizontalLayout();
+        windowSelectorLayout.setWidthFull();
 
         TextField threshold = new TextField();
         threshold.setLabel("Threshold");
@@ -292,6 +308,7 @@ public class MyViewView extends Composite<VerticalLayout> {
 
                 String windowTypeValue = selectWindowType.getValue();
                 windowRowSummary.setName(getWindowAbbrev(windowTypeValue));
+                windowRowSummary.setQuery(queryEditorText.getValue());
 
                 //String Building Based on the window
                 StringBuilder text = new StringBuilder();
@@ -348,6 +365,7 @@ public class MyViewView extends Composite<VerticalLayout> {
         VerticalLayout summaryWindows = new VerticalLayout();
 
         TextArea queryPerspective = new TextArea();
+        queryPerspective.setReadOnly(true);
         tabSheet3.add("Summary", summaryLayout);
 
         Grid<WindowRowSummary> summaryWindowGrid = new Grid<>(WindowRowSummary.class);
@@ -383,6 +401,11 @@ public class MyViewView extends Composite<VerticalLayout> {
                 if (selectedChangeEvent.getSelectedTab().getLabel().equals("Summary")){
                     HashMap<String, Integer> windowCounter = new HashMap<>();
 
+                    centralColumn.remove(bottomCentralRow);
+                    upperCentralRow.setHeightFull();
+
+
+                    //TODO: Bug resolution, if not in summary tab, does not start, due to the absence of the number in the window name
                     for (WindowRowSummary windowRowSummary : windowRowSummaries) {
                         String windowType = windowRowSummary.getName().replaceAll("\\d", "");
 
@@ -391,8 +414,12 @@ public class MyViewView extends Composite<VerticalLayout> {
                         windowCounter.put(windowType, windowCounter.get(windowType)+1);
                     }
 
+
                     summaryWindowGrid.setItems(windowRowSummaries);
                     summaryWindowGrid.getDataProvider().refreshAll();
+                } else {
+                    centralColumn.add(bottomCentralRow);
+                    upperCentralRow.setHeight("50%");
                 }
 
             }
@@ -447,7 +474,7 @@ public class MyViewView extends Composite<VerticalLayout> {
                 try {
                     Notification.show("Registered Windows.");
                     basicGrid.setItems(inputGridListActual);
-                    polyflowService.register(scenario);
+                    polyflowService.register(scenario, windowRowSummaries);
 
                     if (tabSheetUpperRight.getTabAt(0).getLabel().equals("Window State")){
                         tabSheetUpperRight.remove(0);
@@ -468,6 +495,8 @@ public class MyViewView extends Composite<VerticalLayout> {
                     graphs.clear();
                     resultGrids.clear();
 
+
+
                     for (WindowRowSummary windowRowSummary : windowRowSummaries) {
 
                         Tab tabRes = new Tab(windowRowSummary.name+" Results");
@@ -481,7 +510,15 @@ public class MyViewView extends Composite<VerticalLayout> {
                                         .withInteraction(Interaction.builder().withMultiselect(true).build()).build());
                         tabSheetUpperRight.add(tab, snapshotGraphSoloLocal);
                         graphs.put(windowRowSummary.name, snapshotGraphSoloLocal);
+
+
                     }
+
+
+
+
+
+
 
                 } catch (ConfigurationException e) {
                     e.printStackTrace();
@@ -589,15 +626,15 @@ public class MyViewView extends Composite<VerticalLayout> {
         mainRow.setWidthFull();
         getContent().setFlexGrow(1.0, mainRow);
         mainRow.addClassName(Gap.MEDIUM);
-//        layoutRow.setWidth("100%");
-        mainRow.setHeightFull();
+        mainRow.setWidthFull();
+        mainRow.setHeight("100%");
         leftColumn.setHeightFull();
         mainRow.setFlexGrow(1.0, leftColumn);
         leftColumn.addClassName(Gap.XSMALL);
         leftColumn.addClassName(Padding.XSMALL);
-        leftColumn.setWidth("20%");
+        leftColumn.setWidth("25%");
 //        leftColumn.setMinWidth("250px");
-        leftColumn.setHeight("80%");
+        leftColumn.setHeight("95%");
         leftColumn.setJustifyContentMode(JustifyContentMode.START);
         leftColumn.setAlignItems(Alignment.START);
         leftColumn.setAlignSelf(Alignment.CENTER, basicGrid);
@@ -616,17 +653,17 @@ public class MyViewView extends Composite<VerticalLayout> {
         centralColumn.setHeightFull();
         mainRow.setFlexGrow(1.0, centralColumn);
         centralColumn.setPadding(false);
-        centralColumn.setWidth("30%");
-        centralColumn.setHeight("80%");
+        centralColumn.setWidth("35%");
+        centralColumn.setHeight("95%");
         upperCentralRow.setWidthFull();
         centralColumn.setFlexGrow(1.0, upperCentralRow);
         upperCentralRow.addClassName(Gap.SMALL);
         upperCentralRow.setWidth("100%");
-        upperCentralRow.setHeight("70%");
+        upperCentralRow.setHeight("50%");
         upperCentralRow.setAlignItems(Alignment.START);
         upperCentralRow.setJustifyContentMode(JustifyContentMode.CENTER);
         upperCentralTabSheet.setWidth("100%");
-        upperCentralTabSheet.setHeight("100%");
+        upperCentralTabSheet.setHeight("50%");
         upperCentralTabSheet.getStyle().set("flex-grow", "0");
 
 
@@ -636,23 +673,25 @@ public class MyViewView extends Composite<VerticalLayout> {
 //        upperCentralTabSheet.add("Polynomials", inputAnnotatedGrid);
 
 
-        bottomCentralColumn.setWidthFull();
-        centralColumn.setFlexGrow(1.0, bottomCentralColumn);
-        bottomCentralColumn.setPadding(false);
-        bottomCentralColumn.setWidth("100%");
-        bottomCentralColumn.setHeight("50%");
-        bottomCentralColumn.setJustifyContentMode(JustifyContentMode.END);
-        bottomCentralColumn.setAlignItems(Alignment.CENTER);
-//        bottomCentralColumn.setAlignSelf(Alignment.CENTER, queryEditor);
+        bottomCentralRow.setWidthFull();
+        centralColumn.setFlexGrow(1.0, bottomCentralRow);
+        bottomCentralRow.setPadding(false);
+//        bottomCentralRow.setWidth("100%");
+        bottomCentralRow.setHeight("50%");
+//        bottomCentralRow.setJustifyContentMode(JustifyContentMode.END);
+//        bottomCentralRow.setAlignItems(Alignment.CENTER);
+
+
+//        bottomCentralRow.setAlignSelf(Alignment.CENTER, queryEditor);
 //        queryEditor.setWidth("100%");
 //        queryEditor.setHeight("100%");
         rightColumn.setHeightFull();
         mainRow.setFlexGrow(1.0, rightColumn);
         rightColumn.addClassName(Padding.XSMALL);
-        rightColumn.setWidth("30%");
+        rightColumn.setWidth("40%");
 //        rightColumn.setMinWidth("80%");
-        rightColumn.setHeight("100%");
-        tabSheetBottomRight.setWidth("95%");
+        rightColumn.setHeight("95%");
+        tabSheetBottomRight.setWidth("90%");
         tabSheetBottomRight.setHeight("100%");
         tabSheetUpperRight.setWidth("100%");
         tabSheetUpperRight.setHeight("100%");
@@ -662,14 +701,18 @@ public class MyViewView extends Composite<VerticalLayout> {
 
 
 
-        mainRow.setWidthFull();
-        mainRow.setHeightFull();
+//        mainRow.setWidthFull();
+//        mainRow.setHeightFull();
+
+
+
 
         bottomRow.setWidthFull();
         getContent().setFlexGrow(1.0, bottomRow);
         bottomRow.addClassName(Gap.MEDIUM);
 //        bottomRow.addClassName(Padding.XSMALL);
-        bottomRow.setWidth("100%");
+//        bottomRow.setWidth("100%");
+//        bottomRow.setHeight("1%");
         bottomRow.getStyle().set("flex-grow", "1");
         buttonNext.setText("Next");
         bottomRow.setAlignSelf(Alignment.CENTER, buttonNext);
@@ -725,8 +768,9 @@ public class MyViewView extends Composite<VerticalLayout> {
 
         mainRow.add(centralColumn);
         centralColumn.add(upperCentralRow);
+        centralColumn.add(bottomCentralRow);
 //        upperCentralRow.add(upperCentralTabSheet);
-        centralColumn.add(tabSheet3);
+//        centralColumn.add(tabSheet3);
         upperCentralRow.add(tabSheet3);
         mainRow.add(rightColumn);
 
@@ -754,22 +798,22 @@ public class MyViewView extends Composite<VerticalLayout> {
 
         verticalBottomRightLayout.add(new Text("time"));
         verticalBottomRightLayout.add(cdcd1);
-        cdcd1.setWidthFull();
-        cdcd1.setHeightFull();
+        cdcd1.setWidth("40%");
+        cdcd1.setHeight("90%");
 
 //        upperRightHorizontalLayout.add(verticalUpperRightLayout);
         rightColumn.add(upperRightHorizontalLayout);
         upperRightHorizontalLayout.setWidthFull();
-        upperRightHorizontalLayout.setHeight("50%");
+        upperRightHorizontalLayout.setHeight("60%");
 
         bottomRightHorizontalLayout.add(verticalBottomRightLayout);
         rightColumn.add(bottomRightHorizontalLayout);
         bottomRightHorizontalLayout.setWidthFull();
-        bottomRightHorizontalLayout.setHeight("50%");
+        bottomRightHorizontalLayout.setHeight("40%");
 
 
-        rightColumn.setWidth("25%");
-        rightColumn.setHeight("80%");
+//        rightColumn.setWidth("25%");
+//        rightColumn.setHeight("80%");
         getContent().add(bottomRow);
         bottomRow.add(buttonNext);
 //        bottomRow.add(buttonPrimary2);
@@ -781,6 +825,29 @@ public class MyViewView extends Composite<VerticalLayout> {
         bottomRow.add(h6);
     }
 
+    private Map<String,String> getNexMarkQueries() {
+        Map<String, String> queries = new HashMap<>();
+
+        queries.put("Query 1", "SELECT *\nFROM <window>\nWHERE consA >= 0 AND consB >= 0");
+
+        queries.put("Query 2", "SELECT Istream(auction, DOLTOEUR(price), bidder, datetime)\nFROM <window>");
+
+        queries.put("Query 3", "SELECT Rstream(auction, price)\nFROM <window> \nWHERE auction = 1007 OR auction = 1020 OR auction = 2001 OR auction = 2019 OR auction = 2087");
+
+        queries.put("Query 4", "SELECT Istream(P.name, P.city, P.state, A.id)\nFROM Auction A [ROWS UNBOUNDED], Person P [ROWS UNBOUNDED]\nWHERE A.seller = P.id AND (P.state = 'OR' OR P.state = 'ID' OR P.state = 'CA') AND A.category = 10");
+
+        queries.put("Query 5", "SELECT Istream(AVG(Q.final))\nFROM Category C, (SELECT Rstream(MAX(B.price) AS final, A.category)\n                  FROM Auction A [ROWS UNBOUNDED], Bid B [ROWS UNBOUNDED]\n                  WHERE A.id=B.auction AND B.datetime < A.expires AND A.expires < CURRENT_TIME\n                  GROUP BY A.id, A.category) Q\nWHERE Q.category = C.id\nGROUP BY C.id");
+
+        queries.put("Query 6", "SELECT Rstream(auction)\nFROM (SELECT B1.auction, count(*) AS num\n      FROM Bid [RANGE 60 MINUTE SLIDE 1 MINUTE] B1\n      GROUP BY B1.auction)\nWHERE num >= ALL (SELECT count(*)\n                  FROM Bid [RANGE 60 MINUTE SLIDE 1 MINUTE] B2\n                  GROUP BY B2.auction)");
+
+        queries.put("Query 7", "SELECT Istream(AVG(Q.final), Q.seller)\nFROM (SELECT Rstream(MAX(B.price) AS final, A.seller)\n      FROM Auction A [ROWS UNBOUNDED], Bid B [ROWS UNBOUNDED]\n      WHERE A.id=B.auction AND B.datetime < A.expires AND A.expires < CURRENT_TIME\n      GROUP BY A.id, A.seller) [PARTITION BY A.seller ROWS 10] Q\nGROUP BY Q.seller;");
+
+        queries.put("Query 8", "SELECT Rstream(B.auction, B.price, B.bidder)\nFROM Bid [RANGE 1 MINUTE SLIDE 1 MINUTE] B\nWHERE B.price = (SELECT MAX(B1.price)\n                 FROM BID [RANGE 1 MINUTE SLIDE 1 MINUTE] B1);");
+
+        queries.put("Query 9", "SELECT Rstream(P.id, P.name, A.reserve)\nFROM Person [RANGE 12 HOUR] P, Auction [RANGE 12 HOUR] A\nWHERE P.id = A.seller;");
+
+        return queries;
+    }
 
 
     private static Grid<GridOutputWindowed> getGridOutputWindowedGrid() {
@@ -895,6 +962,7 @@ public class MyViewView extends Composite<VerticalLayout> {
         private long size;
         private long slide;
         private long timeout;
+        private String query;
 
         public String getOperator() {
             return operator;
@@ -980,18 +1048,22 @@ public class MyViewView extends Composite<VerticalLayout> {
         }
 
         public String getQuery() {
-            StringBuilder query = new StringBuilder();
-
-            query.append("SELECT *\n" +
-                    "FROM");
+            if (this.query == null) {
+                this.query = "SELECT *\n" +
+                        "FROM <window>";
+            }
             if (this.name.contains("TW"))
-                query.append(" HOP(TABLE Stream, DESCRIPTOR(ts), INTERVAL '" + size + "' minutes, INTERVAL '" + slide + "' minutes)");
+                this.query = query.replaceAll("<window>", "HOP(TABLE Stream, DESCRIPTOR(ts), INTERVAL '" + size + "' minutes, INTERVAL '" + slide + "' minutes)");
             else if (this.name.contains("SW"))
-                query.append(" SESSION(TABLE Stream, DESCRIPTOR(ts), INTERVAL '" + timeout + "' minutes)");
+                this.query = this.query.replaceAll("<window>", "SESSION(TABLE Stream, DESCRIPTOR(ts), INTERVAL '" + timeout + "' minutes)");
             else if (this.name.contains("F"))
-                query.append(" FRAMES(TABLE Stream, DESCRIPTOR(ts), " + attribute + " " + operator + " " + range);
+                this.query = this.query.replaceAll("<window>", "FRAMES(TABLE Stream, DESCRIPTOR(ts), " + attribute + " " + operator + " " + range+")");
 
-            return query.toString();
+            return query;
+        }
+
+        public void setQuery(String query){
+            this.query = query;
         }
     }
 

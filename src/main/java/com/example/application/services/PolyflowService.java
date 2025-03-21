@@ -7,13 +7,13 @@ import com.example.application.polyflow.datatypes.EventBean;
 import com.example.application.polyflow.CustomTask;
 import com.example.application.polyflow.content.factories.AccumulatorFactory;
 import com.example.application.polyflow.datatypes.GridInputWindowed;
-import com.example.application.polyflow.datatypes.GridInputWindowed;
 import com.example.application.polyflow.operators.AggregateFrame;
 import com.example.application.polyflow.operators.R2RCustom;
 import com.example.application.polyflow.operators.R2SCustom;
 import com.example.application.polyflow.operators.S2RHopping;
 import com.example.application.polyflow.reportingStrategies.Always;
 import com.example.application.polyflow.stream.DataStreamImpl;
+import com.example.application.views.myview.MyViewView;
 import org.apache.commons.configuration.ConfigurationException;
 import org.springframework.stereotype.Service;
 import org.streamreasoning.polyflow.api.enums.Tick;
@@ -36,6 +36,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class PolyflowService {
@@ -60,7 +62,7 @@ public class PolyflowService {
             //return longR2RConsistencyAnnotator.getCurrentGraphs();
         }
 
-        public ContinuousProgram<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>, GridInputWindowed> register(String query) throws ConfigurationException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        public ContinuousProgram<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>, GridInputWindowed> register(String query, List<MyViewView.WindowRowSummary> windowRowSummaries) throws ConfigurationException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
 
             registered = true;
 
@@ -73,6 +75,8 @@ public class PolyflowService {
             report.add(new Always());
 
             ContentFactory<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> contentFactory = new AccumulatorFactory();
+
+            List<StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>> streamToRelationOperatorList  = getStreamToRelationOperators(windowRowSummaries, instance, contentFactory, report);
             /*StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> s2r_1 = new S2RHopping(
                     Tick.TIME_DRIVEN,
                     instance,
@@ -90,34 +94,36 @@ public class PolyflowService {
                     report,
                     3,
                     1);*/
-            StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> s2r_1 = new AggregateFrame(
-                    Tick.TIME_DRIVEN,
-                    instance,
-                    "TW1",
-                    contentFactory,
-                    report,
-                    3,
-                    2,
-                    1);
+//            StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> s2r_1 = new AggregateFrame(
+//                    Tick.TIME_DRIVEN,
+//                    instance,
+//                    "TW1",
+//                    contentFactory,
+//                    report,
+//                    3,
+//                    2,
+//                    1);
+//
+//            StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> s2r_2 = new AggregateFrame(
+//                    Tick.TIME_DRIVEN,
+//                    instance,
+//                    "TW2",
+//                    contentFactory,
+//                    report,
+//                    0,
+//                    32,
+//                    1);
 
-            StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> s2r_2 = new AggregateFrame(
-                    Tick.TIME_DRIVEN,
-                    instance,
-                    "TW2",
-                    contentFactory,
-                    report,
-                    0,
-                    32,
-                    1);
 
-
-            R2RCustom r2r = new R2RCustom(List.of("TW1", "TW2"), "result");
+            R2RCustom r2r = new R2RCustom(streamToRelationOperatorList.stream().map(StreamToRelationOperator::getName).toList(), "result");
             ContinuousProgram<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>, GridInputWindowed> cp = new ContinuousProgramImpl<>();
             Task<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>, GridInputWindowed> task = new CustomTask<>("1");
             RelationToStreamOperator<List<GridInputWindowed>, GridInputWindowed> r2sOp = new R2SCustom();
+            for (StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> tmp : streamToRelationOperatorList) {
+                task.addS2ROperator(tmp, inputStream);
+            }
+
             task = task
-                    .addS2ROperator(s2r_1, inputStream)
-                    .addS2ROperator(s2r_2, inputStream)
                     .addR2ROperator(r2r)
                     .addR2SOperator(r2sOp)
                     .addSDS(new SDSDefault<>())
@@ -153,6 +159,59 @@ public class PolyflowService {
             res.addAll(out);
             out = new LinkedList<>();
             return res;
+        }
+
+        public List<StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>> getStreamToRelationOperators(List<MyViewView.WindowRowSummary> windowRowSummaries, Time instance, ContentFactory<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> contentFactory, Report report) {
+            return windowRowSummaries.stream().map(new Function<MyViewView.WindowRowSummary, StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>>() {
+                @Override
+                public StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> apply(MyViewView.WindowRowSummary windowRowSummary) {
+                    if (!windowRowSummary.getName().contains("TW")) {
+                        int frameType = getFrameType(windowRowSummary.getName());
+                        return new AggregateFrame(
+                                Tick.TIME_DRIVEN,
+                                instance,
+                                windowRowSummary.getName(),
+                                contentFactory,
+                                report,
+                                frameType,
+                                frameType == 3 ? (int) windowRowSummary.getTimeout() : (int) windowRowSummary.getRange(),
+                                getAggregationFunction(windowRowSummary.getAttribute()));
+                    } else {
+                        return new S2RHopping(
+                                Tick.TIME_DRIVEN,
+                                instance,
+                                windowRowSummary.getName(),
+                                contentFactory,
+                                report,
+                                windowRowSummary.getSize(),
+                                windowRowSummary.getSlide());
+                    }
+                }
+            }).collect(Collectors.toCollection(LinkedList::new));
+            //return longR2RConsistencyAnnotator.getStreamToRelationOperators();
+        }
+
+        //TODO: right now aggregation works by default on attribute consA, we need to add a way to specify the attribute
+        private int getAggregationFunction(String attribute) {
+            return switch (attribute.split("\\(")[0]) {
+                case "avg" -> 0;
+                case "sum" -> 1;
+                default -> 1;
+            };
+        }
+
+        private int getFrameType(String name) {
+            if (name.contains("FAgg")) {
+                return 2;
+            } else if (name.contains("Del")){
+                return 1;
+            } else if (name.contains("Thr")){
+                return 0;
+            } else if (name.contains("SW")){
+                return 3;
+            } else {
+                throw new IllegalArgumentException("Unknown frame type: " + name);
+            }
         }
 
 }
