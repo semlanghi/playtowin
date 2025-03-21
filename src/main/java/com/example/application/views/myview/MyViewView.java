@@ -316,10 +316,10 @@ public class MyViewView extends Composite<VerticalLayout> {
 
 
                 try {
-                    if (windowTypeValue.equals("Frames:Aggregate")) {
+                    /*if (windowTypeValue.equals("Frames:Aggregate")) {
                         text.append(" on aggregate ").append(selectAggregate.getValue());
                         windowRowSummary.setAttribute(selectAggregate.getValue()+"("+selectAttribute.getValue()+")");
-                    } else if (windowTypeValue.startsWith("Frames")){
+                    } else*/ if (windowTypeValue.startsWith("Frames")){
                         text.append(" over Attribute ").append(selectAttribute.getValue()).append(" ").append(selectOp.getValue()).append(" ").append(threshold.getValue());
                         windowRowSummary.setAttribute(selectAttribute.getValue());
                         windowRowSummary.setOperator(selectOp.getValue());

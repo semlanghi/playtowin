@@ -7,10 +7,7 @@ import com.example.application.polyflow.datatypes.EventBean;
 import com.example.application.polyflow.CustomTask;
 import com.example.application.polyflow.content.factories.AccumulatorFactory;
 import com.example.application.polyflow.datatypes.GridInputWindowed;
-import com.example.application.polyflow.operators.AggregateFrame;
-import com.example.application.polyflow.operators.R2RCustom;
-import com.example.application.polyflow.operators.R2SCustom;
-import com.example.application.polyflow.operators.S2RHopping;
+import com.example.application.polyflow.operators.*;
 import com.example.application.polyflow.reportingStrategies.Always;
 import com.example.application.polyflow.stream.DataStreamImpl;
 import com.example.application.views.myview.MyViewView;
@@ -127,7 +124,7 @@ public class PolyflowService {
                     .addR2ROperator(r2r)
                     .addR2SOperator(r2sOp)
                     .addSDS(new SDSDefault<>())
-                    .addDAG(new DAGImpl<>())
+                    .addDAG(new CustomDAG<>())
                     .addTime(instance);
             task.initialize();
 
