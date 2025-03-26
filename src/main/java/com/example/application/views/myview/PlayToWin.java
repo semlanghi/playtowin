@@ -3,6 +3,7 @@ package com.example.application.views.myview;
 import com.example.application.data.*;
 import com.example.application.polyflow.datatypes.GridInputWindowed;
 import com.example.application.polyflow.datatypes.GridOutputWindowed;
+import com.example.application.polyflow.datatypes.GridOutputWindowedMapping;
 import com.example.application.services.PolyflowService;
 import com.example.application.services.SampleGridService;
 import com.example.application.services.SampleStockService;
@@ -26,15 +27,18 @@ import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
+import elemental.json.JsonArray;
 import org.apache.commons.configuration.ConfigurationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.vaadin.addons.visjs.network.event.SelectNodeEvent;
 import org.vaadin.addons.visjs.network.main.Edge;
 import org.vaadin.addons.visjs.network.main.NetworkDiagram;
 import org.vaadin.addons.visjs.network.main.Node;
@@ -58,14 +62,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 
-@PageTitle("My View")
+@PageTitle("PlayToWin")
 @Route(value = "my-view", layout = MainLayout.class)
 @Uses(Icon.class)
 @CssImport(
         themeFor = "vaadin-grid",
         value = "./recipe/dynamicgridrowbackgroundcolor/dynamic-grid-row-background-color.css"
 )
-public class MyViewView extends Composite<VerticalLayout> {
+public class PlayToWin extends Composite<VerticalLayout> {
 
     private HorizontalLayout mainRow;
 //    private String query = "SELECT percent(consA,consB),percent(consB,consA),ts\n" +
@@ -85,9 +89,10 @@ public class MyViewView extends Composite<VerticalLayout> {
     private List<StockInput> stockInputArrayList;
     private boolean setLocal = false;
     private int counterInput = 0;
+    private List<GridOutputWindowed> actualOutput;
 
 
-    public MyViewView() {
+    public PlayToWin() {
 
         mainRow = new HorizontalLayout();
         upperCentralRow = new HorizontalLayout();
@@ -95,7 +100,7 @@ public class MyViewView extends Composite<VerticalLayout> {
         bottomRow = new HorizontalLayout();
         ComboBox<String> selectScenarios = new ComboBox<>();
         selectScenarios.setLabel("Scenario");
-        selectScenarios.setItems("Electric Grid", "Stock", "GPS", "Movie Reviews");
+        selectScenarios.setItems("Electric Grid", "Stock (Yahoo)", "Linear Road", "DEBS Challenges '12", "DEBS Challenges '16", "DEBS Challenges '22");
         selectScenarios.setValue("Electric Grid");
         sampleOutputClass = GridOutput.class;
         sampleInputClass = GridInputWindowed.class;
@@ -119,7 +124,7 @@ public class MyViewView extends Composite<VerticalLayout> {
 
 
                     break;
-                case "Stock":
+                case "Stock (Yahoo)":
                     sampleOutputClass = StockOutput.class;
                     sampleInputClass = StockInput.class;
 
@@ -209,7 +214,7 @@ public class MyViewView extends Composite<VerticalLayout> {
         selectAggregate.setItems("count", "sum", "avg", "max", "min");
         selectAggregate.setValue("count");
         selectAggregate.addValueChangeListener(event -> {
-            Notification.show(event.getValue());
+            Notification.show(event.getValue()).setPosition(Notification.Position.TOP_START);
         });
 
         ComboBox<String> selectOp = new ComboBox<>();
@@ -218,7 +223,7 @@ public class MyViewView extends Composite<VerticalLayout> {
         selectOp.setItems("<", ">", "=", ">=", "<=");
         selectOp.setValue("<");
         selectOp.addValueChangeListener(event -> {
-            Notification.show(event.getValue());
+            Notification.show(event.getValue()).setPosition(Notification.Position.TOP_START);
         });
 
         ComboBox<String> selectAttribute = new ComboBox<>();
@@ -230,7 +235,7 @@ public class MyViewView extends Composite<VerticalLayout> {
         selectAttribute.setItems(collect);
         selectAttribute.setValue(collect.get(0));
         selectAttribute.addValueChangeListener(event -> {
-            Notification.show(event.getValue());
+            Notification.show(event.getValue()).setPosition(Notification.Position.TOP_START);
         });
 
         TextField size = new TextField();
@@ -281,7 +286,7 @@ public class MyViewView extends Composite<VerticalLayout> {
                 windowSelectorLayout.remove(timeout);
             }
 
-            Notification.show(event.getValue());
+            Notification.show(event.getValue()).setPosition(Notification.Position.TOP_START);
         });
 
 
@@ -316,10 +321,11 @@ public class MyViewView extends Composite<VerticalLayout> {
 
 
                 try {
-                    /*if (windowTypeValue.equals("Frames:Aggregate")) {
+                    if (windowTypeValue.equals("Frames:Aggregate")) {
                         text.append(" on aggregate ").append(selectAggregate.getValue());
                         windowRowSummary.setAttribute(selectAggregate.getValue()+"("+selectAttribute.getValue()+")");
-                    } else*/ if (windowTypeValue.startsWith("Frames")){
+                    }
+                    if (windowTypeValue.startsWith("Frames")){
                         text.append(" over Attribute ").append(selectAttribute.getValue()).append(" ").append(selectOp.getValue()).append(" ").append(threshold.getValue());
                         windowRowSummary.setAttribute(selectAttribute.getValue());
                         windowRowSummary.setOperator(selectOp.getValue());
@@ -340,14 +346,14 @@ public class MyViewView extends Composite<VerticalLayout> {
                     windowEditor.add(horizontalLayout);
                     windowRowSummaries.add(windowRowSummary);
                 } catch (NumberFormatException e) {
-                    Notification.show("No Window Created, Range invalid.");
+                    Notification.show("No Window Created, Range invalid.").setPosition(Notification.Position.TOP_START);
                 }
             }
         });
 
 
         TabSheet tabSheet3 = new TabSheet();
-        tabSheet3.add("Windows", windowEditor);
+        tabSheet3.add("Window Editor", windowEditor);
 
 
 //        HashMap<String, Integer> windowCounter = new HashMap<>();
@@ -463,7 +469,7 @@ public class MyViewView extends Composite<VerticalLayout> {
         tabSheetUpperRight.add("Window State", snapshotGraphSolo);
 
 
-        windowButton.setText("Windows");
+        windowButton.setText("Register Windows");
         bottomRow.setAlignSelf(Alignment.CENTER, windowButton);
         windowButton.setWidth("min-content");
         windowButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -472,7 +478,25 @@ public class MyViewView extends Composite<VerticalLayout> {
             @Override
             public void onComponentEvent(ClickEvent<Button> buttonClickEvent) {
                 try {
-                    Notification.show("Registered Windows.");
+                    Notification.show("Registered Windows.").setPosition(Notification.Position.TOP_START);
+
+                    boolean hasNameWithoutNumber = windowRowSummaries.stream()
+                            .anyMatch(windowRowSummary -> !windowRowSummary.getName().matches(".*\\d.*"));
+
+                    if (hasNameWithoutNumber) {
+                        // Handle the case where a name without a number is found
+                        HashMap<String, Integer> windowCounter = new HashMap<>();
+
+                        //TODO: Bug resolution, if not in summary tab, does not start, due to the absence of the number in the window name
+                        for (WindowRowSummary windowRowSummary : windowRowSummaries) {
+                            String windowType = windowRowSummary.getName().replaceAll("\\d", "");
+
+                            windowCounter.putIfAbsent(windowType, 1);
+                            windowRowSummary.setName(windowType+windowCounter.get(windowType));
+                            windowCounter.put(windowType, windowCounter.get(windowType)+1);
+                        }
+                    }
+
                     basicGrid.setItems(inputGridListActual);
                     polyflowService.register(scenario, windowRowSummaries);
 
@@ -514,6 +538,14 @@ public class MyViewView extends Composite<VerticalLayout> {
 
                     }
 
+                    Tab tab = new Tab("All");
+                    NetworkDiagram snapshotAllGraph =
+                            new NetworkDiagram(Options.builder().withWidth("100%").withHeight("100%")
+                                    .withInteraction(Interaction.builder().withMultiselect(true).build()).build());
+                    tabSheetUpperRight.add(tab, snapshotAllGraph);
+                    graphs.put("All", snapshotAllGraph);
+
+
 
 
 
@@ -548,7 +580,7 @@ public class MyViewView extends Composite<VerticalLayout> {
         buttonNext.addClickListener(buttonClickEvent -> {
 
             if (polyflowService.isRegistered()) {
-                Notification.show("Inserting Next Event.");
+                Notification.show("Inserting Next Event.").setPosition(Notification.Position.TOP_START);
 
                 if (counterInput!=0){
                     GridInputWindowed prevGridInput = inputGridListActual.get(counterInput-1);
@@ -568,7 +600,7 @@ public class MyViewView extends Composite<VerticalLayout> {
                 //updateSnapshotGraphFromContent(snapshotGraphSolo, nodes, edges, (ConsistencyGraphImpl) currentGraph);
 
                 List<GridInputWindowed> nextOutput = polyflowService.getNextOutput();
-                List<GridOutputWindowed> actualOutput =  nextOutput.stream().map(el->{
+                actualOutput = nextOutput.stream().map(el->{
                     GridOutputWindowed g = new GridOutputWindowed();
                     g.setIntervalId(el.getIntervalId());
                     g.setConsA(el.getConsA());
@@ -582,33 +614,130 @@ public class MyViewView extends Composite<VerticalLayout> {
 //                inputAnnotatedGrid.setItems(actualOutput);
 
                 for (String windowName : resultGrids.keySet()) {
-                    Grid<GridOutputWindowed> resultGrid = resultGrids.get(windowName);
+                    if (!windowName.contains("Mapping")) {
+                        Grid<GridOutputWindowed> resultGrid = resultGrids.get(windowName);
 
-                    List<Grid.Column<GridOutputWindowed>> sgab = Arrays.asList(
-                            resultGrid.getColumnByKey("recordId"),
-                            resultGrid.getColumnByKey("operatorId"),
-                            resultGrid.getColumnByKey("intervalId"));
+                        List<Grid.Column<GridOutputWindowed>> sgab = Arrays.asList(
+                                resultGrid.getColumnByKey("recordId"),
+                                resultGrid.getColumnByKey("operatorId"),
+                                resultGrid.getColumnByKey("intervalId"));
 
-                    resultGrid.getColumnByKey("recordId").setWidth("50px");
-                    resultGrid.setColumnOrder(sgab);
+                        resultGrid.getColumnByKey("recordId").setWidth("50px");
+                        resultGrid.setColumnOrder(sgab);
 
-                    //ERRORE TAB NON E PARENT DI GRID
-                    resultGrid.setItems(actualOutput.stream().filter(el -> el.getOperatorId()
-                            .equals((tabSheetBottomRight.getTab(resultGrid)).getLabel().split(" ")[0])).collect(Collectors.toList()));
+                        //ERRORE TAB NON E PARENT DI GRID
+                        resultGrid.setItems(actualOutput.stream().filter(el -> el.getOperatorId()
+                                .equals((tabSheetBottomRight.getTab(resultGrid)).getLabel().split(" ")[0])).collect(Collectors.toList()));
 
-                    resultGrid.getDataProvider().refreshAll();
+
+                        resultGrid.getDataProvider().refreshAll();
+                    }
                 }
 
                 for (String windowName : graphs.keySet()) {
                     NetworkDiagram diagram = graphs.get(windowName);
 
+
                     updateWindowState(diagram, actualOutput.stream().filter(el -> el.getOperatorId()
                             .equals((tabSheetUpperRight.getTab(diagram)).getLabel().split(" ")[0])).collect(Collectors.toList()));
+
+
+                    //TODO: removal
+//                    diagram.addDeselectNodeListener(event -> {
+//                        Optional<String> mappingKey = resultGrids.keySet().stream()
+//                                .filter(key -> key.contains("Mapping"))
+//                                .findFirst();
+//
+//                        if (mappingKey.isPresent()) {
+//                            String keyWithMapping = mappingKey.get();
+//
+//                            resultGrids.get(keyWithMapping).
+//
+//                        }
+//                    });
+
+                    diagram.addSelectNodeListener(event -> {
+//                        Notification.show("Node selected "+ event.getParams().getArray("nodes").getString(0)).setPosition(Notification.Position.TOP_START);
+
+
+
+                        Optional<String> mappingKey = resultGrids.keySet().stream()
+                                .filter(key -> key.contains("Mapping"))
+                                .findFirst();
+
+                        if (mappingKey.isPresent()) {
+                            String keyWithMapping = mappingKey.get();
+                            tabSheetBottomRight.remove(resultGrids.get(keyWithMapping));
+                            resultGrids.remove(keyWithMapping);
+                            // Handle the key with "Mapping" in the name
+                        }
+
+                        String nodeId = "Selected Mappings";
+
+
+
+                        if (!resultGrids.containsKey(nodeId)) {
+                            Tab tabRes = new Tab(nodeId);
+                            Grid<GridOutputWindowedMapping> gridOutputWindowedMappingGrid = resetMappingTab(event, windowRowSummaries);
+
+                            tabSheetBottomRight.add(tabRes, gridOutputWindowedMappingGrid);
+                            resultGrids.put(nodeId, gridOutputWindowedMappingGrid);
+                        } else {
+                            Tab tabRes = new Tab(nodeId);
+                            Grid<GridOutputWindowedMapping> gridOutputWindowedMappingGrid = resetMappingTab(event, windowRowSummaries);
+                            tabSheetBottomRight.remove(resultGrids.get(nodeId));
+                            tabSheetBottomRight.add(tabRes, gridOutputWindowedMappingGrid);
+                            resultGrids.put(nodeId, gridOutputWindowedMappingGrid);
+                        }
+
+                    });
+
+
+
                 }
+
+                NetworkDiagram diagramAll = graphs.get("All");
+
+                updateWindowState(diagramAll, new ArrayList<>(actualOutput));
+
+
+                diagramAll.addSelectNodeListener(event -> {
+//                    Notification.show("Node selected "+ event.getParams().getArray("nodes").getString(0)).setPosition(Notification.Position.TOP_START);
+
+                    Optional<String> mappingKey = resultGrids.keySet().stream()
+                            .filter(key -> key.contains("Mapping"))
+                            .findFirst();
+
+                    if (mappingKey.isPresent()) {
+                        String keyWithMapping = mappingKey.get();
+                        tabSheetBottomRight.remove(resultGrids.get(keyWithMapping));
+                        resultGrids.remove(keyWithMapping);
+                        // Handle the key with "Mapping" in the name
+                    }
+
+                    String nodeId = "Selected Mappings";
+
+
+
+                    if (!resultGrids.containsKey(nodeId)) {
+                        Tab tabRes = new Tab(nodeId);
+                        Grid<GridOutputWindowedMapping> gridOutputWindowedMappingGrid = resetMappingTab(event, windowRowSummaries);
+
+                        tabSheetBottomRight.add(tabRes, gridOutputWindowedMappingGrid);
+                        resultGrids.put(nodeId, gridOutputWindowedMappingGrid);
+                    } else {
+                        Tab tabRes = new Tab(nodeId);
+                        Grid<GridOutputWindowedMapping> gridOutputWindowedMappingGrid = resetMappingTab(event, windowRowSummaries);
+                        tabSheetBottomRight.remove(resultGrids.get(nodeId));
+                        tabSheetBottomRight.add(tabRes, gridOutputWindowedMappingGrid);
+                        resultGrids.put(nodeId, gridOutputWindowedMappingGrid);
+                    }
+
+                });
 
 
             } else {
-                Notification.show("A query must be submitted first.");
+                Notification.show("A query must be submitted first.").setPosition(Notification.Position.TOP_START);
             }
         });
 
@@ -616,7 +745,7 @@ public class MyViewView extends Composite<VerticalLayout> {
         Button buttonPrimary3 = new Button();
 
 //        Button queryButton = new Button();
-        Button buttonPrimary6 = new Button();
+//        Button buttonPrimary6 = new Button();
         Button buttonPrimary7 = new Button();
         H6 h6 = new H6();
         getContent().addClassName(Padding.XSMALL);
@@ -730,10 +859,10 @@ public class MyViewView extends Composite<VerticalLayout> {
 //        bottomRow.setAlignSelf(Alignment.CENTER, queryButton);
 //        queryButton.setWidth("min-content");
 //        queryButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        buttonPrimary6.setText("LLM");
-        bottomRow.setAlignSelf(Alignment.CENTER, buttonPrimary6);
-        buttonPrimary6.setWidth("min-content");
-        buttonPrimary6.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+//        buttonPrimary6.setText("LLM");
+//        bottomRow.setAlignSelf(Alignment.CENTER, buttonPrimary6);
+//        buttonPrimary6.setWidth("min-content");
+//        buttonPrimary6.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         buttonPrimary7.setText("Reset");
         bottomRow.setAlignSelf(Alignment.CENTER, buttonPrimary7);
         buttonPrimary7.setWidth("min-content");
@@ -820,9 +949,45 @@ public class MyViewView extends Composite<VerticalLayout> {
         bottomRow.add(buttonPrimary3);
         bottomRow.add(windowButton);
 //        bottomRow.add(queryButton);
-        bottomRow.add(buttonPrimary6);
+//        bottomRow.add(buttonPrimary6);
         bottomRow.add(buttonPrimary7);
         bottomRow.add(h6);
+    }
+
+    private Grid<GridOutputWindowedMapping> resetMappingTab(SelectNodeEvent event, List<WindowRowSummary> windowRowSummaries) {
+        Map<String,GridOutputWindowedMapping> recordMappings = new HashMap<>();
+
+        JsonArray nodes = event.getParams().getArray("nodes");
+
+        for (int i = 0; i < nodes.length(); i++) {
+            int finalI = i;
+            actualOutput.stream().filter(predicate -> predicate.getRecordId().equals(nodes.getString(finalI)))
+                    .forEach(consumer -> {
+                        if (recordMappings.containsKey(consumer.getRecordId())) {
+                            recordMappings.get(consumer.getRecordId()).add(consumer.getOperatorId(), consumer.getIntervalId());
+                        } else {
+                            GridOutputWindowedMapping g = new GridOutputWindowedMapping();
+                            g.setRecordId(consumer.getRecordId());
+                            g.add(consumer.getOperatorId(), consumer.getIntervalId());
+                            recordMappings.put(consumer.getRecordId(), g);
+                        }
+                    });
+        }
+
+        Grid<GridOutputWindowedMapping> resultGrid = getGridOutputWindowedMapping(windowRowSummaries.stream().map(wrs -> wrs.getName()).collect(Collectors.toList()));
+        resultGrid.setItems(recordMappings.values().stream().sorted(new Comparator<GridOutputWindowedMapping>() {
+            @Override
+            public int compare(GridOutputWindowedMapping o1, GridOutputWindowedMapping o2) {
+                String o1Id = o1.recordId;
+                String o2Id = o2.recordId;
+
+                Integer id1 = Integer.parseInt(o1Id.split("_")[1]);
+                Integer id2 = Integer.parseInt(o2Id.split("_")[1]);
+                return Integer.compare(id1, id2);
+            }
+        }).collect(Collectors.toUnmodifiableList()));
+
+        return resultGrid;
     }
 
     private Map<String,String> getNexMarkQueries() {
@@ -863,6 +1028,45 @@ public class MyViewView extends Composite<VerticalLayout> {
         return inputAnnotatedGrid;
     }
 
+    private static Grid<GridOutputWindowedMapping> getGridOutputWindowedMapping(Collection<String> operatorsNames) {
+        Grid<GridOutputWindowedMapping> inputAnnotatedGrid = new Grid<>(GridOutputWindowedMapping.class, false);
+
+//        inputAnnotatedGrid.setColumns(operatorsNames.toArray(new String[0]));
+
+        inputAnnotatedGrid.addColumn(new ValueProvider<GridOutputWindowedMapping, String>() {
+            @Override
+            public String apply(GridOutputWindowedMapping gridOutputWindowedMapping) {
+                return gridOutputWindowedMapping.getRecordId();
+            }
+        }).setHeader("Record Id");
+
+
+
+        for (String op: operatorsNames){
+            inputAnnotatedGrid.addColumn(new ValueProvider<GridOutputWindowedMapping, String>() {
+                @Override
+                public String apply(GridOutputWindowedMapping gridOutputWindowedMapping) {
+                    StringBuilder intervalIds = new StringBuilder();
+                    String[] split = gridOutputWindowedMapping.opTointervalIds.split(";");
+                    for (int i = 0; i < split.length; i++) {
+                        if (split[i].split("=")[0].equals(op))
+                            intervalIds.append(split[i].split("=")[1].replace("Window ", "")).append("|");
+                    }
+                    if (!intervalIds.isEmpty())
+                        intervalIds.deleteCharAt(intervalIds.length() - 1);
+
+                    return intervalIds.toString();
+                }
+            }).setHeader(op);
+        }
+
+        inputAnnotatedGrid.setWidth("100%");
+        inputAnnotatedGrid.setHeight("100%");
+        inputAnnotatedGrid.getStyle().set("flex-grow", "1");
+//        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("opTointervalIds"));
+        return inputAnnotatedGrid;
+    }
+
     public static int findTimestamp(String input) {
         int index = input.indexOf("timestamp=");
         if (index != -1) {
@@ -886,7 +1090,7 @@ public class MyViewView extends Composite<VerticalLayout> {
             extracted(windowEditor, "5", "5");
             extracted(windowEditor, "7",  "7");
 
-        }else if (scenario.equals("Stock")){
+        }else if (scenario.equals("Stock (Yahoo)")){
             HorizontalLayout horizontalLayout = new HorizontalLayout();
             Button removeButton = new Button();
             removeButton.setText("X");
@@ -1053,9 +1257,9 @@ public class MyViewView extends Composite<VerticalLayout> {
                         "FROM <window>";
             }
             if (this.name.contains("TW"))
-                this.query = query.replaceAll("<window>", "HOP(TABLE Stream, DESCRIPTOR(ts), INTERVAL '" + size + "' minutes, INTERVAL '" + slide + "' minutes)");
+                this.query = query.replaceAll("<window>", "HOP(TABLE Stream, DESCRIPTOR(ts), INTERVAL '" + size + "' hours, INTERVAL '" + slide + "' hours)");
             else if (this.name.contains("SW"))
-                this.query = this.query.replaceAll("<window>", "SESSION(TABLE Stream, DESCRIPTOR(ts), INTERVAL '" + timeout + "' minutes)");
+                this.query = this.query.replaceAll("<window>", "SESSION(TABLE Stream, DESCRIPTOR(ts), INTERVAL '" + timeout + "' hours)");
             else if (this.name.contains("F"))
                 this.query = this.query.replaceAll("<window>", "FRAMES(TABLE Stream, DESCRIPTOR(ts), " + attribute + " " + operator + " " + range+")");
 
@@ -1125,7 +1329,7 @@ public class MyViewView extends Composite<VerticalLayout> {
             grid.setItems(query -> sampleGridService.list(
                             PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
                     .stream());
-        else if (scenario.equals("Stock"))
+        else if (scenario.equals("Stock (Yahoo)"))
             grid.setItems(query -> sampleStockService.list(
                             PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
                     .stream());
@@ -1197,7 +1401,7 @@ public class MyViewView extends Composite<VerticalLayout> {
 
             grid.setItems(inputGridList);
         }
-        else if (scenario.equals("Stock")){
+        else if (scenario.equals("Stock (Yahoo)")){
 
             List<String> strings = Arrays.asList("AAPL", "GOOGL", "AMZN");
             Random randomName = new Random(0L);
@@ -1259,6 +1463,10 @@ public class MyViewView extends Composite<VerticalLayout> {
                 eRecord.setLabelHighlightBold(true);
                 nodes.put(result.getRecordId(), eRecord);
             } else eRecord = nodes.get(result.getRecordId());
+
+
+
+
 
             Node eWindow;
             if (!nodes.keySet().contains(result.getIntervalId())) {

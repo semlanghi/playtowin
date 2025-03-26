@@ -10,7 +10,7 @@ import com.example.application.polyflow.datatypes.GridInputWindowed;
 import com.example.application.polyflow.operators.*;
 import com.example.application.polyflow.reportingStrategies.Always;
 import com.example.application.polyflow.stream.DataStreamImpl;
-import com.example.application.views.myview.MyViewView;
+import com.example.application.views.myview.PlayToWin;
 import org.apache.commons.configuration.ConfigurationException;
 import org.springframework.stereotype.Service;
 import org.streamreasoning.polyflow.api.enums.Tick;
@@ -24,7 +24,6 @@ import org.streamreasoning.polyflow.api.secret.report.ReportImpl;
 import org.streamreasoning.polyflow.api.secret.time.Time;
 import org.streamreasoning.polyflow.api.secret.time.TimeImpl;
 import org.streamreasoning.polyflow.api.stream.data.DataStream;
-import org.streamreasoning.polyflow.base.operatorsimpl.dag.DAGImpl;
 import org.streamreasoning.polyflow.base.processing.ContinuousProgramImpl;
 import org.streamreasoning.polyflow.base.sds.SDSDefault;
 
@@ -59,7 +58,7 @@ public class PolyflowService {
             //return longR2RConsistencyAnnotator.getCurrentGraphs();
         }
 
-        public ContinuousProgram<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>, GridInputWindowed> register(String query, List<MyViewView.WindowRowSummary> windowRowSummaries) throws ConfigurationException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        public ContinuousProgram<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>, GridInputWindowed> register(String query, List<PlayToWin.WindowRowSummary> windowRowSummaries) throws ConfigurationException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
 
             registered = true;
 
@@ -158,10 +157,10 @@ public class PolyflowService {
             return res;
         }
 
-        public List<StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>> getStreamToRelationOperators(List<MyViewView.WindowRowSummary> windowRowSummaries, Time instance, ContentFactory<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> contentFactory, Report report) {
-            return windowRowSummaries.stream().map(new Function<MyViewView.WindowRowSummary, StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>>() {
+        public List<StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>> getStreamToRelationOperators(List<PlayToWin.WindowRowSummary> windowRowSummaries, Time instance, ContentFactory<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> contentFactory, Report report) {
+            return windowRowSummaries.stream().map(new Function<PlayToWin.WindowRowSummary, StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>>() {
                 @Override
-                public StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> apply(MyViewView.WindowRowSummary windowRowSummary) {
+                public StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> apply(PlayToWin.WindowRowSummary windowRowSummary) {
                     if (!windowRowSummary.getName().contains("TW")) {
                         int frameType = getFrameType(windowRowSummary.getName());
                         return new AggregateFrame(
