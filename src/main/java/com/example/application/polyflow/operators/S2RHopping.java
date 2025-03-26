@@ -1,9 +1,6 @@
 package com.example.application.polyflow.operators;
 
 
-import com.example.application.polyflow.content.AccumulatorContent;
-import com.example.application.polyflow.datatypes.GridInputWindowed;
-import com.example.application.polyflow.datatypes.GridInputWindowed;
 import com.example.application.polyflow.datatypes.GridInputWindowed;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -20,10 +17,9 @@ import org.streamreasoning.polyflow.api.secret.tick.Ticker;
 import org.streamreasoning.polyflow.api.secret.tick.secret.TickerFactory;
 import org.streamreasoning.polyflow.api.secret.time.Time;
 import org.streamreasoning.polyflow.api.secret.time.TimeInstant;
-import org.streamreasoning.polyflow.base.sds.TimeVaryingObject;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class S2RHopping implements StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> {
 
@@ -36,6 +32,7 @@ public class S2RHopping implements StreamToRelationOperator<GridInputWindowed, G
     protected Report report;
     private final long width, slide;
     private Map<Window, Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>> active_windows;
+    private Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> throw_content;
     private List<Window> reported_windows;
     private Set<Window> to_evict;
     private long t0;
@@ -58,6 +55,7 @@ public class S2RHopping implements StreamToRelationOperator<GridInputWindowed, G
         this.toi = 0;
         this.ticker = TickerFactory.tick(tick, this);
         Logger.getRootLogger().setLevel(Level.OFF);
+        this.throw_content = cf.create();
     }
 
 
@@ -115,16 +113,11 @@ public class S2RHopping implements StreamToRelationOperator<GridInputWindowed, G
      */
     @Override
     public List<Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>> getContents(long t_e) {
-        /*if (!reported_windows.isEmpty()) {
-            return reported_windows.stream()
-                    .max(Comparator.comparingLong(Window::getC))
-                    .map(w -> Collections.singletonList(active_windows.get(w))).get();
-        } else
-            return active_windows.keySet().stream()
-                    .filter(w -> w.getO() < t_e && t_e < w.getC())
-                    .map(active_windows::get).collect(Collectors.toList());*/
 
-        return active_windows.values().stream().toList();
+        List<Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>> res = new ArrayList<>();
+        res.addAll(active_windows.values());
+        res.add(throw_content);
+        return res;
     }
 
 
@@ -164,10 +157,42 @@ public class S2RHopping implements StreamToRelationOperator<GridInputWindowed, G
 
         scope(ts);
 
-        active_windows.keySet().forEach(
+        boolean added = false;
+        for(Window w : active_windows.keySet()){
+            if(w.getO() <= ts && ts < w.getC()){
+                /*--- Custom code for the demo---*/
+                //We deep copy each element once for every interval in which it is added (to assign to each instance the correct interval ID)
+                GridInputWindowed el = new GridInputWindowed();
+                el.setIntervalId(w.toString());
+                el.setOperatorId(this.name);
+                el.setConsA(arg.getConsA());
+                el.setConsB(arg.getConsB());
+                el.setRecordId(arg.getRecordId());
+                el.setTimestamp(arg.getTimestamp());
+                el.setCursor(arg.getCursor());
+
+                active_windows.get(w).add(el);
+                added = true;
+            }
+        }
+
+        if(added == false){
+            GridInputWindowed el = new GridInputWindowed();
+            el.setIntervalId("throw");
+            el.setOperatorId(this.name);
+            el.setConsA(arg.getConsA());
+            el.setConsB(arg.getConsB());
+            el.setRecordId(arg.getRecordId());
+            el.setTimestamp(arg.getTimestamp());
+            el.setCursor(arg.getCursor());
+
+            throw_content.add(el);
+        }
+
+       /* active_windows.keySet().forEach(
                 w -> {
                     if (w.getO() <= ts && ts < w.getC()) {
-                        /*--- Custom code for the demo---*/
+                        *//*--- Custom code for the demo---*//*
                         //We deep copy each element once for every interval in which it is added (to assign to each instance the correct interval ID)
                         GridInputWindowed el = new GridInputWindowed();
                         el.setIntervalId(w.toString());
@@ -179,10 +204,10 @@ public class S2RHopping implements StreamToRelationOperator<GridInputWindowed, G
                         el.setCursor(arg.getCursor());
 
                         active_windows.get(w).add(el);
-
+                        added.set(true);
                         //No eviction for the demo
                     }
-                });
+                });*/
 
 
         //First version of the demo, we just always report

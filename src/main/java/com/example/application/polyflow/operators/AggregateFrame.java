@@ -51,6 +51,9 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
     //already closed windows
     private Map<Window, Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>> expired_content;
 
+    //elements that do not belong to ANY window
+    private Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> throw_content;
+
     public AggregateFrame(Tick tick, Time time, String name, ContentFactory<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> cf, Report report,
                           int frame_type, int frame_parameter, int aggregation_function) {
 
@@ -69,6 +72,7 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
 
         this.active_content = cf.createEmpty();
         this.active_window = new WindowImpl(0, 0);
+        this.throw_content = cf.create();
     }
 
 
@@ -98,6 +102,7 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
         List<Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>> res = new ArrayList<>();
         res.addAll(expired_content.values());
         res.add(active_content);
+        res.add(throw_content);
         return res;
     }
 
@@ -222,7 +227,7 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
             throw new OutOfOrderElementException("(" + arg + "," + ts + ")");
         }
 
-
+        boolean added = false;
         if (close_pred(arg, ts)) {
             close(arg, ts);
             context.current_timestamp = ts;
@@ -239,6 +244,7 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
         }
 
         if (update_pred(arg, ts)) {
+            added = true;
             GridInputWindowed el = new GridInputWindowed();
             el.setIntervalId("starts@"+active_window.getO());
             el.setOperatorId(this.name);
@@ -254,6 +260,7 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
 
         }
         if (open_pred(arg, ts)){
+            added = true;
             open(arg, ts);
             // open new window with current element
             active_window = new WindowImpl(ts, -1);
@@ -269,6 +276,17 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
             active_content.add(el);
         }
 
+        if(added == false){
+            GridInputWindowed el = new GridInputWindowed();
+            el.setIntervalId("throw");
+            el.setOperatorId(this.name);
+            el.setConsA(arg.getConsA());
+            el.setConsB(arg.getConsB());
+            el.setRecordId(arg.getRecordId());
+            el.setTimestamp(arg.getTimestamp());
+            el.setCursor(arg.getCursor());
+            throw_content.add(el);
+        }
 
         //First version of the demo, we just always report
         time.addEvaluationTimeInstants(new TimeInstant(ts));
