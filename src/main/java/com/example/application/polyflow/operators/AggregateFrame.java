@@ -246,7 +246,7 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
         if (update_pred(arg, ts)) {
             added = true;
             GridInputWindowed el = new GridInputWindowed();
-            el.setIntervalId(active_window.getO()+"");
+            el.setIntervalId("starts@"+active_window.getO());
             el.setOperatorId(this.name);
             el.setConsA(arg.getConsA());
             el.setConsB(arg.getConsB());
@@ -266,7 +266,7 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
             active_window = new WindowImpl(ts, -1);
             active_content = cf.create();
             GridInputWindowed el = new GridInputWindowed();
-            el.setIntervalId(active_window.getO()+"");
+            el.setIntervalId("starts@"+active_window.getO());
             el.setOperatorId(this.name);
             el.setConsA(arg.getConsA());
             el.setConsB(arg.getConsB());

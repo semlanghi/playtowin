@@ -1,7 +1,7 @@
 package com.example.application.views;
 
 import com.example.application.views.about.AboutView;
-import com.example.application.views.myview.MyViewView;
+import com.example.application.views.myview.PlayToWin;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.html.Footer;
@@ -52,7 +52,7 @@ public class MainLayout extends AppLayout {
         SideNav nav = new SideNav();
 
         nav.addItem(new SideNavItem("About", AboutView.class, LineAwesomeIcon.FILE.create()));
-        nav.addItem(new SideNavItem("My View", MyViewView.class, LineAwesomeIcon.PENCIL_RULER_SOLID.create()));
+        nav.addItem(new SideNavItem("PlayToWin", PlayToWin.class, LineAwesomeIcon.PENCIL_RULER_SOLID.create()));
 
         return nav;
     }
