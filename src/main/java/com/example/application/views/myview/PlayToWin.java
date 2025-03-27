@@ -59,6 +59,8 @@ import org.vaadin.addons.visjs.network.util.Shape;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
@@ -71,6 +73,10 @@ import java.util.stream.Collectors;
 )
 public class PlayToWin extends Composite<VerticalLayout> {
 
+    public static final String[] COLORS = new String[]{
+            "orange", "lightgreen",
+             "cyan", "pink"
+    };
     private HorizontalLayout mainRow;
 //    private String query = "SELECT percent(consA,consB),percent(consB,consA),ts\n" +
 //            "FROM Consumption [RANGE 5 minutes SLIDE 2 minutes]\n" +
@@ -90,6 +96,8 @@ public class PlayToWin extends Composite<VerticalLayout> {
     private boolean setLocal = false;
     private int counterInput = 0;
     private List<GridOutputWindowed> actualOutput;
+    private List<WindowRowSummary> windowRowSummaries;
+    private Map<String, String> colorGraphs;
 
 
     public PlayToWin() {
@@ -294,7 +302,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
         Button windowCreatorButton = new Button();
 
 
-        List<WindowRowSummary> windowRowSummaries = new ArrayList<>();
+        windowRowSummaries = new ArrayList<>();
 
         windowCreatorButton.addClickListener(new ComponentEventListener<ClickEvent<Button>>() {
             @Override
@@ -547,7 +555,13 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
 
 
+                    colorGraphs = new HashMap<>();
 
+                    int i=0;
+                    for (String windowName : graphs.keySet()) {
+                        if (!windowName.equals("All"))
+                            colorGraphs.put(windowName, COLORS[i++]);
+                    }
 
 
 
@@ -611,6 +625,8 @@ public class PlayToWin extends Composite<VerticalLayout> {
                     return g;
                 }).collect(Collectors.toList());
 
+
+
 //                inputAnnotatedGrid.setItems(actualOutput);
 
                 for (String windowName : resultGrids.keySet()) {
@@ -634,12 +650,20 @@ public class PlayToWin extends Composite<VerticalLayout> {
                     }
                 }
 
+
                 for (String windowName : graphs.keySet()) {
                     NetworkDiagram diagram = graphs.get(windowName);
 
 
                     updateWindowState(diagram, actualOutput.stream().filter(el -> el.getOperatorId()
-                            .equals((tabSheetUpperRight.getTab(diagram)).getLabel().split(" ")[0])).collect(Collectors.toList()));
+                            .equals((tabSheetUpperRight.getTab(diagram)).getLabel().split(" ")[0]))
+                            .sorted(new Comparator<GridOutputWindowed>() {
+                                @Override
+                                public int compare(GridOutputWindowed o1, GridOutputWindowed o2) {
+                                    return Integer.compare(findFirstNumberInIntervalId(o1.getIntervalId()), findFirstNumberInIntervalId(o2.getIntervalId()));
+                                }
+                            })
+                            .collect(Collectors.toList()), colorGraphs, false);
 
 
                     //TODO: removal
@@ -698,7 +722,14 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
                 NetworkDiagram diagramAll = graphs.get("All");
 
-                updateWindowState(diagramAll, new ArrayList<>(actualOutput));
+                updateWindowState(diagramAll, actualOutput.stream()
+                        .sorted(new Comparator<GridOutputWindowed>() {
+                            @Override
+                            public int compare(GridOutputWindowed o1, GridOutputWindowed o2) {
+                                return Integer.compare(findFirstNumberInIntervalId(o1.getIntervalId()), findFirstNumberInIntervalId(o2.getIntervalId()));
+                            }
+                        })
+                        .collect(Collectors.toList()), colorGraphs, true);
 
 
                 diagramAll.addSelectNodeListener(event -> {
@@ -961,18 +992,26 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
         for (int i = 0; i < nodes.length(); i++) {
             int finalI = i;
-            actualOutput.stream().filter(predicate -> predicate.getRecordId().equals(nodes.getString(finalI)))
-                    .forEach(consumer -> {
-                        if (recordMappings.containsKey(consumer.getRecordId())) {
-                            recordMappings.get(consumer.getRecordId()).add(consumer.getOperatorId(), consumer.getIntervalId());
-                        } else {
-                            GridOutputWindowedMapping g = new GridOutputWindowedMapping();
-                            g.setRecordId(consumer.getRecordId());
-                            g.add(consumer.getOperatorId(), consumer.getIntervalId());
-                            recordMappings.put(consumer.getRecordId(), g);
-                        }
-                    });
+            if (nodes.getString(finalI).contains("r_")) {
+                actualOutput.stream()
+                        .filter(predicate -> {
+                            String string = nodes.getString(finalI);
+                            string = string.contains("@") ? string.split("@")[1] : string;
+                            return predicate.getRecordId().equals(string);
+                        })
+                        .forEach(consumer -> {
+                            if (recordMappings.containsKey(consumer.getRecordId())) {
+                                recordMappings.get(consumer.getRecordId()).add(consumer.getOperatorId(), consumer.getIntervalId());
+                            } else {
+                                GridOutputWindowedMapping g = new GridOutputWindowedMapping();
+                                g.setRecordId(consumer.getRecordId());
+                                g.add(consumer.getOperatorId(), consumer.getIntervalId());
+                                recordMappings.put(consumer.getRecordId(), g);
+                            }
+                        });
+            }
         }
+
 
         Grid<GridOutputWindowedMapping> resultGrid = getGridOutputWindowedMapping(windowRowSummaries.stream().map(wrs -> wrs.getName()).collect(Collectors.toList()));
         resultGrid.setItems(recordMappings.values().stream().sorted(new Comparator<GridOutputWindowedMapping>() {
@@ -1012,6 +1051,15 @@ public class PlayToWin extends Composite<VerticalLayout> {
         queries.put("Query 9", "SELECT Rstream(P.id, P.name, A.reserve)\nFROM Person [RANGE 12 HOUR] P, Auction [RANGE 12 HOUR] A\nWHERE P.id = A.seller;");
 
         return queries;
+    }
+
+    public int findFirstNumberInIntervalId(String intervalId) {
+        Pattern pattern = Pattern.compile("\\d+");
+        Matcher matcher = pattern.matcher(intervalId);
+        if (matcher.find()) {
+            return Integer.parseInt(matcher.group());
+        }
+        return 0; // No number found
     }
 
 
@@ -1449,37 +1497,72 @@ public class PlayToWin extends Composite<VerticalLayout> {
     private PolyflowService polyflowService;
 
 
-    private void updateWindowState(NetworkDiagram snapshotGraph, List<GridOutputWindowed> results) {
+
+
+    private void updateWindowState(NetworkDiagram snapshotGraph, List<GridOutputWindowed> results, Map<String, String> colors, boolean all) {
 
         List<Edge> edges = new ArrayList<>();
         Map<String, Node> nodes = new HashMap<>();
 
+        Map<String, Node> precedentNodesKeyedOperator = new HashMap<>();
+
+
+
         results.forEach(result -> {
-            Node eRecord;
-            if (!nodes.keySet().contains(result.getRecordId())){
-                eRecord = new Node(result.getRecordId(), result.getRecordId());
-                eRecord.setShape(Shape.diamond);
-                eRecord.setColor("lightblue");
+            if (!result.getIntervalId().equals("throw")){
+                Node eRecord;
+                if (!nodes.keySet().contains(result.getRecordId())){
+                    eRecord = new Node(result.getRecordId(), result.getRecordId());
+                    eRecord.setShape(Shape.diamond);
+                    eRecord.setColor("lightblue");
+                    eRecord.setLabelHighlightBold(true);
+                    nodes.put(result.getRecordId(), eRecord);
+                } else eRecord = nodes.get(result.getRecordId());
+
+
+
+
+
+                Node eWindow;
+                if (!nodes.keySet().contains(all ? result.getOperatorId()+"@"+result.getIntervalId() : result.getIntervalId())) {
+
+                    eWindow = all ? new Node(result.getOperatorId()+"@"+result.getIntervalId(), result.getOperatorId()+"@"+result.getIntervalId()) : new Node(result.getIntervalId(), result.getIntervalId());
+
+                    eWindow.setShape(Shape.ellipse);
+                    eWindow.setColor(colors.get(result.getOperatorId()));
+                    eWindow.setLabelHighlightBold(true);
+                    nodes.put(all ? result.getOperatorId()+"@"+result.getIntervalId() : result.getIntervalId(), eWindow);
+
+                    if (precedentNodesKeyedOperator.containsKey(result.getOperatorId())){
+                        if (!precedentNodesKeyedOperator.get(result.getOperatorId()).getLabel().equals(all ? result.getOperatorId()+"@"+result.getIntervalId() : result.getIntervalId())){
+                            //connect predecessor with current Node (eWindow)
+                            Edge e = new Edge(precedentNodesKeyedOperator.get(result.getOperatorId()), eWindow);
+                            e.setColor("gray");
+                            e.setArrows(new Arrows(new ArrowHead()));
+                            e.setLabel(getIntervalRel(result.getOperatorId()));
+                            edges.add(e);
+                        }
+                    }
+
+                    precedentNodesKeyedOperator.put(result.getOperatorId(), eWindow);
+
+
+                } else eWindow = nodes.get(all ? result.getOperatorId()+"@"+result.getIntervalId() : result.getIntervalId());
+
+
+
+                Edge e = new Edge(eRecord, eWindow);
+                e.setColor(colors.get(result.getOperatorId()));
+                e.setArrows(new Arrows(new ArrowHead()));
+                edges.add(e);
+            } else if (!all) {
+                Node eRecord = new Node(result.getRecordId(), result.getRecordId());
+                eRecord.setShape(Shape.square);
+                eRecord.setColor("red");
                 eRecord.setLabelHighlightBold(true);
                 nodes.put(result.getRecordId(), eRecord);
-            } else eRecord = nodes.get(result.getRecordId());
+            }
 
-
-
-
-
-            Node eWindow;
-            if (!nodes.keySet().contains(result.getIntervalId())) {
-                eWindow = new Node(result.getIntervalId(), result.getIntervalId());
-                eWindow.setShape(Shape.ellipse);
-                eWindow.setColor("lightgreen");
-                eWindow.setLabelHighlightBold(true);
-                nodes.put(result.getIntervalId(), eWindow);
-            } else eWindow = nodes.get(result.getIntervalId());
-
-            Edge e = new Edge(eRecord, eWindow);
-            e.setArrows(new Arrows(new ArrowHead()));
-            edges.add(e);
         });
 
 
@@ -1487,5 +1570,25 @@ public class PlayToWin extends Composite<VerticalLayout> {
         snapshotGraph.setNodes(nodes.values());
         snapshotGraph.setEdges(edges);
     }
+
+    private String getIntervalRel(String operatorId) {
+        if (operatorId.contains("TW")){
+            for (WindowRowSummary sumamry: windowRowSummaries){
+                if (operatorId.equals(sumamry.getName())){
+                    return sumamry.getSize() == sumamry.getSlide() ? "meet" : "overlap";
+                }
+            }
+        } else if (operatorId.contains("SW")){
+            return "after";
+        } else if (operatorId.contains("FThr")){
+            return "after";
+        } else if (operatorId.contains("F")){
+            return "meet";
+        } else return null;
+
+        return null;
+    }
+
+
 
 }
