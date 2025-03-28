@@ -149,13 +149,17 @@ public class PlayToWin extends Composite<VerticalLayout> {
         loadPage(selectScenarios, "Electric Grid");
     }
 
-    private String getWindowAbbrev(String windowDescr){
+    private static String getWindowAbbrev(String windowDescr){
         if (windowDescr.contains("Time")){
             return "TW";
         } else if (windowDescr.contains("Session")){
             return "SW";
         } else if (windowDescr.contains("Frames")){
            return "F" + windowDescr.split(":")[1].substring(0, 3);
+        } else if (windowDescr.contains("Union")){
+            return "Uni";
+        } else if (windowDescr.contains("Intersection")){
+            return "Int";
         } return   null;
     }
 
@@ -206,97 +210,25 @@ public class PlayToWin extends Composite<VerticalLayout> {
         windowEditor.setWidthFull();
 
 
-        ComboBox<String> selectWindowType = new ComboBox<>();
-        selectWindowType.setLabel("Window Type");
-        selectWindowType.setItems("Time-based", "Session", "Frames:Threshold", "Frames:Delta", "Frames:Aggregate");
-        selectWindowType.setValue("Time-based");
+
+
+        HorizontalLayout compositeUnionLayout1 = new HorizontalLayout();
+        compositeUnionLayout1.setWidthFull();
+        compositeUnionLayout1.setVisible(false);
+
+        HorizontalLayout compositeUnionLayout2 = new HorizontalLayout();
+        compositeUnionLayout2.setWidthFull();
+        compositeUnionLayout2.setVisible(false);
+
         HorizontalLayout windowSelectorLayout = new HorizontalLayout();
         windowSelectorLayout.setWidthFull();
 
-        TextField threshold = new TextField();
-        threshold.setLabel("Threshold");
+        windowEditor.add(windowSelectorLayout);
+        windowEditor.setAlignItems(Alignment.START);
+        windowEditor.add(compositeUnionLayout1, compositeUnionLayout2);
 
-        ComboBox<String> selectAggregate = new ComboBox<>();
-        selectAggregate.setLabel("Aggregate");
 
-        selectAggregate.setItems("count", "sum", "avg", "max", "min");
-        selectAggregate.setValue("count");
-        selectAggregate.addValueChangeListener(event -> {
-            Notification.show(event.getValue()).setPosition(Notification.Position.TOP_START);
-        });
-
-        ComboBox<String> selectOp = new ComboBox<>();
-        selectOp.setLabel("Comparator");
-
-        selectOp.setItems("<", ">", "=", ">=", "<=");
-        selectOp.setValue("<");
-        selectOp.addValueChangeListener(event -> {
-            Notification.show(event.getValue()).setPosition(Notification.Position.TOP_START);
-        });
-
-        ComboBox<String> selectAttribute = new ComboBox<>();
-        selectAttribute.setLabel("On Attribute");
-
-        Field[] fields = sampleInputClass.getDeclaredFields();
-
-        List<String> collect = Arrays.stream(fields).map(Field::getName).collect(Collectors.toList());
-        selectAttribute.setItems(collect);
-        selectAttribute.setValue(collect.get(0));
-        selectAttribute.addValueChangeListener(event -> {
-            Notification.show(event.getValue()).setPosition(Notification.Position.TOP_START);
-        });
-
-        TextField size = new TextField();
-        size.setLabel("Size");
-
-        TextField slide = new TextField();
-        slide.setLabel("Slide");
-
-        TextField timeout = new TextField();
-        timeout.setLabel("Timeout");
-
-        selectWindowType.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<ComboBox<String>, String>>) event -> {
-            int index = 1;
-
-            if (!(event.getOldValue().equals("Frames:Aggregate")) && (event.getValue().startsWith("Frames:Aggregate"))) {
-                windowSelectorLayout.addComponentAtIndex(index++, selectAggregate);
-                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, selectAggregate);
-            } else if (!(event.getValue().equals("Frames:Aggregate")) && (event.getOldValue().equals("Frames:Aggregate"))) {
-                windowSelectorLayout.remove(selectAggregate);
-            }
-            if (!(event.getOldValue().startsWith("Frames")) && (event.getValue().startsWith("Frames"))) {
-                windowSelectorLayout.addComponentAtIndex(index++, selectAttribute);
-                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, selectAttribute);
-                windowSelectorLayout.addComponentAtIndex(index++, selectOp);
-                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, selectOp);
-                windowSelectorLayout.addComponentAtIndex(index, threshold);
-                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, threshold);
-            } else if (!(event.getValue().startsWith("Frames")) && (event.getOldValue().startsWith("Frames"))) {
-                windowSelectorLayout.remove(threshold);
-                windowSelectorLayout.remove(selectAttribute);
-                windowSelectorLayout.remove(selectOp);
-            }
-
-            if (!(event.getOldValue().equals("Time-based")) && (event.getValue().equals("Time-based"))) {
-                windowSelectorLayout.addComponentAtIndex(index++, size);
-                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, size);
-                windowSelectorLayout.addComponentAtIndex(index, slide);
-                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, slide);
-            } else if (!(event.getValue().equals("Time-based")) && (event.getOldValue().equals("Time-based"))) {
-                windowSelectorLayout.remove(size);
-                windowSelectorLayout.remove(slide);
-            }
-
-            if (!(event.getOldValue().equals("Session")) && (event.getValue().equals("Session"))) {
-                windowSelectorLayout.addComponentAtIndex(index++, timeout);
-                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, timeout);
-            } else if (!(event.getValue().equals("Session")) && (event.getOldValue().equals("Session"))) {
-                windowSelectorLayout.remove(timeout);
-            }
-
-            Notification.show(event.getValue()).setPosition(Notification.Position.TOP_START);
-        });
-
+        List<Result> result = getResult(windowSelectorLayout, compositeUnionLayout1, compositeUnionLayout2);
 
 
         Button windowCreatorButton = new Button();
@@ -319,33 +251,23 @@ public class PlayToWin extends Composite<VerticalLayout> {
                     }
                 });
 
-                String windowTypeValue = selectWindowType.getValue();
-                windowRowSummary.setName(getWindowAbbrev(windowTypeValue));
+                String windowTypeValue = result.get(0).selectWindowType().getValue();
+
                 windowRowSummary.setQuery(queryEditorText.getValue());
+
+                if (windowTypeValue.contains("Union") || windowTypeValue.contains("Int")){
+                    windowRowSummary.setCompositeInternalWindow1(new WindowRowSummary());
+                    windowRowSummary.setCompositeInternalWindow2(new WindowRowSummary());
+
+                }
 
                 //String Building Based on the window
                 StringBuilder text = new StringBuilder();
-                text.append(windowTypeValue);
+
 
 
                 try {
-                    if (windowTypeValue.equals("Frames:Aggregate")) {
-                        text.append(" on aggregate ").append(selectAggregate.getValue());
-                        windowRowSummary.setAttribute(selectAggregate.getValue()+"("+selectAttribute.getValue()+")");
-                    }
-                    if (windowTypeValue.startsWith("Frames")){
-                        text.append(" over Attribute ").append(selectAttribute.getValue()).append(" ").append(selectOp.getValue()).append(" ").append(threshold.getValue());
-                        windowRowSummary.setAttribute(selectAttribute.getValue());
-                        windowRowSummary.setOperator(selectOp.getValue());
-                        windowRowSummary.setRange(Long.parseLong(threshold.getValue()));
-                    } else if (windowTypeValue.equals("Time-based")){
-                        text.append(" with Size ").append(size.getValue()).append(" and Slide ").append(slide.getValue());
-                        windowRowSummary.setSize(Long.parseLong(size.getValue()));
-                        windowRowSummary.setSlide(Long.parseLong(slide.getValue()));
-                    } else if (windowTypeValue.equals("Session")){
-                        text.append(" with Timeout ").append(timeout.getValue());
-                        windowRowSummary.setTimeout(Long.parseLong(timeout.getValue()));
-                    }
+                    PlayToWin.getResumeNameAndParams(windowTypeValue, text, windowRowSummary, result, 0);
                     horizontalLayout.add(removeButton);
                     horizontalLayout.setVerticalComponentAlignment(Alignment.CENTER, removeButton);
                     String text1 = text.toString();
@@ -441,13 +363,11 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
 
         windowCreatorButton.setText("Add");
-        windowSelectorLayout.add(selectWindowType, size, slide);
         windowSelectorLayout.add(windowCreatorButton);
 
         windowSelectorLayout.setAlignItems(Alignment.START);
 
-        windowEditor.add(windowSelectorLayout);
-        windowEditor.setAlignItems(Alignment.START);
+
         windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, windowCreatorButton);
 
 //        setWindowScenario(scenario, windowEditor);
@@ -985,6 +905,262 @@ public class PlayToWin extends Composite<VerticalLayout> {
         bottomRow.add(h6);
     }
 
+    private static void getResumeNameAndParams(String windowTypeValue, StringBuilder text, WindowRowSummary windowRowSummary, List<Result> result, int index) {
+
+        windowRowSummary.setName(getWindowAbbrev(windowTypeValue));
+        text.append(windowTypeValue);
+        if (windowTypeValue.equals("Frames:Aggregate")) {
+            text.append(" on aggregate ").append(result.get(index).selectAggregate().getValue());
+            windowRowSummary.setAttribute(result.get(index).selectAggregate().getValue()+"("+ result.get(index).selectAttribute().getValue()+")");
+        }
+        if (windowTypeValue.startsWith("Frames")){
+            text.append(" over Attribute ").append(result.get(index).selectAttribute().getValue()).append(" ").append(result.get(index).selectOp().getValue()).append(" ").append(result.get(index).threshold().getValue());
+            windowRowSummary.setAttribute(result.get(index).selectAttribute().getValue());
+            windowRowSummary.setOperator(result.get(index).selectOp().getValue());
+            windowRowSummary.setRange(Long.parseLong(result.get(index).threshold().getValue()));
+        } else if (windowTypeValue.equals("Time-based")){
+            text.append(" with Size ").append(result.get(index).size().getValue()).append(" and Slide ").append(result.get(index).slide().getValue());
+            windowRowSummary.setSize(Long.parseLong(result.get(index).size().getValue()));
+            windowRowSummary.setSlide(Long.parseLong(result.get(index).slide().getValue()));
+        } else if (windowTypeValue.equals("Session")){
+            text.append(" with Timeout ").append(result.get(index).timeout().getValue());
+            windowRowSummary.setTimeout(Long.parseLong(result.get(index).timeout().getValue()));
+        } else if (windowTypeValue.equals("Composite-Union")){
+
+            Result result1 = result.get(index+1);
+            Result result2 = result.get(index+2);
+
+            text.append(" of ");
+
+            getResumeNameAndParams(result1.selectWindowType.getValue(), text, windowRowSummary.getCompositeInternalWindow1(), result, index+1);
+            text.append(" and ");
+            getResumeNameAndParams(result2.selectWindowType.getValue(), text, windowRowSummary.getCompositeInternalWindow2(), result, index+2);
+
+        } else if (windowTypeValue.equals("Composite-Intersection")){
+            Result result1 = result.get(index+1);
+            Result result2 = result.get(index+2);
+
+            text.append(" of ");
+
+            getResumeNameAndParams(result1.selectWindowType.getValue(), text, windowRowSummary.getCompositeInternalWindow1(), result, index+1);
+            text.append(" and ");
+            getResumeNameAndParams(result2.selectWindowType.getValue(), text, windowRowSummary.getCompositeInternalWindow2(), result, index+2);
+        }
+    }
+
+    private List<Result> getResult(HorizontalLayout windowSelectorLayout, HorizontalLayout compositeUnionLayout1, HorizontalLayout compositeUnionLayout2) {
+        ComboBox<String> selectWindowType = new ComboBox<>();
+
+
+        selectWindowType.setLabel("Window Type");
+        selectWindowType.setItems("Time-based", "Session", "Frames:Threshold", "Frames:Delta", "Frames:Aggregate", "Composite-Union", "Composite-Intersection");
+        selectWindowType.setValue("Time-based");
+
+
+        TextField threshold = new TextField();
+        threshold.setLabel("Threshold");
+
+        ComboBox<String> selectAggregate = new ComboBox<>();
+        selectAggregate.setLabel("Aggregate");
+
+        selectAggregate.setItems("count", "sum", "avg", "max", "min");
+        selectAggregate.setValue("count");
+        selectAggregate.addValueChangeListener(event -> {
+            Notification.show(event.getValue()).setPosition(Notification.Position.TOP_START);
+        });
+
+        ComboBox<String> selectOp = new ComboBox<>();
+        selectOp.setLabel("Comparator");
+
+        selectOp.setItems("<", ">", "=", ">=", "<=");
+        selectOp.setValue("<");
+        selectOp.addValueChangeListener(event -> {
+            Notification.show(event.getValue()).setPosition(Notification.Position.TOP_START);
+        });
+
+        ComboBox<String> selectAttribute = new ComboBox<>();
+        selectAttribute.setLabel("On Attribute");
+
+        Field[] fields = sampleInputClass.getDeclaredFields();
+
+        List<String> collect = Arrays.stream(fields).map(Field::getName).collect(Collectors.toList());
+        selectAttribute.setItems(collect);
+        selectAttribute.setValue(collect.get(0));
+        selectAttribute.addValueChangeListener(event -> {
+            Notification.show(event.getValue()).setPosition(Notification.Position.TOP_START);
+        });
+
+        TextField size = new TextField();
+        size.setLabel("Size");
+
+        TextField slide = new TextField();
+        slide.setLabel("Slide");
+
+        TextField timeout = new TextField();
+        timeout.setLabel("Timeout");
+
+        selectWindowType.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<ComboBox<String>, String>>) event -> {
+            int index = 1;
+
+            if (!(event.getOldValue().equals("Frames:Aggregate")) && (event.getValue().startsWith("Frames:Aggregate"))) {
+                windowSelectorLayout.addComponentAtIndex(index++, selectAggregate);
+                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, selectAggregate);
+            } else if (!(event.getValue().equals("Frames:Aggregate")) && (event.getOldValue().equals("Frames:Aggregate"))) {
+                windowSelectorLayout.remove(selectAggregate);
+            }
+            if (!(event.getOldValue().startsWith("Frames")) && (event.getValue().startsWith("Frames"))) {
+                windowSelectorLayout.addComponentAtIndex(index++, selectAttribute);
+                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, selectAttribute);
+                windowSelectorLayout.addComponentAtIndex(index++, selectOp);
+                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, selectOp);
+                windowSelectorLayout.addComponentAtIndex(index, threshold);
+                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, threshold);
+            } else if (!(event.getValue().startsWith("Frames")) && (event.getOldValue().startsWith("Frames"))) {
+                windowSelectorLayout.remove(threshold);
+                windowSelectorLayout.remove(selectAttribute);
+                windowSelectorLayout.remove(selectOp);
+            }
+
+            if (!(event.getOldValue().equals("Time-based")) && (event.getValue().equals("Time-based"))) {
+                windowSelectorLayout.addComponentAtIndex(index++, size);
+                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, size);
+                windowSelectorLayout.addComponentAtIndex(index, slide);
+                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, slide);
+            } else if (!(event.getValue().equals("Time-based")) && (event.getOldValue().equals("Time-based"))) {
+                windowSelectorLayout.remove(size);
+                windowSelectorLayout.remove(slide);
+            }
+
+            if (!(event.getOldValue().equals("Session")) && (event.getValue().equals("Session"))) {
+                windowSelectorLayout.addComponentAtIndex(index++, timeout);
+                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, timeout);
+            } else if (!(event.getValue().equals("Session")) && (event.getOldValue().equals("Session"))) {
+                windowSelectorLayout.remove(timeout);
+            }
+
+
+
+            if (event.getValue().equals("Composite-Union") || event.getValue().equals("Composite-Intersection")) {
+
+                compositeUnionLayout1.setVisible(true);
+                compositeUnionLayout2.setVisible(true);
+            } else if (event.getOldValue().equals("Composite-Union") || event.getOldValue().equals("Composite-Intersection")) {
+                compositeUnionLayout1.setVisible(false);
+                compositeUnionLayout2.setVisible(false);
+            }
+            Notification.show(event.getValue()).setPosition(Notification.Position.TOP_START);
+        });
+
+        Result result1 = getResultNotComposite(compositeUnionLayout1);
+        Result result2 = getResultNotComposite(compositeUnionLayout2);
+        Result result = new Result(selectWindowType, threshold, selectAggregate, selectOp, selectAttribute, size, slide, timeout);
+
+        windowSelectorLayout.add(result.selectWindowType(), result.size(), result.slide());
+        return Arrays.asList(result, result1, result2);
+    }
+
+    private Result getResultNotComposite(HorizontalLayout windowSelectorLayout) {
+        ComboBox<String> selectWindowType = new ComboBox<>();
+        selectWindowType.setLabel("Window Type");
+        selectWindowType.setItems("Time-based", "Session", "Frames:Threshold", "Frames:Delta", "Frames:Aggregate");
+        selectWindowType.setValue("Time-based");
+
+
+        TextField threshold = new TextField();
+        threshold.setLabel("Threshold");
+
+        ComboBox<String> selectAggregate = new ComboBox<>();
+        selectAggregate.setLabel("Aggregate");
+
+        selectAggregate.setItems("count", "sum", "avg", "max", "min");
+        selectAggregate.setValue("count");
+        selectAggregate.addValueChangeListener(event -> {
+            Notification.show(event.getValue()).setPosition(Notification.Position.TOP_START);
+        });
+
+        ComboBox<String> selectOp = new ComboBox<>();
+        selectOp.setLabel("Comparator");
+
+        selectOp.setItems("<", ">", "=", ">=", "<=");
+        selectOp.setValue("<");
+        selectOp.addValueChangeListener(event -> {
+            Notification.show(event.getValue()).setPosition(Notification.Position.TOP_START);
+        });
+
+        ComboBox<String> selectAttribute = new ComboBox<>();
+        selectAttribute.setLabel("On Attribute");
+
+        Field[] fields = sampleInputClass.getDeclaredFields();
+
+        List<String> collect = Arrays.stream(fields).map(Field::getName).collect(Collectors.toList());
+        selectAttribute.setItems(collect);
+        selectAttribute.setValue(collect.get(0));
+        selectAttribute.addValueChangeListener(event -> {
+            Notification.show(event.getValue()).setPosition(Notification.Position.TOP_START);
+        });
+
+        TextField size = new TextField();
+        size.setLabel("Size");
+
+        TextField slide = new TextField();
+        slide.setLabel("Slide");
+
+        TextField timeout = new TextField();
+        timeout.setLabel("Timeout");
+
+        selectWindowType.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<ComboBox<String>, String>>) event -> {
+            int index = 1;
+
+            if (!(event.getOldValue().equals("Frames:Aggregate")) && (event.getValue().startsWith("Frames:Aggregate"))) {
+                windowSelectorLayout.addComponentAtIndex(index++, selectAggregate);
+                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, selectAggregate);
+            } else if (!(event.getValue().equals("Frames:Aggregate")) && (event.getOldValue().equals("Frames:Aggregate"))) {
+                windowSelectorLayout.remove(selectAggregate);
+            }
+            if (!(event.getOldValue().startsWith("Frames")) && (event.getValue().startsWith("Frames"))) {
+                windowSelectorLayout.addComponentAtIndex(index++, selectAttribute);
+                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, selectAttribute);
+                windowSelectorLayout.addComponentAtIndex(index++, selectOp);
+                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, selectOp);
+                windowSelectorLayout.addComponentAtIndex(index, threshold);
+                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, threshold);
+            } else if (!(event.getValue().startsWith("Frames")) && (event.getOldValue().startsWith("Frames"))) {
+                windowSelectorLayout.remove(threshold);
+                windowSelectorLayout.remove(selectAttribute);
+                windowSelectorLayout.remove(selectOp);
+            }
+
+            if (!(event.getOldValue().equals("Time-based")) && (event.getValue().equals("Time-based"))) {
+                windowSelectorLayout.addComponentAtIndex(index++, size);
+                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, size);
+                windowSelectorLayout.addComponentAtIndex(index, slide);
+                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, slide);
+            } else if (!(event.getValue().equals("Time-based")) && (event.getOldValue().equals("Time-based"))) {
+                windowSelectorLayout.remove(size);
+                windowSelectorLayout.remove(slide);
+            }
+
+            if (!(event.getOldValue().equals("Session")) && (event.getValue().equals("Session"))) {
+                windowSelectorLayout.addComponentAtIndex(index++, timeout);
+                windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, timeout);
+            } else if (!(event.getValue().equals("Session")) && (event.getOldValue().equals("Session"))) {
+                windowSelectorLayout.remove(timeout);
+            }
+
+
+            Notification.show(event.getValue()).setPosition(Notification.Position.TOP_START);
+        });
+
+
+        Result result = new Result(selectWindowType, threshold, selectAggregate, selectOp, selectAttribute, size, slide, timeout);
+        windowSelectorLayout.add(result.selectWindowType(), result.size(), result.slide());
+
+        return result;
+    }
+
+    private record Result(ComboBox<String> selectWindowType, TextField threshold, ComboBox<String> selectAggregate, ComboBox<String> selectOp, ComboBox<String> selectAttribute, TextField size, TextField slide, TextField timeout) {
+    }
+
     private Grid<GridOutputWindowedMapping> resetMappingTab(SelectNodeEvent event, List<WindowRowSummary> windowRowSummaries) {
         Map<String,GridOutputWindowedMapping> recordMappings = new HashMap<>();
 
@@ -1216,6 +1392,9 @@ public class PlayToWin extends Composite<VerticalLayout> {
         private long timeout;
         private String query;
 
+        private WindowRowSummary compositeInternalWindow1;
+        private WindowRowSummary compositeInternalWindow2;
+
         public String getOperator() {
             return operator;
         }
@@ -1299,6 +1478,22 @@ public class PlayToWin extends Composite<VerticalLayout> {
             this.attribute = attribute;
         }
 
+        public WindowRowSummary getCompositeInternalWindow1() {
+            return compositeInternalWindow1;
+        }
+
+        public void setCompositeInternalWindow1(WindowRowSummary compositeInternalWindow1) {
+            this.compositeInternalWindow1 = compositeInternalWindow1;
+        }
+
+        public WindowRowSummary getCompositeInternalWindow2() {
+            return compositeInternalWindow2;
+        }
+
+        public void setCompositeInternalWindow2(WindowRowSummary compositeInternalWindow2) {
+            this.compositeInternalWindow2 = compositeInternalWindow2;
+        }
+
         public String getQuery() {
             if (this.query == null) {
                 this.query = "SELECT *\n" +
@@ -1310,8 +1505,25 @@ public class PlayToWin extends Composite<VerticalLayout> {
                 this.query = this.query.replaceAll("<window>", "SESSION(TABLE Stream, DESCRIPTOR(ts), INTERVAL '" + timeout + "' hours)");
             else if (this.name.contains("F"))
                 this.query = this.query.replaceAll("<window>", "FRAMES(TABLE Stream, DESCRIPTOR(ts), " + attribute + " " + operator + " " + range+")");
+            else if (this.name.contains("Union"))
+                this.query = this.query.replaceAll("<window>", "UNION");
+            else if (this.name.contains("Int"))
+                this.query = this.query.replaceAll("<window>", "INTERSECTION");
 
             return query;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder text = new StringBuilder();
+            text.append(this.name);
+            if (this.name.contains("F")){
+                text.append("Frame over Aggregate/Attribute ").append(this.attribute).append(" ").append(this.operator).append(" ").append(this.range);
+            } else if (this.name.contains("TW")){
+                text.append("Time Window with Size ").append(this.size).append(" and Slide ").append(this.slide);
+            } else if (this.name.contains("SW")){
+                text.append("Session Window with Timeout ").append(this.timeout);
+            } return text.toString();
         }
 
         public void setQuery(String query){

@@ -161,7 +161,16 @@ public class PolyflowService {
             return windowRowSummaries.stream().map(new Function<PlayToWin.WindowRowSummary, StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>>() {
                 @Override
                 public StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> apply(PlayToWin.WindowRowSummary windowRowSummary) {
-                    if (!windowRowSummary.getName().contains("TW")) {
+                    if (windowRowSummary.getName().contains("TW")) {
+                        return new S2RHopping(
+                                Tick.TIME_DRIVEN,
+                                instance,
+                                windowRowSummary.getName(),
+                                contentFactory,
+                                report,
+                                windowRowSummary.getSize(),
+                                windowRowSummary.getSlide());
+                    } else if (windowRowSummary.getName().contains("F") || windowRowSummary.getName().contains("SW")) {
                         int frameType = getFrameType(windowRowSummary.getName());
                         return new AggregateFrame(
                                 Tick.TIME_DRIVEN,
@@ -173,14 +182,48 @@ public class PolyflowService {
                                 frameType == 3 ? (int) windowRowSummary.getTimeout() : (int) windowRowSummary.getRange(),
                                 getAggregationFunction(windowRowSummary.getAttribute()));
                     } else {
-                        return new S2RHopping(
+                        //TODO: for the moment, we support only intersection
+
+                        if (windowRowSummary.getName().contains("Union")) {
+                            throw new RuntimeException("Support only for intersection");
+                        }
+
+                        long size, slide;
+                        if (windowRowSummary.getCompositeInternalWindow1().getName().contains("TW")) {
+                            size = windowRowSummary.getCompositeInternalWindow1().getSize();
+                            slide = windowRowSummary.getCompositeInternalWindow1().getSlide();
+                        } else if (windowRowSummary.getCompositeInternalWindow2().getName().contains("TW")){
+                            size = windowRowSummary.getCompositeInternalWindow2().getSize();
+                            slide = windowRowSummary.getCompositeInternalWindow2().getSlide();
+                        } else {
+                            throw new RuntimeException("At least one window should be time-based");
+                        }
+
+
+
+                        int frameType, timeoutOrRange, attribute;
+                        if (windowRowSummary.getCompositeInternalWindow1().getName().contains("F") || windowRowSummary.getCompositeInternalWindow1().getName().contains("SW")) {
+                            frameType = getFrameType(windowRowSummary.getCompositeInternalWindow1().getName());
+                            timeoutOrRange = frameType == 3 ? (int) windowRowSummary.getCompositeInternalWindow1().getTimeout() : (int) windowRowSummary.getCompositeInternalWindow1().getRange();
+                            attribute = getAggregationFunction(windowRowSummary.getCompositeInternalWindow1().getAttribute());
+                        } else if (windowRowSummary.getCompositeInternalWindow2().getName().contains("F") || windowRowSummary.getCompositeInternalWindow2().getName().contains("SW")) {
+                            frameType = getFrameType(windowRowSummary.getCompositeInternalWindow2().getName());
+                            timeoutOrRange = frameType == 3 ? (int) windowRowSummary.getCompositeInternalWindow2().getTimeout() : (int) windowRowSummary.getCompositeInternalWindow2().getRange();
+                            attribute = getAggregationFunction(windowRowSummary.getCompositeInternalWindow2().getAttribute());
+                        } else {
+                            throw new RuntimeException("At least one window should be frame or session");
+                        }
+                        return new CompositeOperator(
                                 Tick.TIME_DRIVEN,
                                 instance,
                                 windowRowSummary.getName(),
                                 contentFactory,
                                 report,
-                                windowRowSummary.getSize(),
-                                windowRowSummary.getSlide());
+                                frameType,
+                                timeoutOrRange,
+                                attribute,
+                                size,
+                                slide);
                     }
                 }
             }).collect(Collectors.toCollection(LinkedList::new));
