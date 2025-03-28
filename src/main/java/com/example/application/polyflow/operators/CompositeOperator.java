@@ -111,11 +111,11 @@ public class CompositeOperator implements StreamToRelationOperator<GridInputWind
     @Override
     public List<Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>> getContents(long l) {
         //Return the intersection of the active window and the active frame (the active window can still be open)
-        HashSet<String> events = new HashSet<>();
+        HashMap<String, GridInputWindowed> events = new HashMap<>();
         List<Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>> res = new ArrayList<>();
         Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> intersection = cf.create();
 
-        active_frame_content.coalesce().forEach(e-> events.add(e.getRecordId()));
+        active_frame_content.coalesce().forEach(e-> events.put(e.getRecordId(), e));
 
         //get the last active window
         Optional<Window> max = active_sliding_windows.keySet().stream()
@@ -123,8 +123,18 @@ public class CompositeOperator implements StreamToRelationOperator<GridInputWind
 
         if(max.isPresent()){ //if max is not present, the intersection is empty
             active_sliding_windows.get(max.get()).coalesce().forEach(e->{
-                if(events.contains(e.getRecordId()))
-                    intersection.add(e);
+
+                if(events.containsKey(e.getRecordId())){
+                    GridInputWindowed el = new GridInputWindowed();
+                    el.setIntervalId("sliding:"+e.intervalId+" frame: "+events.get(e.getRecordId()).intervalId);
+                    el.setOperatorId(this.name);
+                    el.setConsA(e.getConsA());
+                    el.setConsB(e.getConsB());
+                    el.setRecordId(e.getRecordId());
+                    el.setTimestamp(e.getTimestamp());
+                    el.setCursor(e.getCursor());
+                    intersection.add(el);
+                }
             });
         }
 
