@@ -953,7 +953,9 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
 
         selectWindowType.setLabel("Window Type");
-        selectWindowType.setItems("Time-based", "Session", "Frames:Threshold", "Frames:Delta", "Frames:Aggregate", "Composite-Union", "Composite-Intersection");
+        selectWindowType.setItems("Time-based", "Session", "Frames:Threshold", "Frames:Delta", "Frames:Aggregate",
+                "Landmark", "Punctuation-based", "Slide-by-Tuple", "Adaptive Window", "Damped Window", "Tilted Window", "Policy-based",
+                "Composite-Union", "Composite-Intersection");
         selectWindowType.setValue("Time-based");
 
 
@@ -1062,7 +1064,8 @@ public class PlayToWin extends Composite<VerticalLayout> {
     private Result getResultNotComposite(HorizontalLayout windowSelectorLayout) {
         ComboBox<String> selectWindowType = new ComboBox<>();
         selectWindowType.setLabel("Window Type");
-        selectWindowType.setItems("Time-based", "Session", "Frames:Threshold", "Frames:Delta", "Frames:Aggregate");
+        selectWindowType.setItems("Time-based", "Session", "Frames:Threshold", "Frames:Delta", "Frames:Aggregate", "Time-based", "Session", "Frames:Threshold", "Frames:Delta", "Frames:Aggregate",
+                "Landmark", "Punctuation-based", "Slide-by-Tuple", "Adaptive Window", "Damped Window", "Tilted Window", "Policy-based");
         selectWindowType.setValue("Time-based");
 
 
