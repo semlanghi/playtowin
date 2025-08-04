@@ -126,7 +126,7 @@ public class CompositeOperator implements StreamToRelationOperator<GridInputWind
 
                 if(events.containsKey(e.getRecordId())){
                     GridInputWindowed el = new GridInputWindowed();
-                    el.setIntervalId("sliding:"+e.intervalId+" frame: "+events.get(e.getRecordId()).intervalId);
+                    el.setIntervalId("sliding:"+e.getOperatorId()+" frame: "+events.get(e.getRecordId()).getIntervalId());
                     el.setOperatorId(this.name);
                     el.setConsA(e.getConsA());
                     el.setConsB(e.getConsB());

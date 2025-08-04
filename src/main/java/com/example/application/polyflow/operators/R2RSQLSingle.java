@@ -3,22 +3,23 @@ package com.example.application.polyflow.operators;
 import com.example.application.polyflow.datatypes.GridInputWindowed;
 import dev.mccue.josql.Query;
 import dev.mccue.josql.QueryExecutionException;
-import dev.mccue.josql.QueryParseException;
 import org.streamreasoning.polyflow.api.operators.r2r.RelationToRelationOperator;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class R2RCustom implements RelationToRelationOperator<List<GridInputWindowed>> {
+public class R2RSQLSingle implements RelationToRelationOperator<List<GridInputWindowed>> {
 
     public String resName;
     public List<String> tvgNames;
     public List<GridInputWindowed> windowedData = new ArrayList<>();
+    public Query query;
 
-    public R2RCustom(List<String> tvgNames, String resName) {
+    public R2RSQLSingle(Query query, List<String> tvgNames, String resName) {
         this.resName = resName;
         this.tvgNames = tvgNames;
+        this.query = query;
     }
 
     @Override
@@ -26,21 +27,10 @@ public class R2RCustom implements RelationToRelationOperator<List<GridInputWindo
         windowedData = new ArrayList<>();
         list.forEach(l -> windowedData.addAll(l));
 
-        var query = new Query();
         try {
-            query.parse("""
-                    SELECT
-                        consA,
-                        timestamp
-                    FROM
-                        com.example.application.polyflow.datatypes.GridInputWindowed
-                    WHERE
-                        consA < 8
-                    """);
+
             System.out.println(query.execute(windowedData).getResults());
 
-        } catch (QueryParseException e) {
-            throw new RuntimeException(e);
         } catch (QueryExecutionException e) {
             throw new RuntimeException(e);
         }

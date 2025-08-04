@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <!-- Project from https://start.vaadin.com/project/1ad80d0f-7870-4764-b455-2205afaf1591 -->
     <groupId>com.example.application</groupId>
@@ -43,10 +44,26 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-runtime</artifactId>
+                <version>4.13.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4</artifactId>
+                <version>4.13.1</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
+
     <dependencies>
+        <dependency>
+            <groupId>dev.mccue</groupId>
+            <artifactId>josql</artifactId>
+            <version>2023.08.05</version>
+        </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
             <!-- Replace artifactId with vaadin-core to use only free components -->
@@ -122,7 +139,6 @@
             <artifactId>antlr4-runtime</artifactId>
             <version>4.13.1</version>
         </dependency>
-
         <dependency>
             <groupId>com.github.riccardotommasini.polyflow</groupId>
             <artifactId>api</artifactId>

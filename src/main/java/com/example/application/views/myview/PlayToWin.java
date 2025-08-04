@@ -100,6 +100,17 @@ public class PlayToWin extends Composite<VerticalLayout> {
     private Map<String, String> colorGraphs;
 
 
+
+
+    @Autowired()
+    private SampleGridService sampleGridService;
+
+    @Autowired()
+    private SampleStockService sampleStockService;
+
+    @Autowired()
+    private PolyflowService polyflowService;
+
     public PlayToWin() {
 
         mainRow = new HorizontalLayout();
@@ -163,20 +174,14 @@ public class PlayToWin extends Composite<VerticalLayout> {
         } return   null;
     }
 
-    private void loadPage(ComboBox<String> selectScenarios, String scenario) {
+    private void loadPage(ComboBox<String> selectScenarios, String scemario) {
 
 
         VerticalLayout leftColumn = new VerticalLayout();
 
-
-
-
         leftColumn.add(selectScenarios);
 
-
-
         Grid basicGrid = new Grid<>(sampleInputClass);
-
 
 
 
@@ -209,9 +214,6 @@ public class PlayToWin extends Composite<VerticalLayout> {
         windowEditor.setHeightFull();
         windowEditor.setWidthFull();
 
-
-
-
         HorizontalLayout compositeUnionLayout1 = new HorizontalLayout();
         compositeUnionLayout1.setWidthFull();
         compositeUnionLayout1.setVisible(false);
@@ -236,48 +238,41 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
         windowRowSummaries = new ArrayList<>();
 
-        windowCreatorButton.addClickListener(new ComponentEventListener<ClickEvent<Button>>() {
-            @Override
-            public void onComponentEvent(ClickEvent<Button> buttonClickEvent) {
-                HorizontalLayout horizontalLayout = new HorizontalLayout();
-                Button removeButton = new Button();
-                WindowRowSummary windowRowSummary = new WindowRowSummary();
-                removeButton.setText("X");
-                removeButton.addSingleClickListener(new ComponentEventListener<ClickEvent<Button>>() {
-                    @Override
-                    public void onComponentEvent(ClickEvent<Button> buttonClickEvent) {
-                        windowEditor.remove(horizontalLayout);
-                        windowRowSummaries.remove(windowRowSummary);
-                    }
-                });
+        windowCreatorButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
+            HorizontalLayout horizontalLayout = new HorizontalLayout();
+            Button removeButton = new Button();
+            WindowRowSummary windowRowSummary = new WindowRowSummary();
+            removeButton.setText("X");
+            removeButton.addSingleClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent1 -> {
+                windowEditor.remove(horizontalLayout);
+                windowRowSummaries.remove(windowRowSummary);
+            });
 
-                String windowTypeValue = result.get(0).selectWindowType().getValue();
+            String windowTypeValue = result.get(0).selectWindowType().getValue();
 
-                windowRowSummary.setQuery(queryEditorText.getValue());
+            windowRowSummary.setQuery(queryEditorText.getValue());
 
-                if (windowTypeValue.contains("Union") || windowTypeValue.contains("Int")){
-                    windowRowSummary.setCompositeInternalWindow1(new WindowRowSummary());
-                    windowRowSummary.setCompositeInternalWindow2(new WindowRowSummary());
+            if (windowTypeValue.contains("Union") || windowTypeValue.contains("Int")) {
+                windowRowSummary.setCompositeInternalWindow1(new WindowRowSummary());
+                windowRowSummary.setCompositeInternalWindow2(new WindowRowSummary());
 
-                }
+            }
 
-                //String Building Based on the window
-                StringBuilder text = new StringBuilder();
+            //String Building Based on the window
+            StringBuilder text = new StringBuilder();
 
 
-
-                try {
-                    PlayToWin.getResumeNameAndParams(windowTypeValue, text, windowRowSummary, result, 0);
-                    horizontalLayout.add(removeButton);
-                    horizontalLayout.setVerticalComponentAlignment(Alignment.CENTER, removeButton);
-                    String text1 = text.toString();
-                    horizontalLayout.add(text1);
-                    horizontalLayout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
-                    windowEditor.add(horizontalLayout);
-                    windowRowSummaries.add(windowRowSummary);
-                } catch (NumberFormatException e) {
-                    Notification.show("No Window Created, Range invalid.").setPosition(Notification.Position.TOP_START);
-                }
+            try {
+                PlayToWin.getResumeNameAndParams(windowTypeValue, text, windowRowSummary, result, 0);
+                horizontalLayout.add(removeButton);
+                horizontalLayout.setVerticalComponentAlignment(Alignment.CENTER, removeButton);
+                String text1 = text.toString();
+                horizontalLayout.add(text1);
+                horizontalLayout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
+                windowEditor.add(horizontalLayout);
+                windowRowSummaries.add(windowRowSummary);
+            } catch (NumberFormatException e) {
+                Notification.show("No Window Created, Range invalid.").setPosition(Notification.Position.TOP_START);
             }
         });
 
@@ -306,8 +301,6 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
         Grid<WindowRowSummary> summaryWindowGrid = new Grid<>(WindowRowSummary.class);
 
-
-        
 
         summaryWindowGrid.setItems(windowRowSummaries);
         summaryWindowGrid.setHeightFull();
@@ -370,7 +363,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
         windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, windowCreatorButton);
 
-//        setWindowScenario(scenario, windowEditor);
+//        setWindowScenario(scemario, windowEditor);
 
         Button windowButton = new Button();
 
@@ -426,7 +419,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
                     }
 
                     basicGrid.setItems(inputGridListActual);
-                    polyflowService.register(scenario, windowRowSummaries);
+                    polyflowService.register(scemario, queryEditorText.getValue(), windowRowSummaries);
 
                     if (tabSheetUpperRight.getTabAt(0).getLabel().equals("Window State")){
                         tabSheetUpperRight.remove(0);
@@ -721,7 +714,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
         basicGrid.setWidth("97%");
         basicGrid.setHeight("100%");
         basicGrid.getStyle().set("flex-grow", "0");
-        setGridSampleSimpleData(basicGrid, scenario);
+        setGridSampleSimpleData(basicGrid, scemario);
 
         basicGrid.setClassNameGenerator(monthlyExpense -> {
             if (monthlyExpense.toString().contains("/"))
@@ -1211,11 +1204,11 @@ public class PlayToWin extends Composite<VerticalLayout> {
     private Map<String,String> getNexMarkQueries() {
         Map<String, String> queries = new HashMap<>();
 
-        queries.put("Query 1", "SELECT *\nFROM <window>\nWHERE consA >= 0 AND consB >= 0");
+        queries.put("Query 1", "SELECT *\nFROM [window]\nWHERE consA >= 0 AND consB >= 0");
 
-        queries.put("Query 2", "SELECT Istream(auction, DOLTOEUR(price), bidder, datetime)\nFROM <window>");
+        queries.put("Query 2", "SELECT Istream(auction, DOLTOEUR(price), bidder, datetime)\nFROM [window]");
 
-        queries.put("Query 3", "SELECT Rstream(auction, price)\nFROM <window> \nWHERE auction = 1007 OR auction = 1020 OR auction = 2001 OR auction = 2019 OR auction = 2087");
+        queries.put("Query 3", "SELECT Rstream(auction, price)\nFROM [window] \nWHERE auction = 1007 OR auction = 1020 OR auction = 2001 OR auction = 2019 OR auction = 2087");
 
         queries.put("Query 4", "SELECT Istream(P.name, P.city, P.state, A.id)\nFROM Auction A [ROWS UNBOUNDED], Person P [ROWS UNBOUNDED]\nWHERE A.seller = P.id AND (P.state = 'OR' OR P.state = 'ID' OR P.state = 'CA') AND A.category = 10");
 
@@ -1700,17 +1693,6 @@ public class PlayToWin extends Composite<VerticalLayout> {
             grid.removeColumn(grid.getColumnByKey("cursor"));
         }
     }
-
-
-    @Autowired()
-    private SampleGridService sampleGridService;
-
-    @Autowired()
-    private SampleStockService sampleStockService;
-
-    @Autowired()
-    private PolyflowService polyflowService;
-
 
 
 

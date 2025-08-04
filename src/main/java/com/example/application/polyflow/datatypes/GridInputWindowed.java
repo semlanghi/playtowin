@@ -10,8 +10,8 @@ public class GridInputWindowed extends AbstractEntity {
     private Long consA;
     private Long consB;
     private long timestamp;
-    public String operatorId;
-    public String intervalId;
+    private String operatorId;
+    private String intervalId;
     private String cursor;
 
     public String getRecordId() {
@@ -25,15 +25,23 @@ public class GridInputWindowed extends AbstractEntity {
     public String getOperatorId() {
         return operatorId;
     }
-    public String getIntervalId(){return intervalId;}
-    public String getCursor(){return cursor;}
-    public void setCursor(String cursor){
+
+    public String getIntervalId() {
+        return intervalId;
+    }
+
+    public String getCursor() {
+        return cursor;
+    }
+
+    public void setCursor(String cursor) {
         this.cursor = cursor;
     }
 
     public void setOperatorId(String operatorId) {
         this.operatorId = operatorId;
     }
+
     public void setIntervalId(String intervalId) {
         this.intervalId = intervalId;
     }
