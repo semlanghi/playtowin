@@ -1,3 +1,4 @@
+/*
 package com.example.application.data;
 
 import jakarta.persistence.Entity;
@@ -42,3 +43,4 @@ public class GridOutput extends AbstractEntity {
         this.timestamp = dateOfBirth;
     }
 }
+*/

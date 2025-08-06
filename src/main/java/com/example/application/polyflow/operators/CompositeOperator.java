@@ -1,3 +1,4 @@
+/*
 package com.example.application.polyflow.operators;
 
 import com.example.application.polyflow.datatypes.GridInputWindowed;
@@ -126,7 +127,7 @@ public class CompositeOperator implements StreamToRelationOperator<GridInputWind
 
                 if(events.containsKey(e.getRecordId())){
                     GridInputWindowed el = new GridInputWindowed();
-                    el.setIntervalId("sliding:"+e.getOperatorId()+" frame: "+events.get(e.getRecordId()).getIntervalId());
+                    el.setIntervalId("sliding:"+e.getIntervalId()+" frame: "+events.get(e.getRecordId()).getIntervalId());
                     el.setOperatorId(this.name);
                     el.setConsA(e.getConsA());
                     el.setConsB(e.getConsB());
@@ -264,7 +265,9 @@ public class CompositeOperator implements StreamToRelationOperator<GridInputWind
         do {
             log.debug("Computing Window [" + o_i + "," + (o_i + width) + ") if absent");
 
-            /*-------------Custom code for the demo--------------*/
+            */
+/*-------------Custom code for the demo--------------*//*
+
 
             Window interval = new WindowImpl(o_i, o_i+width);
             if(!active_sliding_windows.containsKey(interval)){
@@ -283,13 +286,17 @@ public class CompositeOperator implements StreamToRelationOperator<GridInputWind
             throw new OutOfOrderElementException("(" + arg + "," + ts + ")");
         }
 
-        /*----- Sliding window logic ------*/
+        */
+/*----- Sliding window logic ------*//*
+
         scope(ts);
 
         boolean added = false;
         for(Window w : active_sliding_windows.keySet()){
             if(w.getO() <= ts && ts < w.getC()){
-                /*--- Custom code for the demo---*/
+                */
+/*--- Custom code for the demo---*//*
+
                 //We deep copy each element once for every interval in which it is added (to assign to each instance the correct interval ID)
                 GridInputWindowed el = new GridInputWindowed();
                 el.setIntervalId(w.toString());
@@ -320,7 +327,9 @@ public class CompositeOperator implements StreamToRelationOperator<GridInputWind
 
 
 
-        /*----- Frame window logic ------*/
+        */
+/*----- Frame window logic ------*//*
+
         added = false;
         if (close_pred(arg, ts)) {
             close(arg, ts);
@@ -385,13 +394,15 @@ public class CompositeOperator implements StreamToRelationOperator<GridInputWind
         //First version of the demo, we just always report
         time.addEvaluationTimeInstants(new TimeInstant(ts));
 
-        /*active_windows.keySet().stream()
+        */
+/*active_windows.keySet().stream()
                 .filter(w -> report.report(w, getWindowContent(w), ts, System.currentTimeMillis()))
                 .max(Comparator.comparingLong(Window::getC))
                 .ifPresent(window -> {
                     reported_windows.add(window);
                     time.addEvaluationTimeInstants(new TimeInstant(ts));
-                });*/
+                });*//*
+
 
         time.setAppTime(ts);
     }
@@ -420,3 +431,4 @@ public class CompositeOperator implements StreamToRelationOperator<GridInputWind
         }
     }
 }
+*/

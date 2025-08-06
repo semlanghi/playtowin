@@ -1,7 +1,7 @@
 package com.example.application.polyflow.content.factories;
 
 import com.example.application.polyflow.content.AccumulatorContent;
-import com.example.application.polyflow.datatypes.GridInputWindowed;
+import com.example.application.polyflow.datatypes.Tuple;
 import com.example.application.polyflow.datatypes.Table;
 import com.example.application.polyflow.datatypes.Tuple;
 import org.streamreasoning.polyflow.api.secret.content.Content;
@@ -11,15 +11,15 @@ import org.streamreasoning.polyflow.base.contentimpl.EmptyContent;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AccumulatorFactory implements ContentFactory<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> {
+public class AccumulatorFactory implements ContentFactory<Tuple, Tuple, List<Tuple>> {
 
     @Override
-    public Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> createEmpty() {
+    public Content<Tuple, Tuple, List<Tuple>> createEmpty() {
         return new EmptyContent<>(new ArrayList<>());
     }
 
     @Override
-    public Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> create() {
+    public Content<Tuple, Tuple, List<Tuple>> create() {
         return new AccumulatorContent();
     }
 }

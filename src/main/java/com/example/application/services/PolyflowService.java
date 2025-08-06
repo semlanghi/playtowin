@@ -8,6 +8,7 @@ import com.example.application.polyflow.cgraph.ConsistencyGraph;
 import com.example.application.polyflow.content.factories.AccumulatorFactory;
 import com.example.application.polyflow.datatypes.EventBean;
 import com.example.application.polyflow.datatypes.GridInputWindowed;
+import com.example.application.polyflow.datatypes.Tuple;
 import com.example.application.polyflow.operators.*;
 import com.example.application.polyflow.reportingStrategies.Always;
 import com.example.application.polyflow.stream.DataStreamImpl;
@@ -21,6 +22,7 @@ import org.streamreasoning.polyflow.api.operators.r2s.RelationToStreamOperator;
 import org.streamreasoning.polyflow.api.operators.s2r.execution.assigner.StreamToRelationOperator;
 import org.streamreasoning.polyflow.api.processing.ContinuousProgram;
 import org.streamreasoning.polyflow.api.processing.Task;
+import org.streamreasoning.polyflow.api.secret.content.Content;
 import org.streamreasoning.polyflow.api.secret.content.ContentFactory;
 import org.streamreasoning.polyflow.api.secret.report.Report;
 import org.streamreasoning.polyflow.api.secret.report.ReportImpl;
@@ -31,8 +33,10 @@ import org.streamreasoning.polyflow.base.processing.ContinuousProgramImpl;
 import org.streamreasoning.polyflow.base.sds.SDSDefault;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -41,10 +45,10 @@ import java.util.stream.Collectors;
 public class PolyflowService {
     //private final EngineConfiguration ec;
     private final AtomicInteger eventCounter = new AtomicInteger(1);
-    private ContinuousProgram<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>, GridInputWindowed> cp;
+    private ContinuousProgram<Tuple, Tuple, List<Tuple>, Tuple> cp;
     private ConsistencyGraph<Long> consistencyGraph;
-    private List<GridInputWindowed> out;
-    private DataStream<GridInputWindowed> eventStream;
+    private List<Tuple> out;
+    private DataStream<Tuple> eventStream;
     //private EventQuery<Long> id;
     //private R2RDoubleConsistencyAnnotator<Long> longR2RConsistencyAnnotator;
     private boolean registered = false;
@@ -60,23 +64,23 @@ public class PolyflowService {
         //return longR2RConsistencyAnnotator.getCurrentGraphs();
     }
 
-    public ContinuousProgram<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>, GridInputWindowed> register(String scenario, String query, List<PlayToWin.WindowRowSummary> windowRowSummaries) throws ConfigurationException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public ContinuousProgram<Tuple, Tuple, List<Tuple>, Tuple> register(String scenario, String query, List<PlayToWin.WindowRowSummary> windowRowSummaries) throws ConfigurationException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
 
         registered = true;
 
 
-        DataStream<GridInputWindowed> inputStream = new DataStreamImpl<>("inputStream");
-        DataStream<GridInputWindowed> outputStream = new DataStreamImpl<>("outputStream");
+        DataStream<Tuple> inputStream = new DataStreamImpl<>("inputStream");
+        DataStream<Tuple> outputStream = new DataStreamImpl<>("outputStream");
         this.eventStream = inputStream;
 
         Time instance = new TimeImpl(0);
         Report report = new ReportImpl();
         report.add(new Always());
 
-        ContentFactory<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> contentFactory = new AccumulatorFactory();
+        ContentFactory<Tuple, Tuple, List<Tuple>> contentFactory = new AccumulatorFactory();
 
-        List<StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>> streamToRelationOperatorList = getStreamToRelationOperators(windowRowSummaries, instance, contentFactory, report);
-            /*StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> s2r_1 = new S2RHopping(
+        List<StreamToRelationOperator<Tuple, Tuple, List<Tuple>>> streamToRelationOperatorList = getStreamToRelationOperators(windowRowSummaries, instance, contentFactory, report);
+            /*StreamToRelationOperator<Tuple, Tuple, List<Tuple>> s2r_1 = new S2RHopping(
                     Tick.TIME_DRIVEN,
                     instance,
                     "TW1",
@@ -85,7 +89,7 @@ public class PolyflowService {
                     3,
                     1);
 
-            StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> s2r_2 = new S2RHopping(
+            StreamToRelationOperator<Tuple, Tuple, List<Tuple>> s2r_2 = new S2RHopping(
                     Tick.TIME_DRIVEN,
                     instance,
                     "TW2",
@@ -93,7 +97,7 @@ public class PolyflowService {
                     report,
                     3,
                     1);*/
-//            StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> s2r_1 = new AggregateFrame(
+//            StreamToRelationOperator<Tuple, Tuple, List<Tuple>> s2r_1 = new AggregateFrame(
 //                    Tick.TIME_DRIVEN,
 //                    instance,
 //                    "TW1",
@@ -103,7 +107,7 @@ public class PolyflowService {
 //                    2,
 //                    1);
 //
-//            StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> s2r_2 = new AggregateFrame(
+//            StreamToRelationOperator<Tuple, Tuple, List<Tuple>> s2r_2 = new AggregateFrame(
 //                    Tick.TIME_DRIVEN,
 //                    instance,
 //                    "TW2",
@@ -123,18 +127,27 @@ public class PolyflowService {
 //        }
 
         Query q = new Query();
+        String datatype = "";
+        if(scenario.startsWith("Electric"))
+            datatype = "GridInputWindowed";
+        else if(scenario.startsWith("Debs"))
+            datatype = "TODO";
+        else if(scenario.startsWith("Nexmark"))
+            datatype = "TODO";
+        else if(scenario.startsWith("Linear"))
+            datatype = "TODO";
 
         try {
-            String replace = query.replace("[window]", "com.example.application.polyflow.datatypes.GridInputWindowed");
+            String replace = query.replace("[window]", "com.example.application.polyflow.datatypes."+datatype);
             System.out.println(replace);
             q.parse(replace);
 
             R2RSQLSingle r2r = new R2RSQLSingle(q, streamToRelationOperatorList.stream().map(StreamToRelationOperator::getName).toList(), "result");
 
-            ContinuousProgram<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>, GridInputWindowed> cp = new ContinuousProgramImpl<>();
-            Task<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>, GridInputWindowed> task = new CustomTask<>("1");
-            RelationToStreamOperator<List<GridInputWindowed>, GridInputWindowed> r2sOp = new R2SCustom();
-            for (StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> tmp : streamToRelationOperatorList) {
+            ContinuousProgram<Tuple, Tuple, List<Tuple>, Tuple> cp = new ContinuousProgramImpl<>();
+            Task<Tuple, Tuple, List<Tuple>, Tuple> task = new CustomTask<>("1");
+            RelationToStreamOperator<List<Tuple>, Tuple> r2sOp = new R2SCustom();
+            for (StreamToRelationOperator<Tuple, Tuple, List<Tuple>> tmp : streamToRelationOperatorList) {
                 task.addS2ROperator(tmp, inputStream);
             }
 
@@ -166,23 +179,23 @@ public class PolyflowService {
         return registered;
     }
 
-    public void nextEvent(GridInputWindowed row) {
+    public void nextEvent(Tuple row) {
         eventStream.put(row, row.getTimestamp());
         ;
     }
 
 
-    public List<GridInputWindowed> getNextOutput() {
-        LinkedList<GridInputWindowed> res = new LinkedList<>();
+    public List<Tuple> getNextOutput() {
+        LinkedList<Tuple> res = new LinkedList<>();
         res.addAll(out);
         out = new LinkedList<>();
         return res;
     }
 
-    public List<StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>> getStreamToRelationOperators(List<PlayToWin.WindowRowSummary> windowRowSummaries, Time instance, ContentFactory<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> contentFactory, Report report) {
-        return windowRowSummaries.stream().map(new Function<PlayToWin.WindowRowSummary, StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>>() {
+    public List<StreamToRelationOperator<Tuple, Tuple, List<Tuple>>> getStreamToRelationOperators(List<PlayToWin.WindowRowSummary> windowRowSummaries, Time instance, ContentFactory<Tuple, Tuple, List<Tuple>> contentFactory, Report report) {
+        return windowRowSummaries.stream().map(new Function<PlayToWin.WindowRowSummary, StreamToRelationOperator<Tuple, Tuple, List<Tuple>>>() {
             @Override
-            public StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> apply(PlayToWin.WindowRowSummary windowRowSummary) {
+            public StreamToRelationOperator<Tuple, Tuple, List<Tuple>> apply(PlayToWin.WindowRowSummary windowRowSummary) {
                 if (windowRowSummary.getName().contains("TW")) {
                     return new S2RHopping(
                             Tick.TIME_DRIVEN,
@@ -194,6 +207,44 @@ public class PolyflowService {
                             windowRowSummary.getSlide());
                 } else if (windowRowSummary.getName().contains("F") || windowRowSummary.getName().contains("SW")) {
                     int frameType = getFrameType(windowRowSummary.getName());
+
+                    Comparator<Double> comparator;
+                    if(windowRowSummary.getOperator().equals(">")){ //The frame closes on the "bigger than" condition
+                         comparator = (o1, o2) -> {
+                            if(o1 > o2)
+                                return -1;
+                            else return 1;
+                        };
+                    }
+                    else if(windowRowSummary.getOperator().equals("<")){ //The frame closes on the "smaller than" condition
+                         comparator = (o1, o2) -> {
+                            if(o1 < o2)
+                                return -1;
+                            else return 1;
+                        };
+                    }
+                    else if(windowRowSummary.getOperator().equals("<=")){ //The frame closes on the "smaller or equal than" condition
+                         comparator = (o1, o2) -> {
+                            if(o1 <= o2)
+                                return -1;
+                            else return 1;
+                        };
+                    }
+                    else if(windowRowSummary.getOperator().equals(">=")){ //The frame closes on the "bigger or equal than" condition
+                         comparator = (o1, o2) -> {
+                            if(o1 >= o2)
+                                return -1;
+                            else return 1;
+                        };
+                    }
+                    else{ //Frame closes on the "equal" condition
+                        comparator = (o1, o2) -> {
+                            if(Objects.equals(o1, o2))
+                                return -1;
+                            else return 1;
+                        };
+                    }
+
                     return new AggregateFrame(
                             Tick.TIME_DRIVEN,
                             instance,
@@ -202,8 +253,11 @@ public class PolyflowService {
                             report,
                             frameType,
                             frameType == 3 ? (int) windowRowSummary.getTimeout() : (int) windowRowSummary.getRange(),
-                            getAggregationFunction(windowRowSummary.getAttribute()));
-                } else {
+                            getAggregationFunction(windowRowSummary.getAttribute()),
+                            windowRowSummary.getAttribute(),
+                            comparator
+                    );
+                } else{ throw new RuntimeException("No composition");}/*else {
                     //TODO: for the moment, we support only intersection
 
                     if (windowRowSummary.getName().contains("Union")) {
@@ -245,7 +299,7 @@ public class PolyflowService {
                             attribute,
                             size,
                             slide);
-                }
+                }*/
             }
         }).collect(Collectors.toCollection(LinkedList::new));
         //return longR2RConsistencyAnnotator.getStreamToRelationOperators();

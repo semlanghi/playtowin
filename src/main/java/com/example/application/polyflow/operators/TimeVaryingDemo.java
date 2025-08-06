@@ -1,6 +1,6 @@
 package com.example.application.polyflow.operators;
 
-import com.example.application.polyflow.datatypes.GridInputWindowed;
+import com.example.application.polyflow.datatypes.Tuple;
 import org.streamreasoning.polyflow.api.operators.s2r.execution.assigner.StreamToRelationOperator;
 import org.streamreasoning.polyflow.api.sds.timevarying.TimeVarying;
 import org.streamreasoning.polyflow.api.secret.content.Content;
@@ -9,19 +9,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class TimeVaryingDemo implements TimeVarying<List<GridInputWindowed>> {
+public class TimeVaryingDemo implements TimeVarying<List<Tuple>> {
 
-    private final StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> op;
+    private final StreamToRelationOperator<Tuple, Tuple, List<Tuple>> op;
     private final String name;
-    private List<GridInputWindowed> content;
+    private List<Tuple> content;
 
-    public TimeVaryingDemo(StreamToRelationOperator<GridInputWindowed,GridInputWindowed, List<GridInputWindowed>> op, String name) {
+    public TimeVaryingDemo(StreamToRelationOperator<Tuple,Tuple, List<Tuple>> op, String name) {
         this.op = op;
         this.name = name;
     }
 
     /**
-     * The setTimestamp function merges the element
+     * The materialize function merges the element
      * in the content into a single graph
      * and adds it to the current dataset.
      **/
@@ -34,7 +34,7 @@ public class TimeVaryingDemo implements TimeVarying<List<GridInputWindowed>> {
     }
 
     @Override
-    public List<GridInputWindowed> get() {
+    public List<Tuple> get() {
         return content;
     }
 

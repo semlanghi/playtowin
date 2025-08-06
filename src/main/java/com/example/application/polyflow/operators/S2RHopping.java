@@ -1,7 +1,7 @@
 package com.example.application.polyflow.operators;
 
 
-import com.example.application.polyflow.datatypes.GridInputWindowed;
+import com.example.application.polyflow.datatypes.Tuple;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.streamreasoning.polyflow.api.enums.Tick;
@@ -21,24 +21,24 @@ import org.streamreasoning.polyflow.api.secret.time.TimeInstant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class S2RHopping implements StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> {
+public class S2RHopping implements StreamToRelationOperator<Tuple, Tuple, List<Tuple>> {
 
     private static final Logger log = Logger.getLogger(org.streamreasoning.polyflow.base.operatorsimpl.s2r.HoppingWindowOpImpl.class);
     protected final Ticker ticker;
     protected Tick tick;
     protected final Time time;
     protected final String name;
-    protected final ContentFactory<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> cf;
+    protected final ContentFactory<Tuple, Tuple, List<Tuple>> cf;
     protected Report report;
     private final long width, slide;
-    private Map<Window, Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>> active_windows;
-    private Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> throw_content;
+    private Map<Window, Content<Tuple, Tuple, List<Tuple>>> active_windows;
+    private Content<Tuple, Tuple, List<Tuple>> throw_content;
     private List<Window> reported_windows;
     private Set<Window> to_evict;
     private long t0;
     private long toi;
 
-    public S2RHopping(Tick tick, Time time, String name, ContentFactory<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> cf, Report report,
+    public S2RHopping(Tick tick, Time time, String name, ContentFactory<Tuple, Tuple, List<Tuple>> cf, Report report,
                                long width, long slide) {
 
         this.tick = tick;
@@ -88,7 +88,7 @@ public class S2RHopping implements StreamToRelationOperator<GridInputWindowed, G
      * Returns the content of the last window closed before time t_e. If no such window exists, returns an empty content
      */
     @Override
-    public Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> content(long t_e) {
+    public Content<Tuple, Tuple, List<Tuple>> content(long t_e) {
         // If some windows matched the report clause, return the last one that did so
         if (!reported_windows.isEmpty()) {
             return reported_windows.stream()
@@ -112,9 +112,9 @@ public class S2RHopping implements StreamToRelationOperator<GridInputWindowed, G
      * Returns the content of all the windows closed before time t_e as a list of contents. If no such windows exist, returns an empty list of contents
      */
     @Override
-    public List<Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>> getContents(long t_e) {
+    public List<Content<Tuple, Tuple, List<Tuple>>> getContents(long t_e) {
 
-        List<Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>> res = new ArrayList<>();
+        List<Content<Tuple, Tuple, List<Tuple>>> res = new ArrayList<>();
         res.addAll(active_windows.values());
         res.add(throw_content);
         return res;
@@ -146,7 +146,7 @@ public class S2RHopping implements StreamToRelationOperator<GridInputWindowed, G
 
 
     @Override
-    public void compute(GridInputWindowed arg, long ts) {
+    public void compute(Tuple arg, long ts) {
 
         log.debug("Received element (" + arg + "," + ts + ")");
 
@@ -162,14 +162,9 @@ public class S2RHopping implements StreamToRelationOperator<GridInputWindowed, G
             if(w.getO() <= ts && ts < w.getC()){
                 /*--- Custom code for the demo---*/
                 //We deep copy each element once for every interval in which it is added (to assign to each instance the correct interval ID)
-                GridInputWindowed el = new GridInputWindowed();
+                Tuple el = arg.copy();
                 el.setIntervalId(w.toString());
                 el.setOperatorId(this.name);
-                el.setConsA(arg.getConsA());
-                el.setConsB(arg.getConsB());
-                el.setRecordId(arg.getRecordId());
-                el.setTimestamp(arg.getTimestamp());
-                el.setCursor(arg.getCursor());
 
                 active_windows.get(w).add(el);
                 added = true;
@@ -177,14 +172,9 @@ public class S2RHopping implements StreamToRelationOperator<GridInputWindowed, G
         }
 
         if(added == false){
-            GridInputWindowed el = new GridInputWindowed();
+            Tuple el = arg.copy();
             el.setIntervalId("throw");
             el.setOperatorId(this.name);
-            el.setConsA(arg.getConsA());
-            el.setConsB(arg.getConsB());
-            el.setRecordId(arg.getRecordId());
-            el.setTimestamp(arg.getTimestamp());
-            el.setCursor(arg.getCursor());
 
             throw_content.add(el);
         }
@@ -194,7 +184,7 @@ public class S2RHopping implements StreamToRelationOperator<GridInputWindowed, G
                     if (w.getO() <= ts && ts < w.getC()) {
                         *//*--- Custom code for the demo---*//*
                         //We deep copy each element once for every interval in which it is added (to assign to each instance the correct interval ID)
-                        GridInputWindowed el = new GridInputWindowed();
+                        Tuple el = new Tuple();
                         el.setIntervalId(w.toString());
                         el.setOperatorId(this.name);
                         el.setConsA(arg.getConsA());
@@ -227,12 +217,12 @@ public class S2RHopping implements StreamToRelationOperator<GridInputWindowed, G
 
 
     @Override
-    public TimeVarying<List<GridInputWindowed>> get() {
+    public TimeVarying<List<Tuple>> get() {
         return new TimeVaryingDemo(this, name);
     }
 
 
-    private Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> getWindowContent(Window w) {
+    private Content<Tuple, Tuple, List<Tuple>> getWindowContent(Window w) {
         return active_windows.containsKey(w) ? active_windows.get(w) : cf.createEmpty();
     }
 

@@ -1,6 +1,7 @@
 package com.example.application.polyflow.operators;
 
-import com.example.application.polyflow.datatypes.GridInputWindowed;
+import com.example.application.polyflow.datatypes.Tuple;
+import com.example.application.polyflow.datatypes.Tuple;
 import dev.mccue.josql.Query;
 import dev.mccue.josql.QueryExecutionException;
 import org.streamreasoning.polyflow.api.operators.r2r.RelationToRelationOperator;
@@ -9,11 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class R2RSQLSingle implements RelationToRelationOperator<List<GridInputWindowed>> {
+public class R2RSQLSingle implements RelationToRelationOperator<List<Tuple>> {
 
     public String resName;
     public List<String> tvgNames;
-    public List<GridInputWindowed> windowedData = new ArrayList<>();
+    public List<Tuple> windowedData = new ArrayList<>();
     public Query query;
 
     public R2RSQLSingle(Query query, List<String> tvgNames, String resName) {
@@ -23,7 +24,7 @@ public class R2RSQLSingle implements RelationToRelationOperator<List<GridInputWi
     }
 
     @Override
-    public List<GridInputWindowed> eval(List<List<GridInputWindowed>> list) {
+    public List<Tuple> eval(List<List<Tuple>> list) {
         windowedData = new ArrayList<>();
         list.forEach(l -> windowedData.addAll(l));
 
@@ -36,23 +37,23 @@ public class R2RSQLSingle implements RelationToRelationOperator<List<GridInputWi
         }
 
 
-//        SQLParser<GridInputWindowed> parser = new SQLParser<>(GridInputWindowed.class);
+//        SQLParser<Tuple> parser = new SQLParser<>(Tuple.class);
 //
-//        Attribute<GridInputWindowed, Long> consA = attribute("consA", GridInputWindowed::getConsA);
-//        Attribute<GridInputWindowed, Long> consB = attribute("consB", GridInputWindowed::getConsB);
-//        Attribute<GridInputWindowed, Long> ts = attribute("ts", GridInputWindowed::getTimestamp);
-//        Attribute<GridInputWindowed, Long> id = attribute("id", GridInputWindowed::getId);
+//        Attribute<Tuple, Long> consA = attribute("consA", Tuple::getConsA);
+//        Attribute<Tuple, Long> consB = attribute("consB", Tuple::getConsB);
+//        Attribute<Tuple, Long> ts = attribute("ts", Tuple::getTimestamp);
+//        Attribute<Tuple, Long> id = attribute("id", Tuple::getId);
 //
 //        parser.registerAttribute(consA);
 //        parser.registerAttribute(consB);
 //        parser.registerAttribute(ts);
 //        parser.registerAttribute(id);
 //
-//        IndexedCollection<GridInputWindowed> cars = new ConcurrentIndexedCollection<GridInputWindowed>();
+//        IndexedCollection<Tuple> cars = new ConcurrentIndexedCollection<Tuple>();
 //
 //        cars.addAll(windowedData);
 //
-//        ParseResult<GridInputWindowed> q = parser.parse( "SELECT ts FROM cars WHERE 'consA' = 8");
+//        ParseResult<Tuple> q = parser.parse( "SELECT ts FROM cars WHERE 'consA' = 8");
 //
 //        cars.retrieve(q.getQuery()).stream().map(gridInputWindowed -> gridInputWindowed.getConsA());
 

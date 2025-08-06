@@ -1,3 +1,4 @@
+/*
 package com.example.application.polyflow;
 
 import com.example.application.polyflow.content.factories.AccumulatorFactory;
@@ -81,3 +82,4 @@ public class Main {
 
     }
 }
+*/

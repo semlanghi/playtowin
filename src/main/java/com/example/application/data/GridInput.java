@@ -98,15 +98,4 @@ public class GridInput extends AbstractEntity implements EventBean<Long> {
                 '}';
     }
 
-    @Override
-    public Tuple copy() {
-        GridInput grid = new GridInput();
-        grid.setCursor(this.Cursor);
-        grid.setConsA(this.consA);
-        grid.setConsB(this.consB);
-        grid.setRecordId(this.recordId);
-        grid.setTimestamp(this.timestamp);
-        return grid;
-
-    }
 }

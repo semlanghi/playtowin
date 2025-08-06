@@ -1,9 +1,7 @@
 package com.example.application.views.myview;
 
 import com.example.application.data.*;
-import com.example.application.polyflow.datatypes.GridInputWindowed;
-import com.example.application.polyflow.datatypes.GridOutputWindowed;
-import com.example.application.polyflow.datatypes.GridOutputWindowedMapping;
+import com.example.application.polyflow.datatypes.*;
 import com.example.application.services.PolyflowService;
 import com.example.application.services.SampleGridService;
 import com.example.application.services.SampleStockService;
@@ -174,7 +172,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
         } return   null;
     }
 
-    private void loadPage(ComboBox<String> selectScenarios, String scemario) {
+    private void loadPage(ComboBox<String> selectScenarios, String scenario) {
 
 
         VerticalLayout leftColumn = new VerticalLayout();
@@ -306,7 +304,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
         summaryWindowGrid.setHeightFull();
         summaryWindowGrid.setWidthFull();
         summaryWindows.add(summaryWindowGrid, queryPerspective);
-        
+
         summaryWindowGrid.addItemClickListener(event -> {
             WindowRowSummary item = event.getItem();
             queryPerspective.setValue(item.getQuery());
@@ -363,7 +361,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
         windowSelectorLayout.setVerticalComponentAlignment(Alignment.END, windowCreatorButton);
 
-//        setWindowScenario(scemario, windowEditor);
+//        setWindowScenario(scenario, windowEditor);
 
         Button windowButton = new Button();
 
@@ -419,7 +417,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
                     }
 
                     basicGrid.setItems(inputGridListActual);
-                    polyflowService.register(scemario, queryEditorText.getValue(), windowRowSummaries);
+                    polyflowService.register(scenario, queryEditorText.getValue(), windowRowSummaries);
 
                     if (tabSheetUpperRight.getTabAt(0).getLabel().equals("Window State")){
                         tabSheetUpperRight.remove(0);
@@ -526,12 +524,10 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
                 //updateSnapshotGraphFromContent(snapshotGraphSolo, nodes, edges, (ConsistencyGraphImpl) currentGraph);
 
-                List<GridInputWindowed> nextOutput = polyflowService.getNextOutput();
+                List<Tuple> nextOutput = polyflowService.getNextOutput();
                 actualOutput = nextOutput.stream().map(el->{
                     GridOutputWindowed g = new GridOutputWindowed();
                     g.setIntervalId(el.getIntervalId());
-                    g.setConsA(el.getConsA());
-                    g.setConsB(el.getConsB());
                     g.setOperatorId(el.getOperatorId());
                     g.setTimestamp(el.getTimestamp());
                     g.setRecordId(el.getRecordId());
@@ -714,7 +710,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
         basicGrid.setWidth("97%");
         basicGrid.setHeight("100%");
         basicGrid.getStyle().set("flex-grow", "0");
-        setGridSampleSimpleData(basicGrid, scemario);
+        setGridSampleSimpleData(basicGrid, scenario);
 
         basicGrid.setClassNameGenerator(monthlyExpense -> {
             if (monthlyExpense.toString().contains("/"))

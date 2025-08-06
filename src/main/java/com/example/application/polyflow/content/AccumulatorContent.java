@@ -1,6 +1,6 @@
 package com.example.application.polyflow.content;
 
-import com.example.application.polyflow.datatypes.GridInputWindowed;
+import com.example.application.polyflow.datatypes.Tuple;
 import com.example.application.polyflow.datatypes.Table;
 import com.example.application.polyflow.datatypes.Tuple;
 import org.streamreasoning.polyflow.api.secret.content.Content;
@@ -8,8 +8,8 @@ import org.streamreasoning.polyflow.api.secret.content.Content;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AccumulatorContent implements Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> {
-    public List<GridInputWindowed> content = new ArrayList<>();
+public class AccumulatorContent implements Content<Tuple, Tuple, List<Tuple>> {
+    public List<Tuple> content = new ArrayList<>();
 
     @Override
     public int size() {
@@ -17,12 +17,12 @@ public class AccumulatorContent implements Content<GridInputWindowed, GridInputW
     }
 
     @Override
-    public void add(GridInputWindowed tuple) {
+    public void add(Tuple tuple) {
         content.add(tuple);
     }
 
     @Override
-    public List<GridInputWindowed> coalesce() {
+    public List<Tuple> coalesce() {
         //This is the state, if you modify it elsewhere it will also change in here
         return content;
     }

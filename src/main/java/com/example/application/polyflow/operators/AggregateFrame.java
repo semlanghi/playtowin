@@ -1,6 +1,6 @@
 package com.example.application.polyflow.operators;
 
-import com.example.application.polyflow.datatypes.GridInputWindowed;
+import com.example.application.polyflow.datatypes.Tuple;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.streamreasoning.polyflow.api.enums.Tick;
@@ -20,7 +20,7 @@ import org.streamreasoning.polyflow.api.secret.time.TimeInstant;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class AggregateFrame implements StreamToRelationOperator<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> {
+public class AggregateFrame implements StreamToRelationOperator<Tuple, Tuple, List<Tuple>> {
 
 
     private static final Logger log = Logger.getLogger(org.streamreasoning.polyflow.base.operatorsimpl.s2r.HoppingWindowOpImpl.class);
@@ -28,9 +28,10 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
     protected Tick tick;
     protected final Time time;
     protected final String name;
-    protected final ContentFactory<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> cf;
+    protected final ContentFactory<Tuple, Tuple, List<Tuple>> cf;
     protected Report report;
-
+    private String attributeForComputation;
+    private Comparator<Double>  comparator;
     // context
     private Context context;
 
@@ -47,15 +48,16 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
     private int aggregation_function;
 
     private Window active_window;
-    private Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> active_content;
+    private Content<Tuple, Tuple, List<Tuple>> active_content;
     //already closed windows
-    private Map<Window, Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>> expired_content;
+    private Map<Window, Content<Tuple, Tuple, List<Tuple>>> expired_content;
 
     //elements that do not belong to ANY window
-    private Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> throw_content;
+    private Content<Tuple, Tuple, List<Tuple>> throw_content;
 
-    public AggregateFrame(Tick tick, Time time, String name, ContentFactory<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> cf, Report report,
-                          int frame_type, int frame_parameter, int aggregation_function) {
+    public AggregateFrame(Tick tick, Time time, String name, ContentFactory<Tuple, Tuple, List<Tuple>> cf, Report report,
+                          int frame_type, int frame_parameter, int aggregation_function, String attributeForComputation,
+                          Comparator<Double> comparator) {
 
         this.tick = tick;
         this.time = time;
@@ -73,6 +75,8 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
         this.active_content = cf.createEmpty();
         this.active_window = new WindowImpl(0, 0);
         this.throw_content = cf.create();
+        this.attributeForComputation = attributeForComputation;
+        this.comparator = comparator;
     }
 
 
@@ -92,14 +96,14 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
     }
 
     @Override
-    public Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> content(long l) {
+    public Content<Tuple, Tuple, List<Tuple>> content(long l) {
         return active_content;
     }
 
     @Override
-    public List<Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>> getContents(long l) {
+    public List<Content<Tuple, Tuple, List<Tuple>>> getContents(long l) {
 
-        List<Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>> res = new ArrayList<>();
+        List<Content<Tuple, Tuple, List<Tuple>>> res = new ArrayList<>();
         res.addAll(expired_content.values());
         res.add(active_content);
         res.add(throw_content);
@@ -107,7 +111,7 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
     }
 
     @Override
-    public TimeVarying<List<GridInputWindowed>> get() {
+    public TimeVarying<List<Tuple>> get() {
         return new TimeVaryingDemo(this, this.name);
     }
 
@@ -117,22 +121,23 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
     }
 
 
-    double avg(List<GridInputWindowed> content, long size){
+    double avg(List<Tuple> content, long size) {
         double sum = 0;
+        //We enforce that the field must be a double to make our life easier
         for(int i =0; i<size; i++){
-            sum+=content.get(i).getConsA();
+            sum+=content.get(i).getAttributeForComputation(attributeForComputation);
         }
         return sum /size;
     }
-    double sum(List<GridInputWindowed> content, long size){
+    double sum(List<Tuple> content, long size){
         double sum = 0;
         for(int i =0; i<size; i++){
-            sum+=content.get(i).getConsA();
+            sum+=content.get(i).getAttributeForComputation(attributeForComputation);
         }
         return sum;
     }
 
-    double aggregation(int agg_function, List<GridInputWindowed> content, long size){
+    double aggregation(int agg_function, List<Tuple> content, long size){
         switch (agg_function) {
             case 0: return avg(content, size);
             case 1: return sum(content, size);
@@ -141,16 +146,16 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
     }
 
     // Open a new frame and insert the current processed tuple.
-    private void open(GridInputWindowed arg, long ts) {
+    private void open(Tuple arg, long ts) {
         //enqueue(buffer, tuple);
         switch (frame_type) {
             case 0:
                 context.count++;
             case 1:
                 context.start = true;
-                context.v = arg.getConsA();
+                context.v = arg.getAttributeForComputation(attributeForComputation);
             case 2:
-                context.v = arg.getConsA(); // aggregation function on a single value corresponds to that value
+                context.v = arg.getAttributeForComputation(attributeForComputation); // aggregation function on a single value corresponds to that value
                 context.start = true;
             case 3:
                 context.current_timestamp = ts;
@@ -159,7 +164,7 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
     }
 
 // Update the current frame, extends it to include the current processed tuple.
-    private void update(GridInputWindowed arg, long ts) {
+    private void update(Tuple arg, long ts) {
         //enqueue(buffer, tuple);
         switch (frame_type) {
             case 0:
@@ -174,7 +179,7 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
 
 // Close the current frame and check for global conditions to eventually evict.
 // Removes the evicted/discarded frame from the buffer.
-    private void close(GridInputWindowed arg, long ts) {
+    private void close(Tuple arg, long ts) {
         switch (frame_type) {
             case 0:
                 context.count = 0;
@@ -187,9 +192,15 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
         }
     }
 
-    boolean open_pred(GridInputWindowed arg, long ts) {
+    boolean open_pred(Tuple arg, long ts) {
+        double field = arg.getAttributeForComputation(attributeForComputation);
         switch (frame_type) {
-            case 0: return (arg.getConsA() >= frame_parameter && context.count == 0); // threshold
+
+           /* case 0: return (arg.getAttributeForComputation(attributeForComputation) >= frame_parameter && context.count == 0); // threshold
+            case 1: return (!(context.start)); // delta
+            case 2: return (!(context.start)); // aggregate
+            case 3: return (ts - context.current_timestamp <= frame_parameter && !(context.start)); // session*/
+            case 0: return (comparator.compare(field, (double) frame_parameter) == 1 && context.count == 0); // threshold
             case 1: return (!(context.start)); // delta
             case 2: return (!(context.start)); // aggregate
             case 3: return (ts - context.current_timestamp <= frame_parameter && !(context.start)); // session
@@ -198,29 +209,40 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
 
     }
 
-    boolean update_pred(GridInputWindowed arg, long ts) {
+    boolean update_pred(Tuple arg, long ts) {
+        double field = arg.getAttributeForComputation(attributeForComputation);
         switch (frame_type) {
-            case 0: return (arg.getConsA() >= frame_parameter && context.count > 0);
-            case 1: return (Math.abs(context.v - arg.getConsA()) < frame_parameter && context.start);
+            /*case 0: return (arg.getAttributeForComputation(attributeForComputation) >= frame_parameter && context.count > 0);
+            case 1: return (Math.abs(context.v - arg.getAttributeForComputation(attributeForComputation)) < frame_parameter && context.start);
             case 2: return (context.v < frame_parameter && context.start);
+            case 3: return (ts - context.current_timestamp <= frame_parameter && context.start);*/
+            case 0: return (comparator.compare(field, (double) frame_parameter) == 1 && context.count > 0);
+            case 1: return (comparator.compare(Math.abs(context.v - field), (double) frame_parameter) == 1 && context.start);
+            case 2: return (comparator.compare(context.v, (double) frame_parameter) == 1 && context.start);
             case 3: return (ts - context.current_timestamp <= frame_parameter && context.start);
         }
         throw new RuntimeException("error switching on frame type in window operator");
 
     }
 
-    boolean close_pred(GridInputWindowed arg, long ts) {
+    //Frame closes if the comparator returns -1 ... based on the desired logic, define an appropriate comparator
+    boolean close_pred(Tuple arg, long ts) {
+        double field = arg.getAttributeForComputation(attributeForComputation);
         switch (frame_type) {
-            case 0: return (arg.getConsA() < frame_parameter && context.count > 0);
-            case 1: return (Math.abs(context.v - arg.getConsA()) >= frame_parameter && context.start);
+            /*case 0: return (arg.getAttributeForComputation(attributeForComputation) < frame_parameter && context.count > 0);
+            case 1: return (Math.abs(context.v - arg.getAttributeForComputation(attributeForComputation)) >= frame_parameter && context.start);
             case 2: return (context.v >= frame_parameter && context.start);
+            case 3: return (ts - context.current_timestamp > frame_parameter && context.start);*/
+            case 0: return (comparator.compare(field, (double) frame_parameter) == -1 && context.count > 0);
+            case 1: return (comparator.compare(Math.abs(context.v - field), (double) frame_parameter) == -1  && context.start);
+            case 2: return (comparator.compare(context.v, (double) frame_parameter) == -1  && context.start);
             case 3: return (ts - context.current_timestamp > frame_parameter && context.start);
         }
         throw new RuntimeException("error switching on frame type in window operator");
     }
 
     @Override
-    public void compute(GridInputWindowed arg, long ts) {
+    public void compute(Tuple arg, long ts) {
 
         if (time.getAppTime() > ts) {
             log.error("OUT OF ORDER NOT HANDLED");
@@ -245,14 +267,9 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
 
         if (update_pred(arg, ts)) {
             added = true;
-            GridInputWindowed el = new GridInputWindowed();
+            Tuple el = arg.copy();
             el.setIntervalId("starts@"+active_window.getO());
             el.setOperatorId(this.name);
-            el.setConsA(arg.getConsA());
-            el.setConsB(arg.getConsB());
-            el.setRecordId(arg.getRecordId());
-            el.setTimestamp(arg.getTimestamp());
-            el.setCursor(arg.getCursor());
             // add element to current window
             active_content.add(el);
 
@@ -265,26 +282,16 @@ public class AggregateFrame implements StreamToRelationOperator<GridInputWindowe
             // open new window with current element
             active_window = new WindowImpl(ts, -1);
             active_content = cf.create();
-            GridInputWindowed el = new GridInputWindowed();
+            Tuple el = arg.copy();
             el.setIntervalId("starts@"+active_window.getO());
             el.setOperatorId(this.name);
-            el.setConsA(arg.getConsA());
-            el.setConsB(arg.getConsB());
-            el.setRecordId(arg.getRecordId());
-            el.setTimestamp(arg.getTimestamp());
-            el.setCursor(arg.getCursor());
             active_content.add(el);
         }
 
         if(added == false){
-            GridInputWindowed el = new GridInputWindowed();
+            Tuple el = arg.copy();
             el.setIntervalId("throw");
             el.setOperatorId(this.name);
-            el.setConsA(arg.getConsA());
-            el.setConsB(arg.getConsB());
-            el.setRecordId(arg.getRecordId());
-            el.setTimestamp(arg.getTimestamp());
-            el.setCursor(arg.getCursor());
             throw_content.add(el);
         }
 

@@ -2,7 +2,7 @@ package com.example.application.polyflow.datatypes;
 
 import java.util.List;
 
-public interface EventBean<V> extends Tuple {
+public interface EventBean<V> {
     public V getValue(String attributeName);
     public long getTime();
     public V getValue();
