@@ -245,6 +245,7 @@ public class PolyflowService {
                         };
                     }
 
+
                     return new AggregateFrame(
                             Tick.TIME_DRIVEN,
                             instance,
@@ -253,8 +254,8 @@ public class PolyflowService {
                             report,
                             frameType,
                             frameType == 3 ? (int) windowRowSummary.getTimeout() : (int) windowRowSummary.getRange(),
-                            getAggregationFunction(windowRowSummary.getAttribute()),
-                            windowRowSummary.getAttribute(),
+                            getAggregationFunction(windowRowSummary.getAggregateFunction()),
+                            windowRowSummary.getAttribute().replaceAll("^[^(]*\\(|\\)$", ""),
                             comparator
                     );
                 } else{ throw new RuntimeException("No composition");}/*else {
@@ -307,7 +308,7 @@ public class PolyflowService {
 
     //TODO: right now aggregation works by default on attribute consA, we need to add a way to specify the attribute
     private int getAggregationFunction(String attribute) {
-        return switch (attribute.split("\\(")[0]) {
+        return switch (attribute) {
             case "avg" -> 0;
             case "sum" -> 1;
             default -> 1;

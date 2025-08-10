@@ -898,13 +898,20 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
         windowRowSummary.setName(getWindowAbbrev(windowTypeValue));
         text.append(windowTypeValue);
-        if (windowTypeValue.equals("Frames:Aggregate")) {
+        /*if (windowTypeValue.equals("Frames:Aggregate")) {
             text.append(" on aggregate ").append(result.get(index).selectAggregate().getValue());
             windowRowSummary.setAttribute(result.get(index).selectAggregate().getValue()+"("+ result.get(index).selectAttribute().getValue()+")");
-        }
+        }*/
         if (windowTypeValue.startsWith("Frames")){
+            if (windowTypeValue.equals("Frames:Aggregate")) {
+                text.append(" on aggregate ").append(result.get(index).selectAggregate().getValue());
+                windowRowSummary.setAttribute(result.get(index).selectAggregate().getValue() + "(" + result.get(index).selectAttribute().getValue() + ")");
+                windowRowSummary.setAggregateFunction(result.get(index).selectAggregate.getValue());
+            }
+            else {
+                windowRowSummary.setAttribute(result.get(index).selectAttribute().getValue());
+            }
             text.append(" over Attribute ").append(result.get(index).selectAttribute().getValue()).append(" ").append(result.get(index).selectOp().getValue()).append(" ").append(result.get(index).threshold().getValue());
-            windowRowSummary.setAttribute(result.get(index).selectAttribute().getValue());
             windowRowSummary.setOperator(result.get(index).selectOp().getValue());
             windowRowSummary.setRange(Long.parseLong(result.get(index).threshold().getValue()));
         } else if (windowTypeValue.equals("Time-based")){
@@ -1377,6 +1384,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
     public class WindowRowSummary {
         private String name;
         private String attribute;
+        private String aggregateFunction;
         private String operator;
         private long range;
         private long size;
@@ -1403,6 +1411,12 @@ public class PlayToWin extends Composite<VerticalLayout> {
             this.size = size;
         }
 
+        public void setAggregateFunction(String aggregateFunction){
+            this.aggregateFunction = aggregateFunction;
+        }
+        public String getAggregateFunction(){
+            return aggregateFunction;
+        }
         public long getSlide() {
             return slide;
         }
