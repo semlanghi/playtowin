@@ -1,36 +1,93 @@
-package com.example.application.polyflow.datatypes;
+package com.example.application.polyflow.datatypes.linearroad;
 
-import com.example.application.data.AbstractEntity;
+import com.example.application.polyflow.datatypes.Tuple;
 import jakarta.persistence.Entity;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Optional;
 
 @Entity
-public class GridInputWindowed extends Tuple {
+public class InputLinearRoad extends Tuple {
 
     private String recordId;
-    private double consA;
-    private double consB;
+
+    private int car_id;
+    private double speed;
+    private int exp_way;
+    private int lane;
+    private int direction;
+    private double x_pos;
     private long timestamp;
     private String operatorId;
     private String intervalId;
     private String cursor;
     private String attributeForComputation;
 
+
+
     @Override
     public Tuple copy() {
-        GridInputWindowed copy = new GridInputWindowed();
+        InputLinearRoad copy = new InputLinearRoad();
         copy.setCursor(this.cursor);
         copy.setTimestamp(this.timestamp);
         copy.setOperatorId(this.operatorId);
         copy.setIntervalId(this.intervalId);
         copy.setRecordId(this.recordId);
-        copy.setConsB(this.consB);
-        copy.setConsA(this.consA);
+        copy.setCar_id(this.car_id);
+        copy.setSpeed(this.speed);
+        copy.setExp_way(this.exp_way);
+        copy.setLane(this.lane);
+        copy.setDirection(this.direction);
+        copy.setX_pos(this.x_pos);
         copy.setAttributeForComputation(this.attributeForComputation);
         return copy;
+    }
+
+    public int getCar_id() {
+        return car_id;
+    }
+
+    public void setCar_id(int car_id) {
+        this.car_id = car_id;
+    }
+
+    public double getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(double speed) {
+        this.speed = speed;
+    }
+
+    public int getExp_way() {
+        return exp_way;
+    }
+
+    public void setExp_way(int exp_way) {
+        this.exp_way = exp_way;
+    }
+
+    public int getLane() {
+        return lane;
+    }
+
+    public void setLane(int lane) {
+        this.lane = lane;
+    }
+
+    public int getDirection() {
+        return direction;
+    }
+
+    public void setDirection(int direction) {
+        this.direction = direction;
+    }
+
+    public double getX_pos() {
+        return x_pos;
+    }
+
+    public void setX_pos(double x_pos) {
+        this.x_pos = x_pos;
     }
 
     public String getRecordId() {
@@ -65,21 +122,6 @@ public class GridInputWindowed extends Tuple {
         this.intervalId = intervalId;
     }
 
-    public double getConsA() {
-        return consA;
-    }
-
-    public void setConsA(double consA) {
-        this.consA = consA;
-    }
-
-    public double getConsB() {
-        return consB;
-    }
-
-    public void setConsB(double consB) {
-        this.consB = consB;
-    }
 
     public long getTimestamp() {
         return timestamp;
@@ -94,18 +136,6 @@ public class GridInputWindowed extends Tuple {
         this.attributeForComputation = attributeForComputation;
     }
 
-    /*
-        We use this method to dynamically get the Attribute that the user wants to compute over
-        e.g. the user wants an Aggregate Frame and could want to Aggregate on the field ConsA or ConsB
-    */
-    @Override
-    public double getAttributeForComputation(String attributeForComputation) {
-        try {
-            Field field = this.getClass().getDeclaredField(attributeForComputation);
-            field.setAccessible(true); //it's private
-            return field.getDouble(this);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException("Invalid attribute name: " + attributeForComputation, e);
-        }
-    }
+
+
 }

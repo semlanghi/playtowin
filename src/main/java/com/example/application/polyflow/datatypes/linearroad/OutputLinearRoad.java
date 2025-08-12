@@ -1,11 +1,10 @@
-package com.example.application.polyflow.datatypes;
+package com.example.application.polyflow.datatypes.linearroad;
 
 import com.example.application.data.AbstractEntity;
 import jakarta.persistence.Entity;
 
 @Entity
-public class GridOutput extends AbstractEntity {
-
+public class OutputLinearRoad extends AbstractEntity {
     private String recordId;
     private long timestamp;
     public String operatorId;
@@ -31,6 +30,7 @@ public class GridOutput extends AbstractEntity {
         this.intervalId = intervalId;
     }
 
+
     public long getTimestamp() {
         return timestamp;
     }
@@ -38,4 +38,5 @@ public class GridOutput extends AbstractEntity {
     public void setTimestamp(long dateOfBirth) {
         this.timestamp = dateOfBirth;
     }
+
 }

@@ -1,7 +1,7 @@
 /*
 package com.example.application.polyflow.operators;
 
-import com.example.application.polyflow.datatypes.GridInputWindowed;
+import com.example.application.polyflow.datatypes.electricity.GridInputWindowed;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.streamreasoning.polyflow.api.enums.Tick;

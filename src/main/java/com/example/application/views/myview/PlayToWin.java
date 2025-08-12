@@ -2,6 +2,8 @@ package com.example.application.views.myview;
 
 import com.example.application.data.*;
 import com.example.application.polyflow.datatypes.*;
+import com.example.application.polyflow.datatypes.electricity.GridInputWindowed;
+import com.example.application.polyflow.datatypes.electricity.GridOutputWindowed;
 import com.example.application.services.PolyflowService;
 import com.example.application.services.SampleGridService;
 import com.example.application.services.SampleStockService;
@@ -119,7 +121,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
         selectScenarios.setLabel("Scenario");
         selectScenarios.setItems("Electric Grid", "Stock (Yahoo)", "Linear Road", "DEBS Challenges '12", "DEBS Challenges '16", "DEBS Challenges '22");
         selectScenarios.setValue("Electric Grid");
-        sampleOutputClass = GridOutput.class;
+        sampleOutputClass = GridOutputWindowed.class;
         sampleInputClass = GridInputWindowed.class;
 
 
@@ -132,10 +134,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
             switch (event.getValue()) {
                 case "Electric Grid":
 
-//                    this.query = "SELECT percent(consA,consB),percent(consB,consA), max(ts)\n" +
-//                            "FROM Consumption [RANGE 5 minutes SLIDE 2 minutes]\n" +
-//                            "WHERE consA >= 0 AND consB >= 0";
-                    sampleOutputClass = GridOutput.class;
+                    sampleOutputClass = GridOutputWindowed.class;
                     sampleInputClass = GridInputWindowed.class;
                     loadPage(selectScenarios, event.getValue());
 
@@ -145,9 +144,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
                     sampleOutputClass = StockOutput.class;
                     sampleInputClass = StockInput.class;
 
-//                    this.query = "SELECT name, avg(value), max(ts)\n" +
-//                            "FROM Stock [RANGE 5 minutes SLIDE 2 minutes]\n" +
-//                            "WHERE name = Apple";
+
                     loadPage(selectScenarios, event.getValue());
                     break;
                 default: loadPage(selectScenarios, "Electric Grid");
@@ -910,6 +907,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
             }
             else {
                 windowRowSummary.setAttribute(result.get(index).selectAttribute().getValue());
+                windowRowSummary.setAggregateFunction("");
             }
             text.append(" over Attribute ").append(result.get(index).selectAttribute().getValue()).append(" ").append(result.get(index).selectOp().getValue()).append(" ").append(result.get(index).threshold().getValue());
             windowRowSummary.setOperator(result.get(index).selectOp().getValue());
@@ -971,7 +969,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
         selectOp.setLabel("Comparator");
 
         selectOp.setItems("<", ">", "=", ">=", "<=");
-        selectOp.setValue("<");
+        selectOp.setValue(">");
         selectOp.addValueChangeListener(event -> {
             Notification.show(event.getValue()).setPosition(Notification.Position.TOP_START);
         });
@@ -1646,17 +1644,12 @@ public class PlayToWin extends Composite<VerticalLayout> {
                 inputGridList.add(createGridRecord("r_"+(7+i), curr_ts, random.nextInt(0, 11), random.nextInt(0, 11)));
             }
 
-//            grid.addColumn(String.valueOf(VaadinIcon.BOLT.create()));
 
             grid.removeColumn(grid.getColumnByKey("id"));
             grid.removeColumn(grid.getColumnByKey("version"));
-            //grid.removeColumn(grid.getColumnByKey("label"));
-            //grid.removeColumn(grid.getColumnByKey("time"));
-            //grid.removeColumn(grid.getColumnByKey("value"));
             grid.removeColumn(grid.getColumnByKey("cursor"));
             grid.removeColumn(grid.getColumnByKey("intervalId"));
             grid.removeColumn(grid.getColumnByKey("operatorId"));
-//            grid.setSortableColumns("recordId", "timestamp", "consA", "consB");
 
 
             List<Grid.Column> strings = Arrays.asList(grid.getColumnByKey("recordId"),

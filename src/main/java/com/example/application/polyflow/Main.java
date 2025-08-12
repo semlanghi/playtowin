@@ -3,9 +3,9 @@ package com.example.application.polyflow;
 
 import com.example.application.polyflow.content.factories.AccumulatorFactory;
 import com.example.application.polyflow.datatypes.CustomRow;
-import com.example.application.polyflow.datatypes.GridInputWindowed;
-import com.example.application.polyflow.datatypes.GridInputWindowed;
-import com.example.application.polyflow.datatypes.GridInputWindowed;
+import com.example.application.polyflow.datatypes.electricity.GridInputWindowed;
+import com.example.application.polyflow.datatypes.electricity.GridInputWindowed;
+import com.example.application.polyflow.datatypes.electricity.GridInputWindowed;
 import com.example.application.polyflow.operators.R2RCustom;
 import com.example.application.polyflow.operators.R2SCustom;
 import com.example.application.polyflow.operators.S2RHopping;

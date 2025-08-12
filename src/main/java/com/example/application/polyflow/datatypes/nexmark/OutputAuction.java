@@ -1,14 +1,11 @@
-package com.example.application.polyflow.datatypes;
+package com.example.application.polyflow.datatypes.nexmark;
 
 import com.example.application.data.AbstractEntity;
 import jakarta.persistence.Entity;
 
 @Entity
-public class GridOutputWindowed extends AbstractEntity {
-
+public class OutputAuction extends AbstractEntity {
     private String recordId;
-    private Long consA;
-    private Long consB;
     private long timestamp;
     public String operatorId;
     public String intervalId;
@@ -33,21 +30,6 @@ public class GridOutputWindowed extends AbstractEntity {
         this.intervalId = intervalId;
     }
 
-    public Long getConsA() {
-        return consA;
-    }
-
-    public void setConsA(Long consA) {
-        this.consA = consA;
-    }
-
-    public Long getConsB() {
-        return consB;
-    }
-
-    public void setConsB(Long consB) {
-        this.consB = consB;
-    }
 
     public long getTimestamp() {
         return timestamp;
@@ -56,4 +38,5 @@ public class GridOutputWindowed extends AbstractEntity {
     public void setTimestamp(long dateOfBirth) {
         this.timestamp = dateOfBirth;
     }
+
 }

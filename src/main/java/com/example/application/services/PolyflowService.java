@@ -7,7 +7,6 @@ import com.example.application.polyflow.CustomTask;
 import com.example.application.polyflow.cgraph.ConsistencyGraph;
 import com.example.application.polyflow.content.factories.AccumulatorFactory;
 import com.example.application.polyflow.datatypes.EventBean;
-import com.example.application.polyflow.datatypes.GridInputWindowed;
 import com.example.application.polyflow.datatypes.Tuple;
 import com.example.application.polyflow.operators.*;
 import com.example.application.polyflow.reportingStrategies.Always;
@@ -22,7 +21,6 @@ import org.streamreasoning.polyflow.api.operators.r2s.RelationToStreamOperator;
 import org.streamreasoning.polyflow.api.operators.s2r.execution.assigner.StreamToRelationOperator;
 import org.streamreasoning.polyflow.api.processing.ContinuousProgram;
 import org.streamreasoning.polyflow.api.processing.Task;
-import org.streamreasoning.polyflow.api.secret.content.Content;
 import org.streamreasoning.polyflow.api.secret.content.ContentFactory;
 import org.streamreasoning.polyflow.api.secret.report.Report;
 import org.streamreasoning.polyflow.api.secret.report.ReportImpl;
@@ -138,7 +136,7 @@ public class PolyflowService {
             datatype = "TODO";
 
         try {
-            String replace = query.replace("[window]", "com.example.application.polyflow.datatypes."+datatype);
+            String replace = query.replace("[window]", "com.example.application.polyflow.datatypes.electricity."+datatype);
             System.out.println(replace);
             q.parse(replace);
 
@@ -306,7 +304,6 @@ public class PolyflowService {
         //return longR2RConsistencyAnnotator.getStreamToRelationOperators();
     }
 
-    //TODO: right now aggregation works by default on attribute consA, we need to add a way to specify the attribute
     private int getAggregationFunction(String attribute) {
         return switch (attribute) {
             case "avg" -> 0;

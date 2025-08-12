@@ -1,6 +1,6 @@
 package com.example.application.polyflow.operators;
 
-import com.example.application.polyflow.datatypes.GridInputWindowed;
+import com.example.application.polyflow.datatypes.electricity.GridInputWindowed;
 import dev.mccue.josql.Query;
 import dev.mccue.josql.QueryExecutionException;
 import dev.mccue.josql.QueryParseException;
