@@ -1,6 +1,6 @@
 package com.example.application.polyflow.operators;
 
-import com.example.application.polyflow.datatypes.electricity.GridInputWindowed;
+import com.example.application.polyflow.datatypes.electricity.InputElectricity;
 import dev.mccue.josql.Query;
 import dev.mccue.josql.QueryExecutionException;
 import dev.mccue.josql.QueryParseException;
@@ -10,11 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class R2RCustom implements RelationToRelationOperator<List<GridInputWindowed>> {
+public class R2RCustom implements RelationToRelationOperator<List<InputElectricity>> {
 
     public String resName;
     public List<String> tvgNames;
-    public List<GridInputWindowed> windowedData = new ArrayList<>();
+    public List<InputElectricity> windowedData = new ArrayList<>();
 
     public R2RCustom(List<String> tvgNames, String resName) {
         this.resName = resName;
@@ -22,7 +22,7 @@ public class R2RCustom implements RelationToRelationOperator<List<GridInputWindo
     }
 
     @Override
-    public List<GridInputWindowed> eval(List<List<GridInputWindowed>> list) {
+    public List<InputElectricity> eval(List<List<InputElectricity>> list) {
         windowedData = new ArrayList<>();
         list.forEach(l -> windowedData.addAll(l));
 

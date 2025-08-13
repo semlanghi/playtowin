@@ -3,10 +3,8 @@ package com.example.application.polyflow.datatypes.electricity;
 import com.example.application.polyflow.datatypes.Tuple;
 import jakarta.persistence.Entity;
 
-import java.lang.reflect.Field;
-
 @Entity
-public class GridInputWindowed extends Tuple {
+public class InputElectricity extends Tuple {
 
     private String recordId;
     private double consA;
@@ -19,7 +17,7 @@ public class GridInputWindowed extends Tuple {
 
     @Override
     public Tuple copy() {
-        GridInputWindowed copy = new GridInputWindowed();
+        InputElectricity copy = new InputElectricity();
         copy.setCursor(this.cursor);
         copy.setTimestamp(this.timestamp);
         copy.setOperatorId(this.operatorId);

@@ -2,8 +2,8 @@ package com.example.application.views.myview;
 
 import com.example.application.data.*;
 import com.example.application.polyflow.datatypes.*;
-import com.example.application.polyflow.datatypes.electricity.GridInputWindowed;
-import com.example.application.polyflow.datatypes.electricity.GridOutputWindowed;
+import com.example.application.polyflow.datatypes.electricity.InputElectricity;
+import com.example.application.polyflow.datatypes.electricity.OutputElectricity;
 import com.example.application.services.PolyflowService;
 import com.example.application.services.SampleGridService;
 import com.example.application.services.SampleStockService;
@@ -56,6 +56,8 @@ import org.vaadin.addons.visjs.network.util.Shape;
 //import org.vaadin.addons.visjs.network.options.edges.Arrows;
 
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -86,20 +88,37 @@ public class PlayToWin extends Composite<VerticalLayout> {
     private HorizontalLayout bottomCentralRow;
     private Class<?> sampleOutputClass;
     private Class<?> sampleInputClass;
-    private List<GridInputWindowed> inputGridList;
-    private List<GridInputWindowed> inputGridListActual;
-    private List<GridInputWindowed> outputGridList;
-    private List<GridInputWindowed> inputAnnotatedGridList;
+    private List<InputElectricity> inputGridList;
+    private List<InputElectricity> inputGridListActual;
+    private List<InputElectricity> outputGridList;
+    private List<InputElectricity> inputAnnotatedGridList;
     private List<GridOutputAnnotated> outputAnnotatedGridList;
     private List<GridOutputQuantified> outputQuantifiedGridList;
     private List<StockInput> stockInputArrayList;
     private boolean setLocal = false;
     private int counterInput = 0;
-    private List<GridOutputWindowed> actualOutput;
+    private List<OutputElectricity> actualOutput;
     private List<WindowRowSummary> windowRowSummaries;
     private Map<String, String> colorGraphs;
 
+    //ALESSANDRO
+    /*
+    * This List represents fields that belong to a given input class but should not be shown
+    * in the input stream view (left of the GUI)
+    * */
+    private List<String> columnsToRemoveForStream = new ArrayList<>();
 
+    /*
+     * This List represents fields that belong to a given input class that are shown
+     * in the drop down menu of aggregation
+     * */
+    private List<String> columnsToShowForAggregation = new ArrayList<>();
+
+    /*
+     * This List represents fields that belong to a given input class but should not be shown
+     * in the output records view
+     * */
+    private List<String> columnsToRemoveForOutput = new ArrayList<>();
 
 
     @Autowired()
@@ -121,8 +140,12 @@ public class PlayToWin extends Composite<VerticalLayout> {
         selectScenarios.setLabel("Scenario");
         selectScenarios.setItems("Electric Grid", "Stock (Yahoo)", "Linear Road", "DEBS Challenges '12", "DEBS Challenges '16", "DEBS Challenges '22");
         selectScenarios.setValue("Electric Grid");
-        sampleOutputClass = GridOutputWindowed.class;
-        sampleInputClass = GridInputWindowed.class;
+        columnsToRemoveForStream.addAll(List.of("id", "version", "cursor", "operatorId", "intervalId"));
+        columnsToShowForAggregation.addAll(List.of("consA", "consB"));
+        //TODO: modify the columns of Output when we know what the output of the query is.. which will be obtained when parsing the query
+        columnsToRemoveForOutput.addAll(List.of("id", "version", "timestamp", "consA", "consB"));
+        sampleOutputClass = OutputElectricity.class;
+        sampleInputClass = InputElectricity.class;
 
 
 
@@ -131,11 +154,16 @@ public class PlayToWin extends Composite<VerticalLayout> {
             mainRow.removeAll();
             bottomRow.removeAll();
             upperCentralRow.removeAll();
+            counterInput = 0;
             switch (event.getValue()) {
                 case "Electric Grid":
+                    columnsToRemoveForStream = new ArrayList<>();
+                    columnsToRemoveForOutput = new ArrayList<>();
+                    columnsToRemoveForStream.addAll(List.of("id", "version", "cursor", "operatorId", "intervalId"));
+                    columnsToRemoveForOutput.addAll(List.of("id", "version", "timestamp", "consA", "consB"));
 
-                    sampleOutputClass = GridOutputWindowed.class;
-                    sampleInputClass = GridInputWindowed.class;
+                    sampleOutputClass = OutputElectricity.class;
+                    sampleInputClass = InputElectricity.class;
                     loadPage(selectScenarios, event.getValue());
 
 
@@ -371,7 +399,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
 
         Map<String,Grid> resultGrids = new HashMap<>();
-        Grid<GridOutputWindowed> inputAnnotatedGrid = getGridOutputWindowedGrid();
+        Grid<OutputElectricity> inputAnnotatedGrid = getGridOutputWindowedGrid();
 
         tabSheetBottomRight.add("Results", inputAnnotatedGrid);
 
@@ -440,7 +468,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
                     for (WindowRowSummary windowRowSummary : windowRowSummaries) {
 
                         Tab tabRes = new Tab(windowRowSummary.name+" Results");
-                        Grid<GridOutputWindowed> resultGrid = getGridOutputWindowedGrid();
+                        Grid<OutputElectricity> resultGrid = getGridOutputWindowedGrid();
                         tabSheetBottomRight.add(tabRes, resultGrid);
                         resultGrids.put(windowRowSummary.name, resultGrid);
 
@@ -505,11 +533,11 @@ public class PlayToWin extends Composite<VerticalLayout> {
                 Notification.show("Inserting Next Event.").setPosition(Notification.Position.TOP_START);
 
                 if (counterInput!=0){
-                    GridInputWindowed prevGridInput = inputGridListActual.get(counterInput-1);
+                    InputElectricity prevGridInput = inputGridListActual.get(counterInput-1);
                     prevGridInput.setCursor("");
                 }
 
-                GridInputWindowed gridInput = inputGridList.get(counterInput++);
+                InputElectricity gridInput = inputGridList.get(counterInput++);
                 gridInput.setCursor(">");
                 inputGridListActual.add(gridInput);
                 basicGrid.getDataProvider().refreshAll();
@@ -523,7 +551,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
                 List<Tuple> nextOutput = polyflowService.getNextOutput();
                 actualOutput = nextOutput.stream().map(el->{
-                    GridOutputWindowed g = new GridOutputWindowed();
+                    OutputElectricity g = new OutputElectricity();
                     g.setIntervalId(el.getIntervalId());
                     g.setOperatorId(el.getOperatorId());
                     g.setTimestamp(el.getTimestamp());
@@ -537,9 +565,9 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
                 for (String windowName : resultGrids.keySet()) {
                     if (!windowName.contains("Mapping")) {
-                        Grid<GridOutputWindowed> resultGrid = resultGrids.get(windowName);
+                        Grid<OutputElectricity> resultGrid = resultGrids.get(windowName);
 
-                        List<Grid.Column<GridOutputWindowed>> sgab = Arrays.asList(
+                        List<Grid.Column<OutputElectricity>> sgab = Arrays.asList(
                                 resultGrid.getColumnByKey("recordId"),
                                 resultGrid.getColumnByKey("operatorId"),
                                 resultGrid.getColumnByKey("intervalId"));
@@ -563,9 +591,9 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
                     updateWindowState(diagram, actualOutput.stream().filter(el -> el.getOperatorId()
                             .equals((tabSheetUpperRight.getTab(diagram)).getLabel().split(" ")[0]))
-                            .sorted(new Comparator<GridOutputWindowed>() {
+                            .sorted(new Comparator<OutputElectricity>() {
                                 @Override
-                                public int compare(GridOutputWindowed o1, GridOutputWindowed o2) {
+                                public int compare(OutputElectricity o1, OutputElectricity o2) {
                                     return Integer.compare(findFirstNumberInIntervalId(o1.getIntervalId()), findFirstNumberInIntervalId(o2.getIntervalId()));
                                 }
                             })
@@ -629,9 +657,9 @@ public class PlayToWin extends Composite<VerticalLayout> {
                 NetworkDiagram diagramAll = graphs.get("All");
 
                 updateWindowState(diagramAll, actualOutput.stream()
-                        .sorted(new Comparator<GridOutputWindowed>() {
+                        .sorted(new Comparator<OutputElectricity>() {
                             @Override
-                            public int compare(GridOutputWindowed o1, GridOutputWindowed o2) {
+                            public int compare(OutputElectricity o1, OutputElectricity o2) {
                                 return Integer.compare(findFirstNumberInIntervalId(o1.getIntervalId()), findFirstNumberInIntervalId(o2.getIntervalId()));
                             }
                         })
@@ -977,11 +1005,13 @@ public class PlayToWin extends Composite<VerticalLayout> {
         ComboBox<String> selectAttribute = new ComboBox<>();
         selectAttribute.setLabel("On Attribute");
 
-        Field[] fields = sampleInputClass.getDeclaredFields();
+        /*Field[] fields = sampleInputClass.getDeclaredFields();
 
-        List<String> collect = Arrays.stream(fields).map(Field::getName).collect(Collectors.toList());
-        selectAttribute.setItems(collect);
-        selectAttribute.setValue(collect.get(0));
+        List<String> collect = Arrays.stream(fields).map(Field::getName).collect(Collectors.toList());*/
+
+        //These are the columns shown on the dropdown menu "On Attribute"
+        selectAttribute.setItems(columnsToShowForAggregation);
+        selectAttribute.setValue(columnsToShowForAggregation.get(0));
         selectAttribute.addValueChangeListener(event -> {
             Notification.show(event.getValue()).setPosition(Notification.Position.TOP_START);
         });
@@ -1058,6 +1088,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
     private Result getResultNotComposite(HorizontalLayout windowSelectorLayout) {
         ComboBox<String> selectWindowType = new ComboBox<>();
         selectWindowType.setLabel("Window Type");
+        //TODO: Remove windows not implemented
         selectWindowType.setItems("Time-based", "Session", "Frames:Threshold", "Frames:Delta", "Frames:Aggregate", "Time-based", "Session", "Frames:Threshold", "Frames:Delta", "Frames:Aggregate",
                 "Landmark", "Punctuation-based", "Slide-by-Tuple", "Adaptive Window", "Damped Window", "Tilted Window", "Policy-based");
         selectWindowType.setValue("Time-based");
@@ -1069,6 +1100,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
         ComboBox<String> selectAggregate = new ComboBox<>();
         selectAggregate.setLabel("Aggregate");
 
+        //TODO: we do not do max/min aggregation. Count also does not sound interesting
         selectAggregate.setItems("count", "sum", "avg", "max", "min");
         selectAggregate.setValue("count");
         selectAggregate.addValueChangeListener(event -> {
@@ -1236,16 +1268,21 @@ public class PlayToWin extends Composite<VerticalLayout> {
     }
 
 
-    private static Grid<GridOutputWindowed> getGridOutputWindowedGrid() {
-        Grid<GridOutputWindowed> inputAnnotatedGrid = new Grid<>(GridOutputWindowed.class);
+    //TODO: this now reflects the query state, but it should be the query output
+    private Grid<OutputElectricity> getGridOutputWindowedGrid() {
+        Grid<OutputElectricity> inputAnnotatedGrid = new Grid<>(OutputElectricity.class);
         inputAnnotatedGrid.setWidth("100%");
         inputAnnotatedGrid.setHeight("100%");
         inputAnnotatedGrid.getStyle().set("flex-grow", "1");
+        for(String s : columnsToRemoveForOutput){
+            inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey(s));
+        }
+        /*
         inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("version"));
         inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("id"));
         inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("consA"));
         inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("timestamp"));
-        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("consB"));
+        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("consB"));*/
         return inputAnnotatedGrid;
     }
 
@@ -1284,7 +1321,6 @@ public class PlayToWin extends Composite<VerticalLayout> {
         inputAnnotatedGrid.setWidth("100%");
         inputAnnotatedGrid.setHeight("100%");
         inputAnnotatedGrid.getStyle().set("flex-grow", "1");
-//        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("opTointervalIds"));
         return inputAnnotatedGrid;
     }
 
@@ -1602,8 +1638,8 @@ public class PlayToWin extends Composite<VerticalLayout> {
                     .stream());
     }
 
-    public GridInputWindowed createGridRecord(String recordId, long ts, long consA, long consB){
-        GridInputWindowed gridInput = new GridInputWindowed();
+    public InputElectricity createGridRecord(String recordId, long ts, long consA, long consB){
+        InputElectricity gridInput = new InputElectricity();
         gridInput.setRecordId(recordId);
         gridInput.setTimestamp(ts);
         gridInput.setConsA((long) consA);
@@ -1627,29 +1663,28 @@ public class PlayToWin extends Composite<VerticalLayout> {
             inputGridList = new ArrayList<>();
             inputGridListActual = new ArrayList<>();
 
-            GridInputWindowed firstGridRecord = createGridRecord("r_"+0, 0, 8, 2);
-//            firstGridRecord.setCursor(">");
-            inputGridList.add(firstGridRecord);
-            inputGridList.add(createGridRecord("r_"+1, 1, 8, 2));
-            inputGridList.add(createGridRecord("r_"+2, 2, 8, 2));
-            inputGridList.add(createGridRecord("r_"+3, 3, 8, 2));
-            inputGridList.add(createGridRecord("r_"+4, 4, 5, 5));
-            inputGridList.add(createGridRecord("r_"+5, 5, 3, 7));
-            inputGridList.add(createGridRecord("r_"+6, 6, 1, 10));
-            inputGridList.add(createGridRecord("r_"+7, 7, 0, 10));
-            Random random = new Random(0L);
-            int curr_ts = 7;
-            for (int i = 1; i < 20; i++) {
-                curr_ts +=random.nextInt(0, 5);
-                inputGridList.add(createGridRecord("r_"+(7+i), curr_ts, random.nextInt(0, 11), random.nextInt(0, 11)));
+            File file = new File(PlayToWin.class.getResource("/electricity_events.txt").getPath());
+            Scanner scanner = null;
+            try {
+                scanner = new Scanner(file);
+            }catch(FileNotFoundException e){
+            }
+            while(scanner.hasNext()){
+                String input = scanner.nextLine();
+                String[] columns = input.split(",");
+                inputGridList.add(createGridRecord(columns[0], Long.parseLong(columns[1]), Long.parseLong(columns[2]), Long.parseLong(columns[3])));
             }
 
-
-            grid.removeColumn(grid.getColumnByKey("id"));
+            //Remove columns that are not relevant in the input stream columns
+            for (String s : columnsToRemoveForStream){
+                grid.removeColumn(grid.getColumnByKey(s));
+            }
+            /*grid.removeColumn(grid.getColumnByKey("id"));
             grid.removeColumn(grid.getColumnByKey("version"));
             grid.removeColumn(grid.getColumnByKey("cursor"));
             grid.removeColumn(grid.getColumnByKey("intervalId"));
-            grid.removeColumn(grid.getColumnByKey("operatorId"));
+            grid.removeColumn(grid.getColumnByKey("operatorId"));*/
+
 
 
             List<Grid.Column> strings = Arrays.asList(grid.getColumnByKey("recordId"),
@@ -1699,7 +1734,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
 
 
-    private void updateWindowState(NetworkDiagram snapshotGraph, List<GridOutputWindowed> results, Map<String, String> colors, boolean all) {
+    private void updateWindowState(NetworkDiagram snapshotGraph, List<OutputElectricity> results, Map<String, String> colors, boolean all) {
 
         List<Edge> edges = new ArrayList<>();
         Map<String, Node> nodes = new HashMap<>();

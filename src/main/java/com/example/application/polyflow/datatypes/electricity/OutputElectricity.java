@@ -4,7 +4,7 @@ import com.example.application.data.AbstractEntity;
 import jakarta.persistence.Entity;
 
 @Entity
-public class GridOutputWindowed extends AbstractEntity {
+public class OutputElectricity extends AbstractEntity {
 
     private String recordId;
     private Long consA;

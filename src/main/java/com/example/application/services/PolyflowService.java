@@ -127,7 +127,7 @@ public class PolyflowService {
         Query q = new Query();
         String datatype = "";
         if(scenario.startsWith("Electric"))
-            datatype = "GridInputWindowed";
+            datatype = "InputElectricity";
         else if(scenario.startsWith("Debs"))
             datatype = "TODO";
         else if(scenario.startsWith("Nexmark"))
