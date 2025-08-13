@@ -1,10 +1,12 @@
 package com.example.application.polyflow.datatypes.electricity;
 
 import com.example.application.data.AbstractEntity;
+import com.example.application.polyflow.datatypes.OutputTuple;
+import com.example.application.polyflow.datatypes.Tuple;
 import jakarta.persistence.Entity;
 
 @Entity
-public class OutputElectricity extends AbstractEntity {
+public class OutputElectricity extends OutputTuple {
 
     private String recordId;
     private Long consA;

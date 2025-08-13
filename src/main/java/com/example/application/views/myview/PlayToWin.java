@@ -4,6 +4,12 @@ import com.example.application.data.*;
 import com.example.application.polyflow.datatypes.*;
 import com.example.application.polyflow.datatypes.electricity.InputElectricity;
 import com.example.application.polyflow.datatypes.electricity.OutputElectricity;
+import com.example.application.polyflow.datatypes.linearroad.InputLinearRoad;
+import com.example.application.polyflow.datatypes.linearroad.OutputLinearRoad;
+import com.example.application.polyflow.datatypes.nexmark.InputAuction;
+import com.example.application.polyflow.datatypes.nexmark.OutputAuction;
+import com.example.application.polyflow.datatypes.nyctaxi.InputTaxi;
+import com.example.application.polyflow.datatypes.nyctaxi.OutputTaxi;
 import com.example.application.services.PolyflowService;
 import com.example.application.services.SampleGridService;
 import com.example.application.services.SampleStockService;
@@ -88,13 +94,12 @@ public class PlayToWin extends Composite<VerticalLayout> {
     private HorizontalLayout bottomCentralRow;
     private Class<?> sampleOutputClass;
     private Class<?> sampleInputClass;
-    private List<InputElectricity> inputGridList;
-    private List<InputElectricity> inputGridListActual;
-    private List<InputElectricity> outputGridList;
-    private List<InputElectricity> inputAnnotatedGridList;
-    private List<GridOutputAnnotated> outputAnnotatedGridList;
-    private List<GridOutputQuantified> outputQuantifiedGridList;
-    private List<StockInput> stockInputArrayList;
+    private List<Tuple> inputGridList;
+    private List<Tuple> inputGridListActual;
+   // private List<Tuple> outputGridList;
+   // private List<Tuple> inputAnnotatedGridList;
+   // private List<GridOutputAnnotated> outputAnnotatedGridList;
+    //private List<GridOutputQuantified> outputQuantifiedGridList;
     private boolean setLocal = false;
     private int counterInput = 0;
     private List<OutputElectricity> actualOutput;
@@ -138,7 +143,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
         bottomRow = new HorizontalLayout();
         ComboBox<String> selectScenarios = new ComboBox<>();
         selectScenarios.setLabel("Scenario");
-        selectScenarios.setItems("Electric Grid", "Stock (Yahoo)", "Linear Road", "DEBS Challenges '12", "DEBS Challenges '16", "DEBS Challenges '22");
+        selectScenarios.setItems("Electric Grid", "NYC Taxi (DEBS 2015)", "Linear Road", "Nexmark");
         selectScenarios.setValue("Electric Grid");
         columnsToRemoveForStream.addAll(List.of("id", "version", "cursor", "operatorId", "intervalId"));
         columnsToShowForAggregation.addAll(List.of("consA", "consB"));
@@ -166,16 +171,31 @@ public class PlayToWin extends Composite<VerticalLayout> {
                     sampleInputClass = InputElectricity.class;
                     loadPage(selectScenarios, event.getValue());
 
-
                     break;
-                case "Stock (Yahoo)":
-                    sampleOutputClass = StockOutput.class;
-                    sampleInputClass = StockInput.class;
 
+                case "NYC Taxi (DEBS 2015)":
+                    sampleOutputClass = InputTaxi.class;
+                    sampleInputClass = OutputTaxi.class;
 
                     loadPage(selectScenarios, event.getValue());
                     break;
-                default: loadPage(selectScenarios, "Electric Grid");
+
+                case "Linear Road":
+                    sampleOutputClass = InputLinearRoad.class;
+                    sampleInputClass = OutputLinearRoad.class;
+
+                    loadPage(selectScenarios, event.getValue());
+                    break;
+
+                case "Nexmark":
+                    sampleOutputClass = InputAuction.class;
+                    sampleInputClass = OutputAuction.class;
+
+                    loadPage(selectScenarios, event.getValue());
+                    break;
+
+                default: throw new RuntimeException("Error in scenario selection");
+
             }
         });
 
@@ -533,11 +553,11 @@ public class PlayToWin extends Composite<VerticalLayout> {
                 Notification.show("Inserting Next Event.").setPosition(Notification.Position.TOP_START);
 
                 if (counterInput!=0){
-                    InputElectricity prevGridInput = inputGridListActual.get(counterInput-1);
+                    Tuple prevGridInput = inputGridListActual.get(counterInput-1);
                     prevGridInput.setCursor("");
                 }
 
-                InputElectricity gridInput = inputGridList.get(counterInput++);
+                Tuple gridInput = inputGridList.get(counterInput++);
                 gridInput.setCursor(">");
                 inputGridListActual.add(gridInput);
                 basicGrid.getDataProvider().refreshAll();
@@ -1695,7 +1715,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
             grid.setItems(inputGridList);
         }
-        else if (scenario.equals("Stock (Yahoo)")){
+        /*else if (scenario.equals("Stock (Yahoo)")){
 
             List<String> strings = Arrays.asList("AAPL", "GOOGL", "AMZN");
             Random randomName = new Random(0L);
@@ -1720,7 +1740,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
                     grid.getColumnByKey("timestamp"), grid.getColumnByKey("name"), grid.getColumnByKey("dollars"));
             grid.setColumnOrder(strings3);
             grid.setItems(stockInputArrayList);
-        }
+        }*/
 
         else {
             grid.setItems(query -> sampleGridService.list(
