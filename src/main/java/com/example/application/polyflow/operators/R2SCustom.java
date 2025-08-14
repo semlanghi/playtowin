@@ -2,14 +2,16 @@ package com.example.application.polyflow.operators;
 
 import com.example.application.polyflow.datatypes.Tuple;
 import com.example.application.polyflow.datatypes.Table;
+import com.example.application.polyflow.datatypes.TuplesOrResult;
+import dev.mccue.josql.QueryResults;
 import org.streamreasoning.polyflow.api.operators.r2s.RelationToStreamOperator;
 
 import java.util.List;
 import java.util.stream.Stream;
 
-public class R2SCustom implements RelationToStreamOperator<List<Tuple>, Tuple> {
+public class R2SCustom implements RelationToStreamOperator<TuplesOrResult, List<Object>> {
     @Override
-    public Stream<Tuple> eval(List<Tuple> table, long ts){
-        return table.stream();
+    public Stream<List<Object>> eval(TuplesOrResult table, long ts){
+        return table.getQueryResult().stream();
     }
 }

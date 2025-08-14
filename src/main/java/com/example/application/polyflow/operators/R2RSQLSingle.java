@@ -2,15 +2,17 @@ package com.example.application.polyflow.operators;
 
 import com.example.application.polyflow.datatypes.Tuple;
 import com.example.application.polyflow.datatypes.Tuple;
+import com.example.application.polyflow.datatypes.TuplesOrResult;
 import dev.mccue.josql.Query;
 import dev.mccue.josql.QueryExecutionException;
+import dev.mccue.josql.QueryResults;
 import org.streamreasoning.polyflow.api.operators.r2r.RelationToRelationOperator;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class R2RSQLSingle implements RelationToRelationOperator<List<Tuple>> {
+public class R2RSQLSingle implements RelationToRelationOperator<TuplesOrResult> {
 
     public String resName;
     public List<String> tvgNames;
@@ -24,13 +26,17 @@ public class R2RSQLSingle implements RelationToRelationOperator<List<Tuple>> {
     }
 
     @Override
-    public List<Tuple> eval(List<List<Tuple>> list) {
+    public TuplesOrResult eval(List<TuplesOrResult> list) {
         windowedData = new ArrayList<>();
-        list.forEach(l -> windowedData.addAll(l));
+        list.forEach(l -> windowedData.addAll(l.getWindowContent()));
 
         try {
 
-            System.out.println(query.execute(windowedData).getResults());
+            List queryResults = query.execute(windowedData).getResults();
+
+            TuplesOrResult res = new TuplesOrResult(windowedData);
+            res.setQueryResult(queryResults);
+            return res;
 
         } catch (QueryExecutionException e) {
             throw new RuntimeException(e);
@@ -57,7 +63,6 @@ public class R2RSQLSingle implements RelationToRelationOperator<List<Tuple>> {
 //
 //        cars.retrieve(q.getQuery()).stream().map(gridInputWindowed -> gridInputWindowed.getConsA());
 
-        return windowedData;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.example.application.polyflow.operators;
 
 import com.example.application.polyflow.datatypes.Tuple;
+import com.example.application.polyflow.datatypes.TuplesOrResult;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.streamreasoning.polyflow.api.enums.Tick;
@@ -16,11 +17,12 @@ import org.streamreasoning.polyflow.api.secret.tick.Ticker;
 import org.streamreasoning.polyflow.api.secret.tick.secret.TickerFactory;
 import org.streamreasoning.polyflow.api.secret.time.Time;
 import org.streamreasoning.polyflow.api.secret.time.TimeInstant;
+import org.streamreasoning.polyflow.base.sds.TimeVaryingObject;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class AggregateFrame implements StreamToRelationOperator<Tuple, Tuple, List<Tuple>> {
+public class AggregateFrame implements StreamToRelationOperator<Tuple, Tuple, TuplesOrResult> {
 
 
     private static final Logger log = Logger.getLogger(org.streamreasoning.polyflow.base.operatorsimpl.s2r.HoppingWindowOpImpl.class);
@@ -28,7 +30,7 @@ public class AggregateFrame implements StreamToRelationOperator<Tuple, Tuple, Li
     protected Tick tick;
     protected final Time time;
     protected final String name;
-    protected final ContentFactory<Tuple, Tuple, List<Tuple>> cf;
+    protected final ContentFactory<Tuple, Tuple, TuplesOrResult> cf;
     protected Report report;
     private String attributeForComputation;
     private Comparator<Double>  comparator;
@@ -48,14 +50,14 @@ public class AggregateFrame implements StreamToRelationOperator<Tuple, Tuple, Li
     private int aggregation_function;
 
     private Window active_window;
-    private Content<Tuple, Tuple, List<Tuple>> active_content;
+    private Content<Tuple, Tuple, TuplesOrResult> active_content;
     //already closed windows
-    private Map<Window, Content<Tuple, Tuple, List<Tuple>>> expired_content;
+    private Map<Window, Content<Tuple, Tuple, TuplesOrResult>> expired_content;
 
     //elements that do not belong to ANY window
-    private Content<Tuple, Tuple, List<Tuple>> throw_content;
+    private Content<Tuple, Tuple, TuplesOrResult> throw_content;
 
-    public AggregateFrame(Tick tick, Time time, String name, ContentFactory<Tuple, Tuple, List<Tuple>> cf, Report report,
+    public AggregateFrame(Tick tick, Time time, String name, ContentFactory<Tuple, Tuple, TuplesOrResult> cf, Report report,
                           int frame_type, int frame_parameter, int aggregation_function, String attributeForComputation,
                           Comparator<Double> comparator) {
 
@@ -96,14 +98,14 @@ public class AggregateFrame implements StreamToRelationOperator<Tuple, Tuple, Li
     }
 
     @Override
-    public Content<Tuple, Tuple, List<Tuple>> content(long l) {
+    public Content<Tuple, Tuple, TuplesOrResult> content(long l) {
         return active_content;
     }
 
     @Override
-    public List<Content<Tuple, Tuple, List<Tuple>>> getContents(long l) {
+    public List<Content<Tuple, Tuple, TuplesOrResult>> getContents(long l) {
 
-        List<Content<Tuple, Tuple, List<Tuple>>> res = new ArrayList<>();
+        List<Content<Tuple, Tuple, TuplesOrResult>> res = new ArrayList<>();
         res.addAll(expired_content.values());
         res.add(active_content);
         res.add(throw_content);
@@ -111,8 +113,8 @@ public class AggregateFrame implements StreamToRelationOperator<Tuple, Tuple, Li
     }
 
     @Override
-    public TimeVarying<List<Tuple>> get() {
-        return new TimeVaryingDemo(this, this.name);
+    public TimeVarying<TuplesOrResult> get() {
+        return new TimeVaryingObject<>(this, name);
     }
 
     @Override
@@ -171,7 +173,7 @@ public class AggregateFrame implements StreamToRelationOperator<Tuple, Tuple, Li
                 context.count++;
             case 1:
             case 2:
-                context.v = aggregation(aggregation_function, active_content.coalesce(), active_content.size());
+                context.v = aggregation(aggregation_function, active_content.coalesce().getWindowContent(), active_content.size());
             case 3:
                 context.current_timestamp = ts;
         }

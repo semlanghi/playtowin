@@ -2,6 +2,7 @@ package com.example.application.polyflow.operators;
 
 
 import com.example.application.polyflow.datatypes.Tuple;
+import com.example.application.polyflow.datatypes.TuplesOrResult;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.streamreasoning.polyflow.api.enums.Tick;
@@ -17,28 +18,29 @@ import org.streamreasoning.polyflow.api.secret.tick.Ticker;
 import org.streamreasoning.polyflow.api.secret.tick.secret.TickerFactory;
 import org.streamreasoning.polyflow.api.secret.time.Time;
 import org.streamreasoning.polyflow.api.secret.time.TimeInstant;
+import org.streamreasoning.polyflow.base.sds.TimeVaryingObject;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class S2RHopping implements StreamToRelationOperator<Tuple, Tuple, List<Tuple>> {
+public class S2RHopping implements StreamToRelationOperator<Tuple, Tuple, TuplesOrResult> {
 
     private static final Logger log = Logger.getLogger(org.streamreasoning.polyflow.base.operatorsimpl.s2r.HoppingWindowOpImpl.class);
     protected final Ticker ticker;
     protected Tick tick;
     protected final Time time;
     protected final String name;
-    protected final ContentFactory<Tuple, Tuple, List<Tuple>> cf;
+    protected final ContentFactory<Tuple, Tuple, TuplesOrResult> cf;
     protected Report report;
     private final long width, slide;
-    private Map<Window, Content<Tuple, Tuple, List<Tuple>>> active_windows;
-    private Content<Tuple, Tuple, List<Tuple>> throw_content;
+    private Map<Window, Content<Tuple, Tuple, TuplesOrResult>> active_windows;
+    private Content<Tuple, Tuple, TuplesOrResult> throw_content;
     private List<Window> reported_windows;
     private Set<Window> to_evict;
     private long t0;
     private long toi;
 
-    public S2RHopping(Tick tick, Time time, String name, ContentFactory<Tuple, Tuple, List<Tuple>> cf, Report report,
+    public S2RHopping(Tick tick, Time time, String name, ContentFactory<Tuple, Tuple, TuplesOrResult> cf, Report report,
                                long width, long slide) {
 
         this.tick = tick;
@@ -88,7 +90,7 @@ public class S2RHopping implements StreamToRelationOperator<Tuple, Tuple, List<T
      * Returns the content of the last window closed before time t_e. If no such window exists, returns an empty content
      */
     @Override
-    public Content<Tuple, Tuple, List<Tuple>> content(long t_e) {
+    public Content<Tuple, Tuple, TuplesOrResult> content(long t_e) {
         // If some windows matched the report clause, return the last one that did so
         if (!reported_windows.isEmpty()) {
             return reported_windows.stream()
@@ -112,9 +114,9 @@ public class S2RHopping implements StreamToRelationOperator<Tuple, Tuple, List<T
      * Returns the content of all the windows closed before time t_e as a list of contents. If no such windows exist, returns an empty list of contents
      */
     @Override
-    public List<Content<Tuple, Tuple, List<Tuple>>> getContents(long t_e) {
+    public List<Content<Tuple, Tuple, TuplesOrResult>> getContents(long t_e) {
 
-        List<Content<Tuple, Tuple, List<Tuple>>> res = new ArrayList<>();
+        List<Content<Tuple, Tuple, TuplesOrResult>> res = new ArrayList<>();
         res.addAll(active_windows.values());
         res.add(throw_content);
         return res;
@@ -215,14 +217,13 @@ public class S2RHopping implements StreamToRelationOperator<Tuple, Tuple, List<T
 
     }
 
-
     @Override
-    public TimeVarying<List<Tuple>> get() {
-        return new TimeVaryingDemo(this, name);
+    public TimeVarying<TuplesOrResult> get() {
+        return new TimeVaryingObject<>(this, name);
     }
 
 
-    private Content<Tuple, Tuple, List<Tuple>> getWindowContent(Window w) {
+    private Content<Tuple, Tuple, TuplesOrResult> getWindowContent(Window w) {
         return active_windows.containsKey(w) ? active_windows.get(w) : cf.createEmpty();
     }
 

@@ -3,13 +3,19 @@ package com.example.application.polyflow.content;
 import com.example.application.polyflow.datatypes.Tuple;
 import com.example.application.polyflow.datatypes.Table;
 import com.example.application.polyflow.datatypes.Tuple;
+import com.example.application.polyflow.datatypes.TuplesOrResult;
 import org.streamreasoning.polyflow.api.secret.content.Content;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class AccumulatorContent implements Content<Tuple, Tuple, List<Tuple>> {
-    public List<Tuple> content = new ArrayList<>();
+public class AccumulatorContent implements Content<Tuple, Tuple, TuplesOrResult> {
+
+    private List<Tuple> content = new ArrayList<>();
+
+    public List<Tuple> getWindowContent(){
+        return this.content;
+    }
 
     @Override
     public int size() {
@@ -22,9 +28,9 @@ public class AccumulatorContent implements Content<Tuple, Tuple, List<Tuple>> {
     }
 
     @Override
-    public List<Tuple> coalesce() {
+    public TuplesOrResult coalesce() {
         //This is the state, if you modify it elsewhere it will also change in here
-        return content;
+        return new TuplesOrResult(content);
     }
 
 }

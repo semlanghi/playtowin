@@ -96,13 +96,9 @@ public class PlayToWin extends Composite<VerticalLayout> {
     private Class<?> sampleInputClass;
     private List<Tuple> inputGridList;
     private List<Tuple> inputGridListActual;
-   // private List<Tuple> outputGridList;
-   // private List<Tuple> inputAnnotatedGridList;
-   // private List<GridOutputAnnotated> outputAnnotatedGridList;
-    //private List<GridOutputQuantified> outputQuantifiedGridList;
-    private boolean setLocal = false;
     private int counterInput = 0;
-    private List<OutputElectricity> actualOutput;
+    List<OutputElectricity> actualOutput = new ArrayList<>();//TODO: remove this line, it's just to make shut up the errors
+
     private List<WindowRowSummary> windowRowSummaries;
     private Map<String, String> colorGraphs;
 
@@ -487,8 +483,41 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
                     for (WindowRowSummary windowRowSummary : windowRowSummaries) {
 
+                        //get the column names of the fields selected by the user in the query
+                        List<String> resultColumns = extractSelectFields(queryEditorText.getValue());
                         Tab tabRes = new Tab(windowRowSummary.name+" Results");
-                        Grid<OutputElectricity> resultGrid = getGridOutputWindowedGrid();
+
+                        //Create the result section with column names equal to the ones written by the user in the query
+                        Grid<Map<String, Object>> resultGrid = new Grid<>();
+                        List<Map<String, Object>> items = new ArrayList<>();
+                        resultGrid.setWidth("100%");
+                        resultGrid.setHeight("100%");
+                        resultGrid.getStyle().set("flex-grow", "1");
+                        //Add the columns with no value to the result Tab
+                        Map<String, Object> row = new LinkedHashMap<>();
+
+                        //Really ugly trick to make Select * work... let's avoid that shall we?
+                        if(resultColumns.size() == 1 && resultColumns.get(0).equals("*")){
+                            resultColumns = new ArrayList<>();
+                            resultColumns.addAll(((List<Grid.Column<?>>) (List<?>) basicGrid.getColumns()).stream()
+                                    .map(Grid.Column::getHeaderText)
+                                    .collect(Collectors.toList()));
+                        }
+
+                        for(String col : resultColumns){
+                            row.put(col, "");
+                        }
+                        items.add(row);
+
+                        //  determine column names
+                        if (!items.isEmpty()) {
+                            for (String columnKey : items.get(0).keySet()) {
+                                resultGrid.addColumn(r -> String.valueOf(r.get(columnKey)))
+                                        .setHeader(columnKey);
+                            }
+                        }
+                        resultGrid.setItems(items);
+
                         tabSheetBottomRight.add(tabRes, resultGrid);
                         resultGrids.put(windowRowSummary.name, resultGrid);
 
@@ -564,46 +593,43 @@ public class PlayToWin extends Composite<VerticalLayout> {
                 polyflowService.nextEvent(gridInput);
 
 
+                //get the query result
+                List<List<Object>> nextOutput = polyflowService.getNextOutput();
 
-                //ConsistencyGraph currentGraph = polyflowService.getCurrentGraph();
-
-                //updateSnapshotGraphFromContent(snapshotGraphSolo, nodes, edges, (ConsistencyGraphImpl) currentGraph);
-
-                List<Tuple> nextOutput = polyflowService.getNextOutput();
-                actualOutput = nextOutput.stream().map(el->{
-                    OutputElectricity g = new OutputElectricity();
-                    g.setIntervalId(el.getIntervalId());
-                    g.setOperatorId(el.getOperatorId());
-                    g.setTimestamp(el.getTimestamp());
-                    g.setRecordId(el.getRecordId());
-                    return g;
-                }).collect(Collectors.toList());
-
-
-
-//                inputAnnotatedGrid.setItems(actualOutput);
 
                 for (String windowName : resultGrids.keySet()) {
                     if (!windowName.contains("Mapping")) {
-                        Grid<OutputElectricity> resultGrid = resultGrids.get(windowName);
+                        Grid<Map<String, Object>> resultGrid = resultGrids.get(windowName);
+                        List<Map<String, Object>> items = new ArrayList<>();
 
-                        List<Grid.Column<OutputElectricity>> sgab = Arrays.asList(
-                                resultGrid.getColumnByKey("recordId"),
-                                resultGrid.getColumnByKey("operatorId"),
-                                resultGrid.getColumnByKey("intervalId"));
+                        List<String> resultColumns = extractSelectFields(queryEditorText.getValue());
 
-                        resultGrid.getColumnByKey("recordId").setWidth("50px");
-                        resultGrid.setColumnOrder(sgab);
+                        //Really ugly trick to make Select * work... let's avoid that shall we?
+                        if(resultColumns.size() == 1 && resultColumns.get(0).equals("*")){
+                            resultColumns = new ArrayList<>();
+                            resultColumns.addAll(((List<Grid.Column<?>>) (List<?>) basicGrid.getColumns()).stream()
+                                    .map(Grid.Column::getHeaderText)
+                                    .collect(Collectors.toList()));
+                        }
 
+                        //Iterate all the Rows in the result
+                        for(int i = 0; i< nextOutput.size(); i++) {
+                            //For each row, iterate on the columns
+                            Map<String, Object> row = new LinkedHashMap<>();
+                            for (int j=0; j<resultColumns.size(); j++) {
+                                row.put(resultColumns.get(j), nextOutput.get(i).get(j));
+                            }
+                            items.add(row);
+                        }
+
+                        resultGrid.setItems(items);
                         //ERRORE TAB NON E PARENT DI GRID
-                        resultGrid.setItems(actualOutput.stream().filter(el -> el.getOperatorId()
+                       /* resultGrid.setItems(actualOutput.stream().filter(el -> el.getOperatorId()
                                 .equals((tabSheetBottomRight.getTab(resultGrid)).getLabel().split(" ")[0])).collect(Collectors.toList()));
-
-
+*/
                         resultGrid.getDataProvider().refreshAll();
                     }
                 }
-
 
                 for (String windowName : graphs.keySet()) {
                     NetworkDiagram diagram = graphs.get(windowName);
@@ -620,23 +646,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
                             .collect(Collectors.toList()), colorGraphs, false);
 
 
-                    //TODO: removal
-//                    diagram.addDeselectNodeListener(event -> {
-//                        Optional<String> mappingKey = resultGrids.keySet().stream()
-//                                .filter(key -> key.contains("Mapping"))
-//                                .findFirst();
-//
-//                        if (mappingKey.isPresent()) {
-//                            String keyWithMapping = mappingKey.get();
-//
-//                            resultGrids.get(keyWithMapping).
-//
-//                        }
-//                    });
-
                     diagram.addSelectNodeListener(event -> {
-//                        Notification.show("Node selected "+ event.getParams().getArray("nodes").getString(0)).setPosition(Notification.Position.TOP_START);
-
 
 
                         Optional<String> mappingKey = resultGrids.keySet().stream()
@@ -1291,18 +1301,13 @@ public class PlayToWin extends Composite<VerticalLayout> {
     //TODO: this now reflects the query state, but it should be the query output
     private Grid<OutputElectricity> getGridOutputWindowedGrid() {
         Grid<OutputElectricity> inputAnnotatedGrid = new Grid<>(OutputElectricity.class);
+
         inputAnnotatedGrid.setWidth("100%");
         inputAnnotatedGrid.setHeight("100%");
         inputAnnotatedGrid.getStyle().set("flex-grow", "1");
         for(String s : columnsToRemoveForOutput){
             inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey(s));
         }
-        /*
-        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("version"));
-        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("id"));
-        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("consA"));
-        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("timestamp"));
-        inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey("consB"));*/
         return inputAnnotatedGrid;
     }
 
@@ -1842,6 +1847,41 @@ public class PlayToWin extends Composite<VerticalLayout> {
         } else return null;
 
         return null;
+    }
+
+    public static List<String> extractSelectFields(String sql) {
+        List<String> fields = new ArrayList<>();
+
+        // Regex: capture everything between SELECT and FROM
+        Pattern pattern = Pattern.compile("(?i)select\\s+(.*?)\\s+from", Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(sql);
+
+        if (matcher.find()) {
+            String selectPart = matcher.group(1);
+
+            // Split by commas (simple case, won't handle commas inside functions)
+            String[] parts = selectPart.split("\\s*,\\s*");
+
+            for (String part : parts) {
+                String trimmed = part.trim();
+
+                // If there's an "AS", keep only the alias
+                Matcher asMatcher = Pattern.compile("(?i)\\s+as\\s+([\\w\\d_]+)$").matcher(trimmed);
+                if (asMatcher.find()) {
+                    fields.add(asMatcher.group(1));
+                } else {
+                    // No AS clause, but maybe inline alias without AS: e.g., "col alias"
+                    String[] tokens = trimmed.split("\\s+");
+                    if (tokens.length > 1) {
+                        fields.add(tokens[tokens.length - 1]);
+                    } else {
+                        fields.add(trimmed);
+                    }
+                }
+            }
+        }
+
+        return fields;
     }
 
 

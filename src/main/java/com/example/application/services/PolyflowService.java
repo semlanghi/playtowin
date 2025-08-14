@@ -8,12 +8,14 @@ import com.example.application.polyflow.cgraph.ConsistencyGraph;
 import com.example.application.polyflow.content.factories.AccumulatorFactory;
 import com.example.application.polyflow.datatypes.EventBean;
 import com.example.application.polyflow.datatypes.Tuple;
+import com.example.application.polyflow.datatypes.TuplesOrResult;
 import com.example.application.polyflow.operators.*;
 import com.example.application.polyflow.reportingStrategies.Always;
 import com.example.application.polyflow.stream.DataStreamImpl;
 import com.example.application.views.myview.PlayToWin;
 import dev.mccue.josql.Query;
 import dev.mccue.josql.QueryParseException;
+import dev.mccue.josql.QueryResults;
 import org.apache.commons.configuration.ConfigurationException;
 import org.springframework.stereotype.Service;
 import org.streamreasoning.polyflow.api.enums.Tick;
@@ -29,6 +31,7 @@ import org.streamreasoning.polyflow.api.secret.time.TimeImpl;
 import org.streamreasoning.polyflow.api.stream.data.DataStream;
 import org.streamreasoning.polyflow.base.processing.ContinuousProgramImpl;
 import org.streamreasoning.polyflow.base.sds.SDSDefault;
+import org.streamreasoning.polyflow.base.sds.TimeVaryingObject;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Comparator;
@@ -43,17 +46,15 @@ import java.util.stream.Collectors;
 public class PolyflowService {
     //private final EngineConfiguration ec;
     private final AtomicInteger eventCounter = new AtomicInteger(1);
-    private ContinuousProgram<Tuple, Tuple, List<Tuple>, Tuple> cp;
+    // "O" is a List<Object> because the result of the query of the API we use is a List of Lists, where each sublist represents a row and have multiple values inside
+    private ContinuousProgram<Tuple, Tuple, TuplesOrResult, List<Object>> cp;
     private ConsistencyGraph<Long> consistencyGraph;
-    private List<Tuple> out;
+    private List<List<Object>> out;
     private DataStream<Tuple> eventStream;
-    //private EventQuery<Long> id;
-    //private R2RDoubleConsistencyAnnotator<Long> longR2RConsistencyAnnotator;
+
     private boolean registered = false;
 
     public PolyflowService() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, ConfigurationException {
-        //Load engine configuration from yasper/target/classes/csparql.properties
-        //ec = new EngineConfiguration("/home/ale/University/playtowin/src/main/resources/default.properties");
         out = new LinkedList<>();
     }
 
@@ -62,67 +63,23 @@ public class PolyflowService {
         //return longR2RConsistencyAnnotator.getCurrentGraphs();
     }
 
-    public ContinuousProgram<Tuple, Tuple, List<Tuple>, Tuple> register(String scenario, String query, List<PlayToWin.WindowRowSummary> windowRowSummaries) throws ConfigurationException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public ContinuousProgram<Tuple, Tuple, TuplesOrResult, List<Object>> register(String scenario, String query, List<PlayToWin.WindowRowSummary> windowRowSummaries) throws ConfigurationException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
 
         registered = true;
 
 
         DataStream<Tuple> inputStream = new DataStreamImpl<>("inputStream");
-        DataStream<Tuple> outputStream = new DataStreamImpl<>("outputStream");
+        DataStream<List<Object>> outputStream = new DataStreamImpl<>("outputStream");
         this.eventStream = inputStream;
 
         Time instance = new TimeImpl(0);
         Report report = new ReportImpl();
         report.add(new Always());
 
-        ContentFactory<Tuple, Tuple, List<Tuple>> contentFactory = new AccumulatorFactory();
+        ContentFactory<Tuple, Tuple, TuplesOrResult> contentFactory = new AccumulatorFactory();
 
-        List<StreamToRelationOperator<Tuple, Tuple, List<Tuple>>> streamToRelationOperatorList = getStreamToRelationOperators(windowRowSummaries, instance, contentFactory, report);
-            /*StreamToRelationOperator<Tuple, Tuple, List<Tuple>> s2r_1 = new S2RHopping(
-                    Tick.TIME_DRIVEN,
-                    instance,
-                    "TW1",
-                    contentFactory,
-                    report,
-                    3,
-                    1);
+        List<StreamToRelationOperator<Tuple, Tuple, TuplesOrResult>> streamToRelationOperatorList = getStreamToRelationOperators(windowRowSummaries, instance, contentFactory, report);
 
-            StreamToRelationOperator<Tuple, Tuple, List<Tuple>> s2r_2 = new S2RHopping(
-                    Tick.TIME_DRIVEN,
-                    instance,
-                    "TW2",
-                    contentFactory,
-                    report,
-                    3,
-                    1);*/
-//            StreamToRelationOperator<Tuple, Tuple, List<Tuple>> s2r_1 = new AggregateFrame(
-//                    Tick.TIME_DRIVEN,
-//                    instance,
-//                    "TW1",
-//                    contentFactory,
-//                    report,
-//                    3,
-//                    2,
-//                    1);
-//
-//            StreamToRelationOperator<Tuple, Tuple, List<Tuple>> s2r_2 = new AggregateFrame(
-//                    Tick.TIME_DRIVEN,
-//                    instance,
-//                    "TW2",
-//                    contentFactory,
-//                    report,
-//                    0,
-//                    32,
-//                    1);
-
-
-//        try {
-//            PlainSelect select = (PlainSelect) CCJSqlParserUtil.parse(query, parser -> parser
-//                    .withSquareBracketQuotation(true));
-//
-//        } catch (JSQLParserException e) {
-//            throw new RuntimeException(e);
-//        }
 
         Query q = new Query();
         String datatype = "";
@@ -142,10 +99,10 @@ public class PolyflowService {
 
             R2RSQLSingle r2r = new R2RSQLSingle(q, streamToRelationOperatorList.stream().map(StreamToRelationOperator::getName).toList(), "result");
 
-            ContinuousProgram<Tuple, Tuple, List<Tuple>, Tuple> cp = new ContinuousProgramImpl<>();
-            Task<Tuple, Tuple, List<Tuple>, Tuple> task = new CustomTask<>("1");
-            RelationToStreamOperator<List<Tuple>, Tuple> r2sOp = new R2SCustom();
-            for (StreamToRelationOperator<Tuple, Tuple, List<Tuple>> tmp : streamToRelationOperatorList) {
+            ContinuousProgram<Tuple, Tuple, TuplesOrResult, List<Object>> cp = new ContinuousProgramImpl<>();
+            Task<Tuple, Tuple, TuplesOrResult, List<Object>> task = new CustomTask<>("1");
+            RelationToStreamOperator<TuplesOrResult, List<Object>> r2sOp = new R2SCustom();
+            for (StreamToRelationOperator<Tuple, Tuple, TuplesOrResult> tmp : streamToRelationOperatorList) {
                 task.addS2ROperator(tmp, inputStream);
             }
 
@@ -168,10 +125,6 @@ public class PolyflowService {
         return cp;
     }
 
-    public ConsistencyGraph<EventBean<Long>> getCurrentGraph() {
-        //return longR2RConsistencyAnnotator.getCurrentGraph();
-        return null;
-    }
 
     public boolean isRegistered() {
         return registered;
@@ -183,17 +136,17 @@ public class PolyflowService {
     }
 
 
-    public List<Tuple> getNextOutput() {
-        LinkedList<Tuple> res = new LinkedList<>();
+    public List<List<Object>> getNextOutput() {
+        LinkedList<List<Object>> res = new LinkedList<>();
         res.addAll(out);
         out = new LinkedList<>();
         return res;
     }
 
-    public List<StreamToRelationOperator<Tuple, Tuple, List<Tuple>>> getStreamToRelationOperators(List<PlayToWin.WindowRowSummary> windowRowSummaries, Time instance, ContentFactory<Tuple, Tuple, List<Tuple>> contentFactory, Report report) {
-        return windowRowSummaries.stream().map(new Function<PlayToWin.WindowRowSummary, StreamToRelationOperator<Tuple, Tuple, List<Tuple>>>() {
+    public List<StreamToRelationOperator<Tuple, Tuple, TuplesOrResult>> getStreamToRelationOperators(List<PlayToWin.WindowRowSummary> windowRowSummaries, Time instance, ContentFactory<Tuple, Tuple, TuplesOrResult> contentFactory, Report report) {
+        return windowRowSummaries.stream().map(new Function<PlayToWin.WindowRowSummary, StreamToRelationOperator<Tuple, Tuple, TuplesOrResult>>() {
             @Override
-            public StreamToRelationOperator<Tuple, Tuple, List<Tuple>> apply(PlayToWin.WindowRowSummary windowRowSummary) {
+            public StreamToRelationOperator<Tuple, Tuple, TuplesOrResult> apply(PlayToWin.WindowRowSummary windowRowSummary) {
                 if (windowRowSummary.getName().contains("TW")) {
                     return new S2RHopping(
                             Tick.TIME_DRIVEN,
