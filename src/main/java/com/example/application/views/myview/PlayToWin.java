@@ -320,16 +320,6 @@ public class PlayToWin extends Composite<VerticalLayout> {
         tabSheet3.add("Window Editor", windowEditor);
 
 
-//        HashMap<String, Integer> windowCounter = new HashMap<>();
-//
-//        for (WindowRowSummary windowRowSummary : windowRowSummaries) {
-//            String windowType = windowRowSummary.getName().replaceAll("\\d", "");
-//
-//            windowCounter.putIfAbsent(windowType, 1);
-//            windowRowSummary.setName(windowType +"_"+windowCounter.get(windowRowSummary.getName()));
-//            windowCounter.put(windowType, windowCounter.get(windowType)+1);
-//        }
-
         //Summary Tab
         HorizontalLayout summaryLayout = new HorizontalLayout();
         VerticalLayout summaryWindows = new VerticalLayout();
@@ -458,6 +448,16 @@ public class PlayToWin extends Composite<VerticalLayout> {
                     }
 
                     basicGrid.setItems(inputGridListActual);
+
+                    //For API issues, if the query is a "select *" we substitute the "*" with all the fields..
+                    String attributes = String.join(", ", ((List<Grid.Column<?>>) (List<?>) basicGrid.getColumns()).stream()
+                            .map(c->c.getKey())
+                            .collect(Collectors.toList()));
+
+                    //Replace the "*" with the attributes
+
+                    queryEditorText.setValue(queryEditorText.getValue().replaceFirst("(?i)select\\s*\\*", "SELECT " + attributes));
+
                     polyflowService.register(scenario, queryEditorText.getValue(), windowRowSummaries);
 
                     if (tabSheetUpperRight.getTabAt(0).getLabel().equals("Window State")){
@@ -497,12 +497,12 @@ public class PlayToWin extends Composite<VerticalLayout> {
                         Map<String, Object> row = new LinkedHashMap<>();
 
                         //Really ugly trick to make Select * work... let's avoid that shall we?
-                        if(resultColumns.size() == 1 && resultColumns.get(0).equals("*")){
+                        /*if(resultColumns.size() == 1 && resultColumns.get(0).equals("*")){
                             resultColumns = new ArrayList<>();
                             resultColumns.addAll(((List<Grid.Column<?>>) (List<?>) basicGrid.getColumns()).stream()
-                                    .map(Grid.Column::getHeaderText)
+                                    .map(c->c.getKey())
                                     .collect(Collectors.toList()));
-                        }
+                        }*/
 
                         for(String col : resultColumns){
                             row.put(col, "");
@@ -605,12 +605,13 @@ public class PlayToWin extends Composite<VerticalLayout> {
                         List<String> resultColumns = extractSelectFields(queryEditorText.getValue());
 
                         //Really ugly trick to make Select * work... let's avoid that shall we?
-                        if(resultColumns.size() == 1 && resultColumns.get(0).equals("*")){
+                        /*if(resultColumns.size() == 1 && resultColumns.get(0).equals("*")){
                             resultColumns = new ArrayList<>();
                             resultColumns.addAll(((List<Grid.Column<?>>) (List<?>) basicGrid.getColumns()).stream()
-                                    .map(Grid.Column::getHeaderText)
+                                    .map(Grid.Column::getKey)
                                     .collect(Collectors.toList()));
-                        }
+
+                        }*/
 
                         //Iterate all the Rows in the result
                         for(int i = 0; i< nextOutput.size(); i++) {
@@ -1704,12 +1705,6 @@ public class PlayToWin extends Composite<VerticalLayout> {
             for (String s : columnsToRemoveForStream){
                 grid.removeColumn(grid.getColumnByKey(s));
             }
-            /*grid.removeColumn(grid.getColumnByKey("id"));
-            grid.removeColumn(grid.getColumnByKey("version"));
-            grid.removeColumn(grid.getColumnByKey("cursor"));
-            grid.removeColumn(grid.getColumnByKey("intervalId"));
-            grid.removeColumn(grid.getColumnByKey("operatorId"));*/
-
 
 
             List<Grid.Column> strings = Arrays.asList(grid.getColumnByKey("recordId"),

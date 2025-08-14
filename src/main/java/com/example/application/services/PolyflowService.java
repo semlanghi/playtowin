@@ -132,7 +132,6 @@ public class PolyflowService {
 
     public void nextEvent(Tuple row) {
         eventStream.put(row, row.getTimestamp());
-        ;
     }
 
 

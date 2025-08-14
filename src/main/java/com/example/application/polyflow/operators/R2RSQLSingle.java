@@ -43,26 +43,6 @@ public class R2RSQLSingle implements RelationToRelationOperator<TuplesOrResult> 
         }
 
 
-//        SQLParser<Tuple> parser = new SQLParser<>(Tuple.class);
-//
-//        Attribute<Tuple, Long> consA = attribute("consA", Tuple::getConsA);
-//        Attribute<Tuple, Long> consB = attribute("consB", Tuple::getConsB);
-//        Attribute<Tuple, Long> ts = attribute("ts", Tuple::getTimestamp);
-//        Attribute<Tuple, Long> id = attribute("id", Tuple::getId);
-//
-//        parser.registerAttribute(consA);
-//        parser.registerAttribute(consB);
-//        parser.registerAttribute(ts);
-//        parser.registerAttribute(id);
-//
-//        IndexedCollection<Tuple> cars = new ConcurrentIndexedCollection<Tuple>();
-//
-//        cars.addAll(windowedData);
-//
-//        ParseResult<Tuple> q = parser.parse( "SELECT ts FROM cars WHERE 'consA' = 8");
-//
-//        cars.retrieve(q.getQuery()).stream().map(gridInputWindowed -> gridInputWindowed.getConsA());
-
     }
 
     @Override
