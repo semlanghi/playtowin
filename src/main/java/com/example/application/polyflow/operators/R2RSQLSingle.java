@@ -9,7 +9,9 @@ import dev.mccue.josql.QueryResults;
 import org.streamreasoning.polyflow.api.operators.r2r.RelationToRelationOperator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class R2RSQLSingle implements RelationToRelationOperator<TuplesOrResult> {
@@ -27,21 +29,21 @@ public class R2RSQLSingle implements RelationToRelationOperator<TuplesOrResult> 
 
     @Override
     public TuplesOrResult eval(List<TuplesOrResult> list) {
-        windowedData = new ArrayList<>();
-        list.forEach(l -> windowedData.addAll(l.getWindowContent()));
+        TuplesOrResult finalRes = new TuplesOrResult();
+        /*For each Content of each window operator, we compute the query result and add it to a single object.
+            This is necessary because in the GUI we need to know the S2R that each element is associated to in order to correctly
+             show them separated in the Results Tab
+             */
+        for(int i = 0; i<list.size(); i++){
+            TuplesOrResult curr = list.get(i);
+            try{
+                finalRes.getResultContainer().put(curr.getOperatorId(), query.execute(curr.getWindowContent()).getResults());
+            }catch(QueryExecutionException e){
+                throw new RuntimeException(e);
+            }
 
-        try {
-
-            List queryResults = query.execute(windowedData).getResults();
-
-            TuplesOrResult res = new TuplesOrResult(windowedData);
-            res.setQueryResult(queryResults);
-            return res;
-
-        } catch (QueryExecutionException e) {
-            throw new RuntimeException(e);
         }
-
+        return finalRes;
 
     }
 

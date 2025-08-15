@@ -99,7 +99,13 @@ public class AggregateFrame implements StreamToRelationOperator<Tuple, Tuple, Tu
 
     @Override
     public Content<Tuple, Tuple, TuplesOrResult> content(long l) {
-        return active_content;
+        if(expired_content.keySet().isEmpty())
+            return cf.createEmpty();
+        return expired_content.get(expired_content.keySet().stream().max((w1, w2)->{
+            if(w1.getC()>w2.getC())
+                return 1;
+            else return -1;
+        }).get());
     }
 
     @Override
@@ -114,7 +120,7 @@ public class AggregateFrame implements StreamToRelationOperator<Tuple, Tuple, Tu
 
     @Override
     public TimeVarying<TuplesOrResult> get() {
-        return new TimeVaryingObject<>(this, name);
+        return new TimeVaryingTuplesOrResult(this, this.name);
     }
 
     @Override
@@ -198,10 +204,6 @@ public class AggregateFrame implements StreamToRelationOperator<Tuple, Tuple, Tu
         double field = arg.getAttributeForComputation(attributeForComputation);
         switch (frame_type) {
 
-           /* case 0: return (arg.getAttributeForComputation(attributeForComputation) >= frame_parameter && context.count == 0); // threshold
-            case 1: return (!(context.start)); // delta
-            case 2: return (!(context.start)); // aggregate
-            case 3: return (ts - context.current_timestamp <= frame_parameter && !(context.start)); // session*/
             case 0: return (comparator.compare(field, (double) frame_parameter) == 1 && context.count == 0); // threshold
             case 1: return (!(context.start)); // delta
             case 2: return (!(context.start)); // aggregate
@@ -231,10 +233,6 @@ public class AggregateFrame implements StreamToRelationOperator<Tuple, Tuple, Tu
     boolean close_pred(Tuple arg, long ts) {
         double field = arg.getAttributeForComputation(attributeForComputation);
         switch (frame_type) {
-            /*case 0: return (arg.getAttributeForComputation(attributeForComputation) < frame_parameter && context.count > 0);
-            case 1: return (Math.abs(context.v - arg.getAttributeForComputation(attributeForComputation)) >= frame_parameter && context.start);
-            case 2: return (context.v >= frame_parameter && context.start);
-            case 3: return (ts - context.current_timestamp > frame_parameter && context.start);*/
             case 0: return (comparator.compare(field, (double) frame_parameter) == -1 && context.count > 0);
             case 1: return (comparator.compare(Math.abs(context.v - field), (double) frame_parameter) == -1  && context.start);
             case 2: return (comparator.compare(context.v, (double) frame_parameter) == -1  && context.start);
@@ -264,6 +262,8 @@ public class AggregateFrame implements StreamToRelationOperator<Tuple, Tuple, Tu
                 active_window = null;
                 active_content = cf.createEmpty();
             }
+            //Report when the frame closes
+            time.addEvaluationTimeInstants(new TimeInstant(ts));
 
         }
 
@@ -290,23 +290,13 @@ public class AggregateFrame implements StreamToRelationOperator<Tuple, Tuple, Tu
             active_content.add(el);
         }
 
-        if(added == false){
+        if(added == false) {
             Tuple el = arg.copy();
             el.setIntervalId("throw");
             el.setOperatorId(this.name);
             throw_content.add(el);
         }
 
-        //First version of the demo, we just always report
-        time.addEvaluationTimeInstants(new TimeInstant(ts));
-
-        /*active_windows.keySet().stream()
-                .filter(w -> report.report(w, getWindowContent(w), ts, System.currentTimeMillis()))
-                .max(Comparator.comparingLong(Window::getC))
-                .ifPresent(window -> {
-                    reported_windows.add(window);
-                    time.addEvaluationTimeInstants(new TimeInstant(ts));
-                });*/
 
         time.setAppTime(ts);
     }

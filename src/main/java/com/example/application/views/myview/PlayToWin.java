@@ -496,13 +496,6 @@ public class PlayToWin extends Composite<VerticalLayout> {
                         //Add the columns with no value to the result Tab
                         Map<String, Object> row = new LinkedHashMap<>();
 
-                        //Really ugly trick to make Select * work... let's avoid that shall we?
-                        /*if(resultColumns.size() == 1 && resultColumns.get(0).equals("*")){
-                            resultColumns = new ArrayList<>();
-                            resultColumns.addAll(((List<Grid.Column<?>>) (List<?>) basicGrid.getColumns()).stream()
-                                    .map(c->c.getKey())
-                                    .collect(Collectors.toList()));
-                        }*/
 
                         for(String col : resultColumns){
                             row.put(col, "");
@@ -565,15 +558,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
             }
         });
 
-
-
-
-
         Button buttonNext = new Button();
-
-
-
-
 
 
         buttonNext.addClickListener(buttonClickEvent -> {
@@ -594,7 +579,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
 
                 //get the query result
-                List<List<Object>> nextOutput = polyflowService.getNextOutput();
+                TuplesOrResult nextOutput = polyflowService.getNextOutput();
 
 
                 for (String windowName : resultGrids.keySet()) {
@@ -604,30 +589,22 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
                         List<String> resultColumns = extractSelectFields(queryEditorText.getValue());
 
-                        //Really ugly trick to make Select * work... let's avoid that shall we?
-                        /*if(resultColumns.size() == 1 && resultColumns.get(0).equals("*")){
-                            resultColumns = new ArrayList<>();
-                            resultColumns.addAll(((List<Grid.Column<?>>) (List<?>) basicGrid.getColumns()).stream()
-                                    .map(Grid.Column::getKey)
-                                    .collect(Collectors.toList()));
-
-                        }*/
+                        Map<String, List<List>> resultContainer = nextOutput.getResultContainer();
+                        //Iterate the result of each S2R Operator
 
                         //Iterate all the Rows in the result
-                        for(int i = 0; i< nextOutput.size(); i++) {
+                        for (int i = 0; i < resultContainer.get(windowName).size() ; i++) {
                             //For each row, iterate on the columns
                             Map<String, Object> row = new LinkedHashMap<>();
-                            for (int j=0; j<resultColumns.size(); j++) {
-                                row.put(resultColumns.get(j), nextOutput.get(i).get(j));
+                            for (int j = 0; j < resultColumns.size(); j++) {
+                                row.put(resultColumns.get(j), resultContainer.get(windowName).get(i).get(j));
                             }
                             items.add(row);
                         }
 
+
                         resultGrid.setItems(items);
-                        //ERRORE TAB NON E PARENT DI GRID
-                       /* resultGrid.setItems(actualOutput.stream().filter(el -> el.getOperatorId()
-                                .equals((tabSheetBottomRight.getTab(resultGrid)).getLabel().split(" ")[0])).collect(Collectors.toList()));
-*/
+
                         resultGrid.getDataProvider().refreshAll();
                     }
                 }

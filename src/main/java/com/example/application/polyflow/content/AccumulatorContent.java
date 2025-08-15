@@ -12,9 +12,17 @@ import java.util.List;
 public class AccumulatorContent implements Content<Tuple, Tuple, TuplesOrResult> {
 
     private List<Tuple> content = new ArrayList<>();
+    private String operatorId = "";
 
     public List<Tuple> getWindowContent(){
         return this.content;
+    }
+
+    public void setOperatorId(String operatorId){
+        this.operatorId = operatorId;
+    }
+    public String getOperatorId(){
+        return operatorId;
     }
 
     @Override

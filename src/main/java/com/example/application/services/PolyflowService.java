@@ -26,6 +26,7 @@ import org.streamreasoning.polyflow.api.processing.Task;
 import org.streamreasoning.polyflow.api.secret.content.ContentFactory;
 import org.streamreasoning.polyflow.api.secret.report.Report;
 import org.streamreasoning.polyflow.api.secret.report.ReportImpl;
+import org.streamreasoning.polyflow.api.secret.report.strategies.OnWindowClose;
 import org.streamreasoning.polyflow.api.secret.time.Time;
 import org.streamreasoning.polyflow.api.secret.time.TimeImpl;
 import org.streamreasoning.polyflow.api.stream.data.DataStream;
@@ -46,16 +47,17 @@ import java.util.stream.Collectors;
 public class PolyflowService {
     //private final EngineConfiguration ec;
     private final AtomicInteger eventCounter = new AtomicInteger(1);
-    // "O" is a List<Object> because the result of the query of the API we use is a List of Lists, where each sublist represents a row and have multiple values inside
-    private ContinuousProgram<Tuple, Tuple, TuplesOrResult, List<Object>> cp;
+    // "O" is a TuplesOrResult because the result of the query of the API we use is a List of Lists, where each sublist represents a row and have multiple values inside
+    private ContinuousProgram<Tuple, Tuple, TuplesOrResult, TuplesOrResult> cp;
     private ConsistencyGraph<Long> consistencyGraph;
-    private List<List<Object>> out;
+   // private List<TuplesOrResult> out;
+    private TuplesOrResult out;
     private DataStream<Tuple> eventStream;
 
     private boolean registered = false;
 
     public PolyflowService() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, ConfigurationException {
-        out = new LinkedList<>();
+        out = new TuplesOrResult();
     }
 
     public List<ConsistencyGraph<EventBean<Long>>> getConsistencyGraphs() {
@@ -63,18 +65,18 @@ public class PolyflowService {
         //return longR2RConsistencyAnnotator.getCurrentGraphs();
     }
 
-    public ContinuousProgram<Tuple, Tuple, TuplesOrResult, List<Object>> register(String scenario, String query, List<PlayToWin.WindowRowSummary> windowRowSummaries) throws ConfigurationException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public ContinuousProgram<Tuple, Tuple, TuplesOrResult, TuplesOrResult> register(String scenario, String query, List<PlayToWin.WindowRowSummary> windowRowSummaries) throws ConfigurationException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
 
         registered = true;
 
 
         DataStream<Tuple> inputStream = new DataStreamImpl<>("inputStream");
-        DataStream<List<Object>> outputStream = new DataStreamImpl<>("outputStream");
+        DataStream<TuplesOrResult> outputStream = new DataStreamImpl<>("outputStream");
         this.eventStream = inputStream;
 
         Time instance = new TimeImpl(0);
         Report report = new ReportImpl();
-        report.add(new Always());
+        report.add(new OnWindowClose());
 
         ContentFactory<Tuple, Tuple, TuplesOrResult> contentFactory = new AccumulatorFactory();
 
@@ -99,9 +101,9 @@ public class PolyflowService {
 
             R2RSQLSingle r2r = new R2RSQLSingle(q, streamToRelationOperatorList.stream().map(StreamToRelationOperator::getName).toList(), "result");
 
-            ContinuousProgram<Tuple, Tuple, TuplesOrResult, List<Object>> cp = new ContinuousProgramImpl<>();
-            Task<Tuple, Tuple, TuplesOrResult, List<Object>> task = new CustomTask<>("1");
-            RelationToStreamOperator<TuplesOrResult, List<Object>> r2sOp = new R2SCustom();
+            ContinuousProgram<Tuple, Tuple, TuplesOrResult, TuplesOrResult> cp = new ContinuousProgramImpl<>();
+            Task<Tuple, Tuple, TuplesOrResult, TuplesOrResult> task = new CustomTask<>("1");
+            RelationToStreamOperator<TuplesOrResult, TuplesOrResult> r2sOp = new R2SCustom();
             for (StreamToRelationOperator<Tuple, Tuple, TuplesOrResult> tmp : streamToRelationOperatorList) {
                 task.addS2ROperator(tmp, inputStream);
             }
@@ -115,7 +117,7 @@ public class PolyflowService {
             task.initialize();
 
             //empty consumer
-            outputStream.addConsumer((stream, el, ts) -> {out.add(0, el);});
+            outputStream.addConsumer((stream, el, ts) -> {out = el;});
 
             cp.buildTask(task, List.of(inputStream), List.of(outputStream));
         } catch (QueryParseException e) {
@@ -135,12 +137,15 @@ public class PolyflowService {
     }
 
 
-    public List<List<Object>> getNextOutput() {
-        LinkedList<List<Object>> res = new LinkedList<>();
+   /* public List<TuplesOrResult> getNextOutput() {
+        LinkedList<TuplesOrResult> res = new LinkedList<>();
         res.addAll(out);
         out = new LinkedList<>();
         return res;
-    }
+    }*/
+   public TuplesOrResult getNextOutput() {
+       return out;
+   }
 
     public List<StreamToRelationOperator<Tuple, Tuple, TuplesOrResult>> getStreamToRelationOperators(List<PlayToWin.WindowRowSummary> windowRowSummaries, Time instance, ContentFactory<Tuple, Tuple, TuplesOrResult> contentFactory, Report report) {
         return windowRowSummaries.stream().map(new Function<PlayToWin.WindowRowSummary, StreamToRelationOperator<Tuple, Tuple, TuplesOrResult>>() {

@@ -219,7 +219,7 @@ public class S2RHopping implements StreamToRelationOperator<Tuple, Tuple, Tuples
 
     @Override
     public TimeVarying<TuplesOrResult> get() {
-        return new TimeVaryingObject<>(this, name);
+        return new TimeVaryingTuplesOrResult(this, name);
     }
 
 

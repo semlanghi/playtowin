@@ -2,17 +2,23 @@ package com.example.application.polyflow.datatypes;
 
 import dev.mccue.josql.QueryResults;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class TuplesOrResult implements Iterable<Tuple>{
 
     List<Tuple> windowContent;
-    List queryResult;
+    List<List> queryResult;
+
+    Map<String, List<List>> resultContainer = new HashMap<>();
+
+
+    private String operatorId = "";
 
     public TuplesOrResult(){
 
+    }
+    public Map<String, List<List>> getResultContainer(){
+        return this.resultContainer;
     }
     public TuplesOrResult (List<Tuple> windowContent){
         this.windowContent = windowContent;
@@ -31,6 +37,13 @@ public class TuplesOrResult implements Iterable<Tuple>{
         return this.windowContent;
     }
 
+    public void setOperatorId(String operatorId) {
+        this.operatorId = operatorId;
+
+    }
+    public String getOperatorId(){
+        return this.operatorId;
+    }
 
 
     @Override
