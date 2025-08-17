@@ -31,6 +31,7 @@ public class AggregateFrame implements StreamToRelationOperator<Tuple, Tuple, Tu
     protected final Time time;
     protected final String name;
     protected final ContentFactory<Tuple, Tuple, TuplesOrResult> cf;
+    protected TimeVaryingTuplesOrResult tvg;
     protected Report report;
     private String attributeForComputation;
     private Comparator<Double>  comparator;
@@ -120,6 +121,9 @@ public class AggregateFrame implements StreamToRelationOperator<Tuple, Tuple, Tu
 
     @Override
     public TimeVarying<TuplesOrResult> get() {
+        if(tvg != null)
+            return tvg;
+
         return new TimeVaryingTuplesOrResult(this, this.name);
     }
 
@@ -216,10 +220,7 @@ public class AggregateFrame implements StreamToRelationOperator<Tuple, Tuple, Tu
     boolean update_pred(Tuple arg, long ts) {
         double field = arg.getAttributeForComputation(attributeForComputation);
         switch (frame_type) {
-            /*case 0: return (arg.getAttributeForComputation(attributeForComputation) >= frame_parameter && context.count > 0);
-            case 1: return (Math.abs(context.v - arg.getAttributeForComputation(attributeForComputation)) < frame_parameter && context.start);
-            case 2: return (context.v < frame_parameter && context.start);
-            case 3: return (ts - context.current_timestamp <= frame_parameter && context.start);*/
+
             case 0: return (comparator.compare(field, (double) frame_parameter) == 1 && context.count > 0);
             case 1: return (comparator.compare(Math.abs(context.v - field), (double) frame_parameter) == 1 && context.start);
             case 2: return (comparator.compare(context.v, (double) frame_parameter) == 1 && context.start);

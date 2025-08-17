@@ -31,6 +31,7 @@ public class S2RHopping implements StreamToRelationOperator<Tuple, Tuple, Tuples
     protected final Time time;
     protected final String name;
     protected final ContentFactory<Tuple, Tuple, TuplesOrResult> cf;
+    protected TimeVaryingTuplesOrResult tvg;
     protected Report report;
     private final long width, slide;
     private Map<Window, Content<Tuple, Tuple, TuplesOrResult>> active_windows;
@@ -100,7 +101,7 @@ public class S2RHopping implements StreamToRelationOperator<Tuple, Tuple, Tuples
         //Else return the last window closed
         else {
             Optional<Window> max = active_windows.keySet().stream()
-                    .filter(w -> w.getO() < t_e && w.getC() < t_e)
+                    .filter(w -> w.getO() < t_e && w.getC() <= t_e)
                     .max(Comparator.comparingLong(Window::getC));
 
             if (max.isPresent())
@@ -181,25 +182,6 @@ public class S2RHopping implements StreamToRelationOperator<Tuple, Tuple, Tuples
             throw_content.add(el);
         }
 
-       /* active_windows.keySet().forEach(
-                w -> {
-                    if (w.getO() <= ts && ts < w.getC()) {
-                        *//*--- Custom code for the demo---*//*
-                        //We deep copy each element once for every interval in which it is added (to assign to each instance the correct interval ID)
-                        Tuple el = new Tuple();
-                        el.setIntervalId(w.toString());
-                        el.setOperatorId(this.name);
-                        el.setConsA(arg.getConsA());
-                        el.setConsB(arg.getConsB());
-                        el.setRecordId(arg.getRecordId());
-                        el.setTimestamp(arg.getTimestamp());
-                        el.setCursor(arg.getCursor());
-
-                        active_windows.get(w).add(el);
-                        added.set(true);
-                        //No eviction for the demo
-                    }
-                });*/
 
 
         //First version of the demo, we just always report
@@ -219,6 +201,9 @@ public class S2RHopping implements StreamToRelationOperator<Tuple, Tuple, Tuples
 
     @Override
     public TimeVarying<TuplesOrResult> get() {
+        if(tvg != null)
+            return tvg;
+
         return new TimeVaryingTuplesOrResult(this, name);
     }
 

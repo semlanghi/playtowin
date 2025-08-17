@@ -10,6 +10,7 @@ import com.example.application.polyflow.datatypes.nexmark.InputAuction;
 import com.example.application.polyflow.datatypes.nexmark.OutputAuction;
 import com.example.application.polyflow.datatypes.nyctaxi.InputTaxi;
 import com.example.application.polyflow.datatypes.nyctaxi.OutputTaxi;
+import com.example.application.polyflow.operators.TimeVaryingTuplesOrResult;
 import com.example.application.services.PolyflowService;
 import com.example.application.services.SampleGridService;
 import com.example.application.services.SampleStockService;
@@ -44,6 +45,7 @@ import elemental.json.JsonArray;
 import org.apache.commons.configuration.ConfigurationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.streamreasoning.polyflow.api.operators.s2r.execution.assigner.StreamToRelationOperator;
 import org.vaadin.addons.visjs.network.event.SelectNodeEvent;
 import org.vaadin.addons.visjs.network.main.Edge;
 import org.vaadin.addons.visjs.network.main.NetworkDiagram;
@@ -590,16 +592,18 @@ public class PlayToWin extends Composite<VerticalLayout> {
                         List<String> resultColumns = extractSelectFields(queryEditorText.getValue());
 
                         Map<String, List<List>> resultContainer = nextOutput.getResultContainer();
-                        //Iterate the result of each S2R Operator
 
-                        //Iterate all the Rows in the result
-                        for (int i = 0; i < resultContainer.get(windowName).size() ; i++) {
-                            //For each row, iterate on the columns
-                            Map<String, Object> row = new LinkedHashMap<>();
-                            for (int j = 0; j < resultColumns.size(); j++) {
-                                row.put(resultColumns.get(j), resultContainer.get(windowName).get(i).get(j));
+
+                        if(resultContainer.containsKey(windowName)) {
+                            //Iterate all the Rows in the result
+                            for (int i = 0; i < resultContainer.get(windowName).size(); i++) {
+                                //For each row, iterate on the columns
+                                Map<String, Object> row = new LinkedHashMap<>();
+                                for (int j = 0; j < resultColumns.size(); j++) {
+                                    row.put(resultColumns.get(j), resultContainer.get(windowName).get(i).get(j));
+                                }
+                                items.add(row);
                             }
-                            items.add(row);
                         }
 
 
@@ -609,15 +613,30 @@ public class PlayToWin extends Composite<VerticalLayout> {
                     }
                 }
 
+                //Get the windows operators
+                List<StreamToRelationOperator<Tuple, Tuple, TuplesOrResult>> s2rList = polyflowService.getStreamToRelationOperatorList();
+
+                //history of the window content to draw in the graph
+                List<Tuple> windowHistory = new ArrayList<>();
+                for(StreamToRelationOperator<Tuple, Tuple, TuplesOrResult> s2r : s2rList){
+                    TimeVaryingTuplesOrResult tvg = (TimeVaryingTuplesOrResult)s2r.get();
+
+                    //materialize the history of elements of the current window
+                    tvg.materialize_history(s2r.time().getAppTime());
+
+                    //Add everything to the history variable
+                    windowHistory.addAll(tvg.getHistory().getWindowContent());
+                }
+
                 for (String windowName : graphs.keySet()) {
                     NetworkDiagram diagram = graphs.get(windowName);
 
 
-                    updateWindowState(diagram, actualOutput.stream().filter(el -> el.getOperatorId()
+                    updateWindowState(diagram, windowHistory.stream().filter(el -> el.getOperatorId()
                             .equals((tabSheetUpperRight.getTab(diagram)).getLabel().split(" ")[0]))
-                            .sorted(new Comparator<OutputElectricity>() {
+                            .sorted(new Comparator<Tuple>() {
                                 @Override
-                                public int compare(OutputElectricity o1, OutputElectricity o2) {
+                                public int compare(Tuple o1, Tuple o2) {
                                     return Integer.compare(findFirstNumberInIntervalId(o1.getIntervalId()), findFirstNumberInIntervalId(o2.getIntervalId()));
                                 }
                             })
@@ -664,10 +683,10 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
                 NetworkDiagram diagramAll = graphs.get("All");
 
-                updateWindowState(diagramAll, actualOutput.stream()
-                        .sorted(new Comparator<OutputElectricity>() {
+                updateWindowState(diagramAll, windowHistory.stream()
+                        .sorted(new Comparator<Tuple>() {
                             @Override
-                            public int compare(OutputElectricity o1, OutputElectricity o2) {
+                            public int compare(Tuple o1, Tuple o2) {
                                 return Integer.compare(findFirstNumberInIntervalId(o1.getIntervalId()), findFirstNumberInIntervalId(o2.getIntervalId()));
                             }
                         })
@@ -1731,7 +1750,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
 
 
-    private void updateWindowState(NetworkDiagram snapshotGraph, List<OutputElectricity> results, Map<String, String> colors, boolean all) {
+    private void updateWindowState(NetworkDiagram snapshotGraph, List<Tuple> results, Map<String, String> colors, boolean all) {
 
         List<Edge> edges = new ArrayList<>();
         Map<String, Node> nodes = new HashMap<>();

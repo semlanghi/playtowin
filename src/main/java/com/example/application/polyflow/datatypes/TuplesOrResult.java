@@ -6,8 +6,8 @@ import java.util.*;
 
 public class TuplesOrResult implements Iterable<Tuple>{
 
-    List<Tuple> windowContent;
-    List<List> queryResult;
+    List<Tuple> windowContent = new ArrayList<>();
+    List<List> queryResult = new ArrayList<>();
 
     Map<String, List<List>> resultContainer = new HashMap<>();
 

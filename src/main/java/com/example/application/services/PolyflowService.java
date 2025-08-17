@@ -10,12 +10,10 @@ import com.example.application.polyflow.datatypes.EventBean;
 import com.example.application.polyflow.datatypes.Tuple;
 import com.example.application.polyflow.datatypes.TuplesOrResult;
 import com.example.application.polyflow.operators.*;
-import com.example.application.polyflow.reportingStrategies.Always;
 import com.example.application.polyflow.stream.DataStreamImpl;
 import com.example.application.views.myview.PlayToWin;
 import dev.mccue.josql.Query;
 import dev.mccue.josql.QueryParseException;
-import dev.mccue.josql.QueryResults;
 import org.apache.commons.configuration.ConfigurationException;
 import org.springframework.stereotype.Service;
 import org.streamreasoning.polyflow.api.enums.Tick;
@@ -32,13 +30,9 @@ import org.streamreasoning.polyflow.api.secret.time.TimeImpl;
 import org.streamreasoning.polyflow.api.stream.data.DataStream;
 import org.streamreasoning.polyflow.base.processing.ContinuousProgramImpl;
 import org.streamreasoning.polyflow.base.sds.SDSDefault;
-import org.streamreasoning.polyflow.base.sds.TimeVaryingObject;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -53,6 +47,7 @@ public class PolyflowService {
    // private List<TuplesOrResult> out;
     private TuplesOrResult out;
     private DataStream<Tuple> eventStream;
+    private List<StreamToRelationOperator<Tuple, Tuple, TuplesOrResult>> streamToRelationOperatorList = new ArrayList<>();
 
     private boolean registered = false;
 
@@ -80,7 +75,7 @@ public class PolyflowService {
 
         ContentFactory<Tuple, Tuple, TuplesOrResult> contentFactory = new AccumulatorFactory();
 
-        List<StreamToRelationOperator<Tuple, Tuple, TuplesOrResult>> streamToRelationOperatorList = getStreamToRelationOperators(windowRowSummaries, instance, contentFactory, report);
+        streamToRelationOperatorList = createStreamToRealationOperators(windowRowSummaries, instance, contentFactory, report);
 
 
         Query q = new Query();
@@ -147,7 +142,10 @@ public class PolyflowService {
        return out;
    }
 
-    public List<StreamToRelationOperator<Tuple, Tuple, TuplesOrResult>> getStreamToRelationOperators(List<PlayToWin.WindowRowSummary> windowRowSummaries, Time instance, ContentFactory<Tuple, Tuple, TuplesOrResult> contentFactory, Report report) {
+   public List<StreamToRelationOperator<Tuple, Tuple, TuplesOrResult>> getStreamToRelationOperatorList(){
+       return this.streamToRelationOperatorList;
+   }
+    public List<StreamToRelationOperator<Tuple, Tuple, TuplesOrResult>> createStreamToRealationOperators(List<PlayToWin.WindowRowSummary> windowRowSummaries, Time instance, ContentFactory<Tuple, Tuple, TuplesOrResult> contentFactory, Report report) {
         return windowRowSummaries.stream().map(new Function<PlayToWin.WindowRowSummary, StreamToRelationOperator<Tuple, Tuple, TuplesOrResult>>() {
             @Override
             public StreamToRelationOperator<Tuple, Tuple, TuplesOrResult> apply(PlayToWin.WindowRowSummary windowRowSummary) {
