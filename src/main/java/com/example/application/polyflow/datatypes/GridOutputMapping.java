@@ -3,11 +3,8 @@ package com.example.application.polyflow.datatypes;
 import com.example.application.data.AbstractEntity;
 import jakarta.persistence.Entity;
 
-import java.util.Collection;
-import java.util.Map;
-
 @Entity
-public class GridOutputWindowedMapping extends AbstractEntity {
+public class GridOutputMapping extends AbstractEntity {
 
     public String recordId;
     public String opTointervalIds = "";

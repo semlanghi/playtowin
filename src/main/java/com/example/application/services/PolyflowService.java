@@ -81,16 +81,16 @@ public class PolyflowService {
         Query q = new Query();
         String datatype = "";
         if(scenario.startsWith("Electric"))
-            datatype = "InputElectricity";
+            datatype = "electricity.InputElectricity";
         else if(scenario.startsWith("Debs"))
             datatype = "TODO";
         else if(scenario.startsWith("Nexmark"))
-            datatype = "TODO";
+            datatype = "nexmark.InputBid";
         else if(scenario.startsWith("Linear"))
             datatype = "TODO";
 
         try {
-            String replace = query.replace("[window]", "com.example.application.polyflow.datatypes.electricity."+datatype);
+            String replace = query.replace("[window]", "com.example.application.polyflow.datatypes."+datatype);
             System.out.println(replace);
             q.parse(replace);
 
@@ -132,12 +132,6 @@ public class PolyflowService {
     }
 
 
-   /* public List<TuplesOrResult> getNextOutput() {
-        LinkedList<TuplesOrResult> res = new LinkedList<>();
-        res.addAll(out);
-        out = new LinkedList<>();
-        return res;
-    }*/
    public TuplesOrResult getNextOutput() {
        return out;
    }

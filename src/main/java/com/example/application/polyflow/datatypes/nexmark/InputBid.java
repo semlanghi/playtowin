@@ -6,28 +6,34 @@ import jakarta.persistence.Entity;
 @Entity
 public class InputBid extends Tuple {
 
-    private long bidId;
     private long auction;
     private long bidder;
     private long price;
     private String channel;
     private String url;
-    private long dateTime;
+    private long timestamp;
     private String extra;
-
     private String recordId;
     private String operatorId;
     private String intervalId;
     private String cursor;
     private String attributeForComputation;
-    private long timestamp;
 
-    public long getBidId() {
-        return bidId;
-    }
-
-    public void setBidId(long bidId) {
-        this.bidId = bidId;
+    public InputBid copy(){
+        InputBid copy = new InputBid();
+        copy.setTimestamp(timestamp);
+        copy.setRecordId(recordId);
+        copy.setExtra(extra);
+        copy.setUrl(url);
+        copy.setChannel(channel);
+        copy.setPrice(price);
+        copy.setBidder(bidder);
+        copy.setAuction(auction);
+        copy.setOperatorId(this.operatorId);
+        copy.setIntervalId(this.intervalId);
+        copy.setCursor(cursor);
+        copy.setAttributeForComputation(attributeForComputation);
+        return copy;
     }
 
     public long getAuction() {
@@ -70,13 +76,6 @@ public class InputBid extends Tuple {
         this.url = url;
     }
 
-    public long getDateTime() {
-        return dateTime;
-    }
-
-    public void setDateTime(long dateTime) {
-        this.dateTime = dateTime;
-    }
 
     public String getExtra() {
         return extra;

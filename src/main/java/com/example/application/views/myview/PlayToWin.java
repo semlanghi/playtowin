@@ -7,6 +7,7 @@ import com.example.application.polyflow.datatypes.electricity.OutputElectricity;
 import com.example.application.polyflow.datatypes.linearroad.InputLinearRoad;
 import com.example.application.polyflow.datatypes.linearroad.OutputLinearRoad;
 import com.example.application.polyflow.datatypes.nexmark.InputAuction;
+import com.example.application.polyflow.datatypes.nexmark.InputBid;
 import com.example.application.polyflow.datatypes.nexmark.OutputAuction;
 import com.example.application.polyflow.datatypes.nyctaxi.InputTaxi;
 import com.example.application.polyflow.datatypes.nyctaxi.OutputTaxi;
@@ -186,8 +187,8 @@ public class PlayToWin extends Composite<VerticalLayout> {
                     break;
 
                 case "Nexmark":
-                    sampleOutputClass = InputAuction.class;
-                    sampleInputClass = OutputAuction.class;
+                    sampleOutputClass = InputBid.class;
+                    sampleInputClass = InputBid.class;
 
                     loadPage(selectScenarios, event.getValue());
                     break;
@@ -407,9 +408,9 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
 
         Map<String,Grid> resultGrids = new HashMap<>();
-        Grid<OutputElectricity> inputAnnotatedGrid = getGridOutputWindowedGrid();
+        Grid<String> emptyResultGrid = getGridOutputWindowedGrid();
 
-        tabSheetBottomRight.add("Results", inputAnnotatedGrid);
+        tabSheetBottomRight.add("Results", emptyResultGrid);
 
 
 
@@ -663,13 +664,13 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
                         if (!resultGrids.containsKey(nodeId)) {
                             Tab tabRes = new Tab(nodeId);
-                            Grid<GridOutputWindowedMapping> gridOutputWindowedMappingGrid = resetMappingTab(event, windowRowSummaries);
+                            Grid<GridOutputMapping> gridOutputWindowedMappingGrid = resetMappingTab(event, windowRowSummaries);
 
                             tabSheetBottomRight.add(tabRes, gridOutputWindowedMappingGrid);
                             resultGrids.put(nodeId, gridOutputWindowedMappingGrid);
                         } else {
                             Tab tabRes = new Tab(nodeId);
-                            Grid<GridOutputWindowedMapping> gridOutputWindowedMappingGrid = resetMappingTab(event, windowRowSummaries);
+                            Grid<GridOutputMapping> gridOutputWindowedMappingGrid = resetMappingTab(event, windowRowSummaries);
                             tabSheetBottomRight.remove(resultGrids.get(nodeId));
                             tabSheetBottomRight.add(tabRes, gridOutputWindowedMappingGrid);
                             resultGrids.put(nodeId, gridOutputWindowedMappingGrid);
@@ -694,7 +695,6 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
 
                 diagramAll.addSelectNodeListener(event -> {
-//                    Notification.show("Node selected "+ event.getParams().getArray("nodes").getString(0)).setPosition(Notification.Position.TOP_START);
 
                     Optional<String> mappingKey = resultGrids.keySet().stream()
                             .filter(key -> key.contains("Mapping"))
@@ -713,13 +713,13 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
                     if (!resultGrids.containsKey(nodeId)) {
                         Tab tabRes = new Tab(nodeId);
-                        Grid<GridOutputWindowedMapping> gridOutputWindowedMappingGrid = resetMappingTab(event, windowRowSummaries);
+                        Grid<GridOutputMapping> gridOutputWindowedMappingGrid = resetMappingTab(event, windowRowSummaries);
 
                         tabSheetBottomRight.add(tabRes, gridOutputWindowedMappingGrid);
                         resultGrids.put(nodeId, gridOutputWindowedMappingGrid);
                     } else {
                         Tab tabRes = new Tab(nodeId);
-                        Grid<GridOutputWindowedMapping> gridOutputWindowedMappingGrid = resetMappingTab(event, windowRowSummaries);
+                        Grid<GridOutputMapping> gridOutputWindowedMappingGrid = resetMappingTab(event, windowRowSummaries);
                         tabSheetBottomRight.remove(resultGrids.get(nodeId));
                         tabSheetBottomRight.add(tabRes, gridOutputWindowedMappingGrid);
                         resultGrids.put(nodeId, gridOutputWindowedMappingGrid);
@@ -736,8 +736,6 @@ public class PlayToWin extends Composite<VerticalLayout> {
         Button buttonPrimary2 = new Button();
         Button buttonPrimary3 = new Button();
 
-//        Button queryButton = new Button();
-//        Button buttonPrimary6 = new Button();
         Button buttonPrimary7 = new Button();
         H6 h6 = new H6();
         getContent().addClassName(Padding.XSMALL);
@@ -754,7 +752,6 @@ public class PlayToWin extends Composite<VerticalLayout> {
         leftColumn.addClassName(Gap.XSMALL);
         leftColumn.addClassName(Padding.XSMALL);
         leftColumn.setWidth("25%");
-//        leftColumn.setMinWidth("250px");
         leftColumn.setHeight("95%");
         leftColumn.setJustifyContentMode(JustifyContentMode.START);
         leftColumn.setAlignItems(Alignment.START);
@@ -787,30 +784,15 @@ public class PlayToWin extends Composite<VerticalLayout> {
         upperCentralTabSheet.setHeight("50%");
         upperCentralTabSheet.getStyle().set("flex-grow", "0");
 
-
-
-
-//        upperCentralTabSheet.add("Graph", snapshotGraphSolo);
-//        upperCentralTabSheet.add("Polynomials", inputAnnotatedGrid);
-
-
         bottomCentralRow.setWidthFull();
         centralColumn.setFlexGrow(1.0, bottomCentralRow);
         bottomCentralRow.setPadding(false);
-//        bottomCentralRow.setWidth("100%");
         bottomCentralRow.setHeight("50%");
-//        bottomCentralRow.setJustifyContentMode(JustifyContentMode.END);
-//        bottomCentralRow.setAlignItems(Alignment.CENTER);
 
-
-//        bottomCentralRow.setAlignSelf(Alignment.CENTER, queryEditor);
-//        queryEditor.setWidth("100%");
-//        queryEditor.setHeight("100%");
         rightColumn.setHeightFull();
         mainRow.setFlexGrow(1.0, rightColumn);
         rightColumn.addClassName(Padding.XSMALL);
         rightColumn.setWidth("40%");
-//        rightColumn.setMinWidth("80%");
         rightColumn.setHeight("95%");
         tabSheetBottomRight.setWidth("90%");
         tabSheetBottomRight.setHeight("100%");
@@ -818,22 +800,11 @@ public class PlayToWin extends Composite<VerticalLayout> {
         tabSheetUpperRight.setHeight("100%");
         tabSheet3.setWidth("100%");
         tabSheet3.setHeight("100%");
-//        setTabSheetSampleData(tabSheetUpperRight);
-
-
-
-//        mainRow.setWidthFull();
-//        mainRow.setHeightFull();
-
-
 
 
         bottomRow.setWidthFull();
         getContent().setFlexGrow(1.0, bottomRow);
         bottomRow.addClassName(Gap.MEDIUM);
-//        bottomRow.addClassName(Padding.XSMALL);
-//        bottomRow.setWidth("100%");
-//        bottomRow.setHeight("1%");
         bottomRow.getStyle().set("flex-grow", "1");
         buttonNext.setText("Next");
         bottomRow.setAlignSelf(Alignment.CENTER, buttonNext);
@@ -847,14 +818,6 @@ public class PlayToWin extends Composite<VerticalLayout> {
         bottomRow.setAlignSelf(Alignment.CENTER, buttonPrimary3);
         buttonPrimary3.setWidth("min-content");
         buttonPrimary3.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
-//        bottomRow.setAlignSelf(Alignment.CENTER, queryButton);
-//        queryButton.setWidth("min-content");
-//        queryButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-//        buttonPrimary6.setText("LLM");
-//        bottomRow.setAlignSelf(Alignment.CENTER, buttonPrimary6);
-//        buttonPrimary6.setWidth("min-content");
-//        buttonPrimary6.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         buttonPrimary7.setText("Reset");
         bottomRow.setAlignSelf(Alignment.CENTER, buttonPrimary7);
         buttonPrimary7.setWidth("min-content");
@@ -880,7 +843,6 @@ public class PlayToWin extends Composite<VerticalLayout> {
         cdcd.setWidthFull();
         verticalLayout.add(new Text("time"));
         verticalLayout.add(cdcd);
-//        verticalLayout.add(new Icon(VaadinIcon.BOLT));
         horizontalLayout.add(verticalLayout);
         leftColumn.add(horizontalLayout);
 
@@ -890,16 +852,12 @@ public class PlayToWin extends Composite<VerticalLayout> {
         mainRow.add(centralColumn);
         centralColumn.add(upperCentralRow);
         centralColumn.add(bottomCentralRow);
-//        upperCentralRow.add(upperCentralTabSheet);
-//        centralColumn.add(tabSheet3);
         upperCentralRow.add(tabSheet3);
         mainRow.add(rightColumn);
 
 
         HorizontalLayout upperRightHorizontalLayout = new HorizontalLayout();
         HorizontalLayout bottomRightHorizontalLayout = new HorizontalLayout();
-//        upperRightHorizontalLayout.setHeightFull();
-//        upperRightHorizontalLayout.setWidthFull();
         upperRightHorizontalLayout.add(tabSheetUpperRight);
         bottomRightHorizontalLayout.add(tabSheetBottomRight);
 
@@ -908,21 +866,17 @@ public class PlayToWin extends Composite<VerticalLayout> {
         StreamResource streamResource1 = new StreamResource("time_dir.png",
                 () -> getClass().getResourceAsStream("/time_dir.png"));
         Image cdcd1 = new Image(streamResource1, "cdcd1");
-        VerticalLayout verticalUpperRightLayout = new VerticalLayout();
         VerticalLayout verticalBottomRightLayout = new VerticalLayout();
 
         verticalBottomRightLayout.setWidth("10%");
         verticalBottomRightLayout.setHeightFull();
 
-//        verticalUpperRightLayout.setWidth("10%");
-//        verticalUpperRightLayout.setHeightFull();
 
         verticalBottomRightLayout.add(new Text("time"));
         verticalBottomRightLayout.add(cdcd1);
         cdcd1.setWidth("40%");
         cdcd1.setHeight("90%");
 
-//        upperRightHorizontalLayout.add(verticalUpperRightLayout);
         rightColumn.add(upperRightHorizontalLayout);
         upperRightHorizontalLayout.setWidthFull();
         upperRightHorizontalLayout.setHeight("60%");
@@ -933,15 +887,10 @@ public class PlayToWin extends Composite<VerticalLayout> {
         bottomRightHorizontalLayout.setHeight("40%");
 
 
-//        rightColumn.setWidth("25%");
-//        rightColumn.setHeight("80%");
         getContent().add(bottomRow);
         bottomRow.add(buttonNext);
-//        bottomRow.add(buttonPrimary2);
         bottomRow.add(buttonPrimary3);
         bottomRow.add(windowButton);
-//        bottomRow.add(queryButton);
-//        bottomRow.add(buttonPrimary6);
         bottomRow.add(buttonPrimary7);
         bottomRow.add(h6);
     }
@@ -950,10 +899,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
         windowRowSummary.setName(getWindowAbbrev(windowTypeValue));
         text.append(windowTypeValue);
-        /*if (windowTypeValue.equals("Frames:Aggregate")) {
-            text.append(" on aggregate ").append(result.get(index).selectAggregate().getValue());
-            windowRowSummary.setAttribute(result.get(index).selectAggregate().getValue()+"("+ result.get(index).selectAttribute().getValue()+")");
-        }*/
+
         if (windowTypeValue.startsWith("Frames")){
             if (windowTypeValue.equals("Frames:Aggregate")) {
                 text.append(" on aggregate ").append(result.get(index).selectAggregate().getValue());
@@ -1217,8 +1163,8 @@ public class PlayToWin extends Composite<VerticalLayout> {
     private record Result(ComboBox<String> selectWindowType, TextField threshold, ComboBox<String> selectAggregate, ComboBox<String> selectOp, ComboBox<String> selectAttribute, TextField size, TextField slide, TextField timeout) {
     }
 
-    private Grid<GridOutputWindowedMapping> resetMappingTab(SelectNodeEvent event, List<WindowRowSummary> windowRowSummaries) {
-        Map<String,GridOutputWindowedMapping> recordMappings = new HashMap<>();
+    private Grid<GridOutputMapping> resetMappingTab(SelectNodeEvent event, List<WindowRowSummary> windowRowSummaries) {
+        Map<String, GridOutputMapping> recordMappings = new HashMap<>();
 
         JsonArray nodes = event.getParams().getArray("nodes");
 
@@ -1235,7 +1181,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
                             if (recordMappings.containsKey(consumer.getRecordId())) {
                                 recordMappings.get(consumer.getRecordId()).add(consumer.getOperatorId(), consumer.getIntervalId());
                             } else {
-                                GridOutputWindowedMapping g = new GridOutputWindowedMapping();
+                                GridOutputMapping g = new GridOutputMapping();
                                 g.setRecordId(consumer.getRecordId());
                                 g.add(consumer.getOperatorId(), consumer.getIntervalId());
                                 recordMappings.put(consumer.getRecordId(), g);
@@ -1245,10 +1191,10 @@ public class PlayToWin extends Composite<VerticalLayout> {
         }
 
 
-        Grid<GridOutputWindowedMapping> resultGrid = getGridOutputWindowedMapping(windowRowSummaries.stream().map(wrs -> wrs.getName()).collect(Collectors.toList()));
-        resultGrid.setItems(recordMappings.values().stream().sorted(new Comparator<GridOutputWindowedMapping>() {
+        Grid<GridOutputMapping> resultGrid = getGridOutputWindowedMapping(windowRowSummaries.stream().map(wrs -> wrs.getName()).collect(Collectors.toList()));
+        resultGrid.setItems(recordMappings.values().stream().sorted(new Comparator<GridOutputMapping>() {
             @Override
-            public int compare(GridOutputWindowedMapping o1, GridOutputWindowedMapping o2) {
+            public int compare(GridOutputMapping o1, GridOutputMapping o2) {
                 String o1Id = o1.recordId;
                 String o2Id = o2.recordId;
 
@@ -1295,27 +1241,29 @@ public class PlayToWin extends Composite<VerticalLayout> {
     }
 
 
-    //TODO: this now reflects the query state, but it should be the query output
-    private Grid<OutputElectricity> getGridOutputWindowedGrid() {
-        Grid<OutputElectricity> inputAnnotatedGrid = new Grid<>(OutputElectricity.class);
+    private Grid<String> getGridOutputWindowedGrid() {
+        Grid<String> grid = new Grid<>();
 
-        inputAnnotatedGrid.setWidth("100%");
-        inputAnnotatedGrid.setHeight("100%");
-        inputAnnotatedGrid.getStyle().set("flex-grow", "1");
-        for(String s : columnsToRemoveForOutput){
-            inputAnnotatedGrid.removeColumn(inputAnnotatedGrid.getColumnByKey(s));
-        }
-        return inputAnnotatedGrid;
+        // Define at least one column
+        grid.addColumn(item -> item).setHeader("Value");
+
+        // No items (empty)
+        grid.setItems(Collections.emptyList());
+
+        grid.setWidth("100%");
+        grid.setHeight("100%");
+        grid.getStyle().set("flex-grow", "1");
+
+        return grid;
     }
 
-    private static Grid<GridOutputWindowedMapping> getGridOutputWindowedMapping(Collection<String> operatorsNames) {
-        Grid<GridOutputWindowedMapping> inputAnnotatedGrid = new Grid<>(GridOutputWindowedMapping.class, false);
+    private static Grid<GridOutputMapping> getGridOutputWindowedMapping(Collection<String> operatorsNames) {
+        Grid<GridOutputMapping> inputAnnotatedGrid = new Grid<>(GridOutputMapping.class, false);
 
-//        inputAnnotatedGrid.setColumns(operatorsNames.toArray(new String[0]));
 
-        inputAnnotatedGrid.addColumn(new ValueProvider<GridOutputWindowedMapping, String>() {
+        inputAnnotatedGrid.addColumn(new ValueProvider<GridOutputMapping, String>() {
             @Override
-            public String apply(GridOutputWindowedMapping gridOutputWindowedMapping) {
+            public String apply(GridOutputMapping gridOutputWindowedMapping) {
                 return gridOutputWindowedMapping.getRecordId();
             }
         }).setHeader("Record Id");
@@ -1323,9 +1271,9 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
 
         for (String op: operatorsNames){
-            inputAnnotatedGrid.addColumn(new ValueProvider<GridOutputWindowedMapping, String>() {
+            inputAnnotatedGrid.addColumn(new ValueProvider<GridOutputMapping, String>() {
                 @Override
-                public String apply(GridOutputWindowedMapping gridOutputWindowedMapping) {
+                public String apply(GridOutputMapping gridOutputWindowedMapping) {
                     StringBuilder intervalIds = new StringBuilder();
                     String[] split = gridOutputWindowedMapping.opTointervalIds.split(";");
                     for (int i = 0; i < split.length; i++) {
@@ -1346,55 +1294,6 @@ public class PlayToWin extends Composite<VerticalLayout> {
         return inputAnnotatedGrid;
     }
 
-    public static int findTimestamp(String input) {
-        int index = input.indexOf("timestamp=");
-        if (index != -1) {
-            int startIndex = index + "timestamp=".length();
-            int endIndex = startIndex;
-            while (endIndex < input.length() && Character.isDigit(input.charAt(endIndex))) {
-                endIndex++;
-            }
-            String timestampStr = input.substring(startIndex, endIndex);
-            try {
-                return Integer.parseInt(timestampStr);
-            } catch (NumberFormatException e) {
-                System.out.println("Error parsing timestamp: " + e.getMessage());
-            }
-        }
-        return -1;
-    }
-
-    private void setWindowScenario(String scenario, VerticalLayout windowEditor) {
-        if (scenario.equals("Electric Grid")){
-            extracted(windowEditor, "5", "5");
-            extracted(windowEditor, "7",  "7");
-
-        }else if (scenario.equals("Stock (Yahoo)")){
-            HorizontalLayout horizontalLayout = new HorizontalLayout();
-            Button removeButton = new Button();
-            removeButton.setText("X");
-            removeButton.addSingleClickListener(new ComponentEventListener<ClickEvent<Button>>() {
-                @Override
-                public void onComponentEvent(ClickEvent<Button> buttonClickEvent) {
-                    windowEditor.remove(horizontalLayout);
-                }
-            });
-
-            //String Building Based on the window
-            StringBuilder text = new StringBuilder();
-            text.append("Time-based Window").append(" with size 5 and slide 5");
-
-            horizontalLayout.add(removeButton);
-            horizontalLayout.setVerticalComponentAlignment(Alignment.CENTER, removeButton);
-            String text1 = text.toString();
-            horizontalLayout.add(text1);
-            horizontalLayout.setDefaultVerticalComponentAlignment(Alignment.CENTER);
-            windowEditor.add(horizontalLayout);
-        }else {
-            extracted(windowEditor, "5", "5");
-            extracted(windowEditor, "7",  "7");
-        }
-    }
 
     private void extracted(VerticalLayout windowEditor, String size, String slide) {
         HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -1420,21 +1319,6 @@ public class PlayToWin extends Composite<VerticalLayout> {
         windowEditor.add(horizontalLayout);
     }
 
-
-    public String findWordAfterAttribute(String input) {
-        int attributeIndex = input.indexOf("Attribute");
-        if (attributeIndex != -1) {
-            int start = attributeIndex + "Attribute".length() + 1; // Move to the character after 'Attribute'
-            int end = input.indexOf(' ', start); // Find the end of the word
-            if (end != -1) {
-                return input.substring(start, end);
-            } else {
-                // If there's no space after 'Attribute', return the substring from 'Attribute' to the end of the input
-                return input.substring(start);
-            }
-        }
-        return null; // No word found after 'Attribute'
-    }
 
 
     public class WindowRowSummary {
@@ -1492,27 +1376,6 @@ public class PlayToWin extends Composite<VerticalLayout> {
         public WindowRowSummary() {
         }
 
-        public WindowRowSummary(String name, String attribute, String operator, Long range) {
-            this.name = name;
-            this.attribute = attribute;
-            this.operator = operator;
-            this.range = range;
-        }
-
-        public WindowRowSummary(String name, Long timeout) {
-            this.name = name;
-            this.timeout = timeout;
-            this.attribute = "ND";
-            this.operator = "ND";
-        }
-
-        public WindowRowSummary(String name, Long size, Long slide) {
-            this.name = name;
-            this.size = size;
-            this.slide = slide;
-            this.attribute = "ND";
-            this.operator = "ND";
-        }
 
         public String getName() {
             return name;
@@ -1595,72 +1458,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
 
 
-    public Long findSize(String input) {
-        int start = input.lastIndexOf("Size ");
-        if (start != -1) {
-            start += 6; // Move to the beginning of the integer value
-            int end = input.length(); // Find the end of the integer value
-            if (end != -1) {
-                try {
-                    return Long.parseLong(input.substring(start, end));
-                } catch (NumberFormatException e) {
-                    System.err.println("Error parsing integer value.");
-                }
-            }
-        }
-        return (long) -1; // Integer value not found
-    }
-
-    public Long findSlide(String input) {
-        int start = input.lastIndexOf("Slide ");
-        if (start != -1) {
-            start += 6; // Move to the beginning of the integer value
-            int end = input.length(); // Find the end of the integer value
-            if (end != -1) {
-                try {
-                    return Long.parseLong(input.substring(start, end));
-                } catch (NumberFormatException e) {
-                    System.err.println("Error parsing integer value.");
-                }
-            }
-        }
-        return (long) -1; // Integer value not found
-    }
-
-    public Long findTimeout(String input) {
-        int start = input.lastIndexOf("Timeout ");
-        if (start != -1) {
-            start += 6; // Move to the beginning of the integer value
-            int end = input.length(); // Find the end of the integer value
-            if (end != -1) {
-                try {
-                    return Long.parseLong(input.substring(start, end));
-                } catch (NumberFormatException e) {
-                    System.err.println("Error parsing integer value.");
-                }
-            }
-        }
-        return (long) -1; // Integer value not found
-    }
-
-
-
-
-    private void setGridSampleData(Grid grid, String scenario) {
-        if (scenario.equals("Electric Grid"))
-            grid.setItems(query -> sampleGridService.list(
-                            PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
-                    .stream());
-        else if (scenario.equals("Stock (Yahoo)"))
-            grid.setItems(query -> sampleStockService.list(
-                            PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
-                    .stream());
-        else grid.setItems(query -> sampleGridService.list(
-                            PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
-                    .stream());
-    }
-
-    public InputElectricity createGridRecord(String recordId, long ts, long consA, long consB){
+    public InputElectricity createElectricGridRecord(String recordId, long ts, long consA, long consB){
         InputElectricity gridInput = new InputElectricity();
         gridInput.setRecordId(recordId);
         gridInput.setTimestamp(ts);
@@ -1669,13 +1467,17 @@ public class PlayToWin extends Composite<VerticalLayout> {
         return gridInput;
     }
 
-    public StockInput createStockRecord(long ts, String name, int dollars, String recordId){
-        StockInput stockInput = new StockInput();
-        stockInput.setRecordId(recordId);
-        stockInput.setTimestamp(ts);
-        stockInput.setDollars(dollars);
-        stockInput.setName(name);
-        return stockInput;
+    public InputBid createNexmarkBidRecord(String recordId, long auction, long bidder, long price, String channel, String url, long timestamp, String extra){
+        InputBid inputBid = new InputBid();
+        inputBid.setAuction(auction);
+        inputBid.setBidder(bidder);
+        inputBid.setRecordId(recordId);
+        inputBid.setPrice(price);
+        inputBid.setChannel(channel);
+        inputBid.setUrl(url);
+        inputBid.setTimestamp(timestamp);
+        inputBid.setExtra(extra);
+        return inputBid;
     }
 
 
@@ -1694,7 +1496,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
             while(scanner.hasNext()){
                 String input = scanner.nextLine();
                 String[] columns = input.split(",");
-                inputGridList.add(createGridRecord(columns[0], Long.parseLong(columns[1]), Long.parseLong(columns[2]), Long.parseLong(columns[3])));
+                inputGridList.add(createElectricGridRecord(columns[0], Long.parseLong(columns[1]), Long.parseLong(columns[2]), Long.parseLong(columns[3])));
             }
 
             //Remove columns that are not relevant in the input stream columns
@@ -1711,32 +1513,43 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
             grid.setItems(inputGridList);
         }
-        /*else if (scenario.equals("Stock (Yahoo)")){
 
-            List<String> strings = Arrays.asList("AAPL", "GOOGL", "AMZN");
-            Random randomName = new Random(0L);
 
-            Random randomDollars = new Random(0L);
+        else if (scenario.equals("Nexmark")){
+            inputGridList = new ArrayList<>();
+            inputGridListActual = new ArrayList<>();
 
-            stockInputArrayList = new ArrayList<>();
+            File file = new File(PlayToWin.class.getResource("/nexmark_events.txt").getPath());
+            Scanner scanner = null;
+            try {
+                scanner = new Scanner(file);
+            }catch(FileNotFoundException e){
+            }
 
-            StockInput stockRecord = createStockRecord(0, strings.get(randomName.nextInt(0, 3)), randomDollars.nextInt(0, 100), "r_0");
-            stockRecord.setCursor(">");
-            stockInputArrayList.add(stockRecord);
-            for (int i = 1; i < 40; i++) {
-                stockInputArrayList.add(createStockRecord(i, strings.get(randomName.nextInt(0, 3)), randomDollars.nextInt(0, 100), "r_"+i));
+            int rowCounter = 1;
+            while(scanner.hasNext()){
+                String[] columns = parseNexmarkBid(scanner.nextLine(), rowCounter);
+                rowCounter+=1;
+                inputGridList.add(createNexmarkBidRecord(columns[0], Long.parseLong(columns[1]), Long.parseLong(columns[2]), Long.parseLong(columns[3]), columns[4], columns[5], Long.parseLong(columns[6]), columns[7]));
+            }
+
+            //Remove columns that are not relevant in the input stream columns
+            for (String s : columnsToRemoveForStream){
+                grid.removeColumn(grid.getColumnByKey(s));
             }
 
 
-            grid.removeColumn(grid.getColumnByKey("id"));
-            grid.removeColumn(grid.getColumnByKey("version"));
-            grid.removeColumn(grid.getColumnByKey("cursor"));
+            List<Grid.Column> strings = Arrays.asList(grid.getColumnByKey("recordId"),
+                    grid.getColumnByKey("timestamp"), grid.getColumnByKey("auction"),
+                    grid.getColumnByKey("bidder"), grid.getColumnByKey("channel"),
+                    grid.getColumnByKey("price"), grid.getColumnByKey("url"),
+                    grid.getColumnByKey("extra"));
+            grid.setColumnOrder(strings);
 
-            List<Grid.Column> strings3 = Arrays.asList(grid.getColumnByKey("recordId"),
-                    grid.getColumnByKey("timestamp"), grid.getColumnByKey("name"), grid.getColumnByKey("dollars"));
-            grid.setColumnOrder(strings3);
-            grid.setItems(stockInputArrayList);
-        }*/
+
+            grid.setItems(inputGridList);
+        }
+
 
         else {
             grid.setItems(query -> sampleGridService.list(
@@ -1873,6 +1686,36 @@ public class PlayToWin extends Composite<VerticalLayout> {
         }
 
         return fields;
+    }
+
+    public String[] parseNexmarkBid(String line, int rowCounter){
+        int firstComma = line.indexOf(",");
+        String bidPart = line.substring(firstComma + 1);
+
+        bidPart = bidPart.substring(4, bidPart.length() - 1);
+
+        // Split fields inside Bid{...}
+        Map<String, String> fields = new LinkedHashMap<>();
+        String[] parts = bidPart.split(", (?=[a-zA-Z]+=)");
+        for (String part : parts) {
+            String[] kv = part.split("=", 2);
+            fields.put(kv[0].trim(), kv[1].trim());
+        }
+
+        // Build result array in fixed order (8 fields)
+        String[] row = new String[8];
+        row[0] = "r_" + rowCounter;                 // recordId
+        row[1] = fields.get("auction");                    // auction
+        row[2] = fields.get("bidder");                     // bidder
+        row[3] = fields.get("price");                      // price
+        row[4] = fields.get("channel").replace("'", "");   // channel (remove quotes)
+        row[5] = fields.get("url").replace("'", "");       // url (remove quotes)
+        row[6] = String.valueOf(rowCounter);              // replace dateTime with counter
+        row[7] = fields.get("extra").replace("'", "");     // extra (remove quotes)
+
+
+        return row;
+
     }
 
 
