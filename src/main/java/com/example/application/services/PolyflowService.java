@@ -64,6 +64,8 @@ public class PolyflowService {
 
         registered = true;
 
+        //reset output in case we did not refresh the page to clear the previously executed query
+        out = new TuplesOrResult();
 
         DataStream<Tuple> inputStream = new DataStreamImpl<>("inputStream");
         DataStream<TuplesOrResult> outputStream = new DataStreamImpl<>("outputStream");
@@ -87,7 +89,7 @@ public class PolyflowService {
         else if(scenario.startsWith("Nexmark"))
             datatype = "nexmark.InputBid";
         else if(scenario.startsWith("Linear"))
-            datatype = "TODO";
+            datatype = "linearroad.InputLinearRoad";
 
         try {
             String replace = query.replace("[window]", "com.example.application.polyflow.datatypes."+datatype);

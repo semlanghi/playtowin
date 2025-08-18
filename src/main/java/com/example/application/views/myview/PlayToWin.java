@@ -9,6 +9,7 @@ import com.example.application.polyflow.datatypes.linearroad.OutputLinearRoad;
 import com.example.application.polyflow.datatypes.nexmark.InputAuction;
 import com.example.application.polyflow.datatypes.nexmark.InputBid;
 import com.example.application.polyflow.datatypes.nexmark.OutputAuction;
+import com.example.application.polyflow.datatypes.nexmark.OutputBid;
 import com.example.application.polyflow.datatypes.nyctaxi.InputTaxi;
 import com.example.application.polyflow.datatypes.nyctaxi.OutputTaxi;
 import com.example.application.polyflow.operators.TimeVaryingTuplesOrResult;
@@ -95,7 +96,6 @@ public class PlayToWin extends Composite<VerticalLayout> {
     private HorizontalLayout bottomRow;
     private HorizontalLayout upperCentralRow;
     private HorizontalLayout bottomCentralRow;
-    private Class<?> sampleOutputClass;
     private Class<?> sampleInputClass;
     private List<Tuple> inputGridList;
     private List<Tuple> inputGridListActual;
@@ -117,12 +117,6 @@ public class PlayToWin extends Composite<VerticalLayout> {
      * in the drop down menu of aggregation
      * */
     private List<String> columnsToShowForAggregation = new ArrayList<>();
-
-    /*
-     * This List represents fields that belong to a given input class but should not be shown
-     * in the output records view
-     * */
-    private List<String> columnsToRemoveForOutput = new ArrayList<>();
 
 
     @Autowired()
@@ -146,9 +140,6 @@ public class PlayToWin extends Composite<VerticalLayout> {
         selectScenarios.setValue("Electric Grid");
         columnsToRemoveForStream.addAll(List.of("id", "version", "cursor", "operatorId", "intervalId"));
         columnsToShowForAggregation.addAll(List.of("consA", "consB"));
-        //TODO: modify the columns of Output when we know what the output of the query is.. which will be obtained when parsing the query
-        columnsToRemoveForOutput.addAll(List.of("id", "version", "timestamp", "consA", "consB"));
-        sampleOutputClass = OutputElectricity.class;
         sampleInputClass = InputElectricity.class;
 
 
@@ -161,35 +152,32 @@ public class PlayToWin extends Composite<VerticalLayout> {
             counterInput = 0;
             switch (event.getValue()) {
                 case "Electric Grid":
-                    columnsToRemoveForStream = new ArrayList<>();
-                    columnsToRemoveForOutput = new ArrayList<>();
-                    columnsToRemoveForStream.addAll(List.of("id", "version", "cursor", "operatorId", "intervalId"));
-                    columnsToRemoveForOutput.addAll(List.of("id", "version", "timestamp", "consA", "consB"));
+                    columnsToShowForAggregation = new ArrayList<>();
+                    columnsToShowForAggregation.addAll(List.of("consA", "consB"));
 
-                    sampleOutputClass = OutputElectricity.class;
                     sampleInputClass = InputElectricity.class;
                     loadPage(selectScenarios, event.getValue());
 
                     break;
 
                 case "NYC Taxi (DEBS 2015)":
-                    sampleOutputClass = InputTaxi.class;
-                    sampleInputClass = OutputTaxi.class;
-
+                    sampleInputClass = InputTaxi.class;
+                    columnsToShowForAggregation = new ArrayList<>();
+                    columnsToShowForAggregation.addAll(List.of("consA", "consB"));
                     loadPage(selectScenarios, event.getValue());
                     break;
 
                 case "Linear Road":
-                    sampleOutputClass = InputLinearRoad.class;
-                    sampleInputClass = OutputLinearRoad.class;
-
+                    sampleInputClass = InputLinearRoad.class;
+                    columnsToShowForAggregation = new ArrayList<>();
+                    columnsToShowForAggregation.addAll(List.of("speed", "exp_way", "lane", "direction", "x_pos"));
                     loadPage(selectScenarios, event.getValue());
                     break;
 
                 case "Nexmark":
-                    sampleOutputClass = InputBid.class;
                     sampleInputClass = InputBid.class;
-
+                    columnsToShowForAggregation = new ArrayList<>();
+                    columnsToShowForAggregation.addAll(List.of("price"));
                     loadPage(selectScenarios, event.getValue());
                     break;
 
@@ -1480,6 +1468,19 @@ public class PlayToWin extends Composite<VerticalLayout> {
         return inputBid;
     }
 
+    public InputLinearRoad createLinearRoad(String recordId, long ts, int car_id, double speed, int exp_way, int lane, int direction, double x_pos){
+        InputLinearRoad inputLinearRoad = new InputLinearRoad();
+        inputLinearRoad.setRecordId(recordId);
+        inputLinearRoad.setTimestamp(ts);
+        inputLinearRoad.setCar_id(car_id);
+        inputLinearRoad.setSpeed(speed);
+        inputLinearRoad.setExp_way(exp_way);
+        inputLinearRoad.setDirection(direction);
+        inputLinearRoad.setLane(lane);
+        inputLinearRoad.setX_pos(x_pos);
+        return inputLinearRoad;
+    }
+
 
 
     private void setGridSampleSimpleData(Grid grid, String scenario) {
@@ -1548,6 +1549,42 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
 
             grid.setItems(inputGridList);
+        }
+
+        else if(scenario.equals("Linear Road")){
+            inputGridList = new ArrayList<>();
+            inputGridListActual = new ArrayList<>();
+
+            File file = new File(PlayToWin.class.getResource("/linear_road_events.txt").getPath());
+            Scanner scanner = null;
+            try {
+                scanner = new Scanner(file);
+            }catch(FileNotFoundException e){
+            }
+
+            while(scanner.hasNext()){
+                String input = scanner.nextLine();
+                String[] columns = input.split(",");
+                inputGridList.add(createLinearRoad(columns[0], Long.parseLong(columns[1]), Integer.parseInt(columns[2]), Double.parseDouble(columns[3]), Integer.parseInt(columns[4]),
+                        Integer.parseInt(columns[5]), Integer.parseInt(columns[6]), Double.parseDouble(columns[7])));
+            }
+
+            //Remove columns that are not relevant in the input stream columns
+            for (String s : columnsToRemoveForStream){
+                grid.removeColumn(grid.getColumnByKey(s));
+            }
+
+
+            List<Grid.Column> strings = Arrays.asList(grid.getColumnByKey("recordId"),
+                    grid.getColumnByKey("timestamp"), grid.getColumnByKey("car_id"),
+                    grid.getColumnByKey("speed"), grid.getColumnByKey("exp_way"),
+                    grid.getColumnByKey("lane"), grid.getColumnByKey("direction"),
+                    grid.getColumnByKey("x_pos"));
+            grid.setColumnOrder(strings);
+
+
+            grid.setItems(inputGridList);
+
         }
 
 
