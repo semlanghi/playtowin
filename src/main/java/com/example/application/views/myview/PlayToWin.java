@@ -99,7 +99,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
     private List<Tuple> inputGridList;
     private List<Tuple> inputGridListActual;
     private int counterInput = 0;
-    List<OutputElectricity> actualOutput = new ArrayList<>();//TODO: remove this line, it's just to make shut up the errors
+    List<Tuple> windowHistory = new ArrayList<>();//TODO: remove this line, it's just to make shut up the errors
 
     private List<WindowRowSummary> windowRowSummaries;
     private Map<String, String> colorGraphs;
@@ -617,7 +617,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
                 List<StreamToRelationOperator<Tuple, Tuple, TuplesOrResult>> s2rList = polyflowService.getStreamToRelationOperatorList();
 
                 //history of the window content to draw in the graph
-                List<Tuple> windowHistory = new ArrayList<>();
+                windowHistory = new ArrayList<>();
                 for(StreamToRelationOperator<Tuple, Tuple, TuplesOrResult> s2r : s2rList){
                     TimeVaryingTuplesOrResult tvg = (TimeVaryingTuplesOrResult)s2r.get();
 
@@ -1225,7 +1225,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
         for (int i = 0; i < nodes.length(); i++) {
             int finalI = i;
             if (nodes.getString(finalI).contains("r_")) {
-                actualOutput.stream()
+                windowHistory.stream()
                         .filter(predicate -> {
                             String string = nodes.getString(finalI);
                             string = string.contains("@") ? string.split("@")[1] : string;
