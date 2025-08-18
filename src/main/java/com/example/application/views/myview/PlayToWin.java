@@ -1,17 +1,10 @@
 package com.example.application.views.myview;
 
-import com.example.application.data.*;
 import com.example.application.polyflow.datatypes.*;
 import com.example.application.polyflow.datatypes.electricity.InputElectricity;
-import com.example.application.polyflow.datatypes.electricity.OutputElectricity;
 import com.example.application.polyflow.datatypes.linearroad.InputLinearRoad;
-import com.example.application.polyflow.datatypes.linearroad.OutputLinearRoad;
-import com.example.application.polyflow.datatypes.nexmark.InputAuction;
 import com.example.application.polyflow.datatypes.nexmark.InputBid;
-import com.example.application.polyflow.datatypes.nexmark.OutputAuction;
-import com.example.application.polyflow.datatypes.nexmark.OutputBid;
 import com.example.application.polyflow.datatypes.nyctaxi.InputTaxi;
-import com.example.application.polyflow.datatypes.nyctaxi.OutputTaxi;
 import com.example.application.polyflow.operators.TimeVaryingTuplesOrResult;
 import com.example.application.services.PolyflowService;
 import com.example.application.services.SampleGridService;
@@ -90,9 +83,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
              "cyan", "pink"
     };
     private HorizontalLayout mainRow;
-//    private String query = "SELECT percent(consA,consB),percent(consB,consA),ts\n" +
-//            "FROM Consumption [RANGE 5 minutes SLIDE 2 minutes]\n" +
-//            "WHERE consA >= 0 AND consB >= 0";
+
     private HorizontalLayout bottomRow;
     private HorizontalLayout upperCentralRow;
     private HorizontalLayout bottomCentralRow;
@@ -139,7 +130,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
         selectScenarios.setItems("Electric Grid", "NYC Taxi (DEBS 2015)", "Linear Road", "Nexmark");
         selectScenarios.setValue("Electric Grid");
         columnsToRemoveForStream.addAll(List.of("id", "version", "cursor", "operatorId", "intervalId"));
-        columnsToShowForAggregation.addAll(List.of("consA", "consB"));
+        columnsToShowForAggregation.addAll(List.of("cons_A", "cons_B"));
         sampleInputClass = InputElectricity.class;
 
 
@@ -153,7 +144,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
             switch (event.getValue()) {
                 case "Electric Grid":
                     columnsToShowForAggregation = new ArrayList<>();
-                    columnsToShowForAggregation.addAll(List.of("consA", "consB"));
+                    columnsToShowForAggregation.addAll(List.of("cons_A", "cons_B"));
 
                     sampleInputClass = InputElectricity.class;
                     loadPage(selectScenarios, event.getValue());
@@ -163,7 +154,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
                 case "NYC Taxi (DEBS 2015)":
                     sampleInputClass = InputTaxi.class;
                     columnsToShowForAggregation = new ArrayList<>();
-                    columnsToShowForAggregation.addAll(List.of("consA", "consB"));
+                    columnsToShowForAggregation.addAll(List.of("cons_A", "cons_B"));
                     loadPage(selectScenarios, event.getValue());
                     break;
 
@@ -1198,7 +1189,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
     private Map<String,String> getNexMarkQueries() {
         Map<String, String> queries = new HashMap<>();
 
-        queries.put("Query 1", "SELECT *\nFROM [window]\nWHERE consA >= 0 AND consB >= 0");
+        queries.put("Query 1", "SELECT *\nFROM [window]\nWHERE cons_A >= 0 AND cons_B >= 0");
 
         queries.put("Query 2", "SELECT Istream(auction, DOLTOEUR(price), bidder, datetime)\nFROM [window]");
 
@@ -1450,8 +1441,8 @@ public class PlayToWin extends Composite<VerticalLayout> {
         InputElectricity gridInput = new InputElectricity();
         gridInput.setRecordId(recordId);
         gridInput.setTimestamp(ts);
-        gridInput.setConsA((long) consA);
-        gridInput.setConsB((long) consB);
+        gridInput.setCons_A((long) consA);
+        gridInput.setCons_B((long) consB);
         return gridInput;
     }
 
@@ -1507,8 +1498,8 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
 
             List<Grid.Column> strings = Arrays.asList(grid.getColumnByKey("recordId"),
-                    grid.getColumnByKey("timestamp"), grid.getColumnByKey("consA"),
-                    grid.getColumnByKey("consB"));
+                    grid.getColumnByKey("timestamp"), grid.getColumnByKey("cons_A"),
+                    grid.getColumnByKey("cons_B"));
             grid.setColumnOrder(strings);
 
 

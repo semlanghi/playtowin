@@ -55,11 +55,6 @@ public class PolyflowService {
         out = new TuplesOrResult();
     }
 
-    public List<ConsistencyGraph<EventBean<Long>>> getConsistencyGraphs() {
-        return null;
-        //return longR2RConsistencyAnnotator.getCurrentGraphs();
-    }
-
     public ContinuousProgram<Tuple, Tuple, TuplesOrResult, TuplesOrResult> register(String scenario, String query, List<PlayToWin.WindowRowSummary> windowRowSummaries) throws ConfigurationException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
 
         registered = true;
