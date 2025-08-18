@@ -927,9 +927,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
 
         selectWindowType.setLabel("Window Type");
-        selectWindowType.setItems("Time-based", "Session", "Frames:Threshold", "Frames:Delta", "Frames:Aggregate",
-                "Landmark", "Punctuation-based", "Slide-by-Tuple", "Adaptive Window", "Damped Window", "Tilted Window", "Policy-based",
-                "Composite-Union", "Composite-Intersection");
+        selectWindowType.setItems("Time-based", "Session", "Frames:Threshold", "Frames:Delta", "Frames:Aggregate");
         selectWindowType.setValue("Time-based");
 
 
@@ -939,8 +937,8 @@ public class PlayToWin extends Composite<VerticalLayout> {
         ComboBox<String> selectAggregate = new ComboBox<>();
         selectAggregate.setLabel("Aggregate");
 
-        selectAggregate.setItems("count", "sum", "avg", "max", "min");
-        selectAggregate.setValue("count");
+        selectAggregate.setItems("sum", "avg");
+        selectAggregate.setValue("sum");
         selectAggregate.addValueChangeListener(event -> {
             Notification.show(event.getValue()).setPosition(Notification.Position.TOP_START);
         });
@@ -1040,9 +1038,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
     private Result getResultNotComposite(HorizontalLayout windowSelectorLayout) {
         ComboBox<String> selectWindowType = new ComboBox<>();
         selectWindowType.setLabel("Window Type");
-        //TODO: Remove windows not implemented
-        selectWindowType.setItems("Time-based", "Session", "Frames:Threshold", "Frames:Delta", "Frames:Aggregate", "Time-based", "Session", "Frames:Threshold", "Frames:Delta", "Frames:Aggregate",
-                "Landmark", "Punctuation-based", "Slide-by-Tuple", "Adaptive Window", "Damped Window", "Tilted Window", "Policy-based");
+        selectWindowType.setItems("Time-based", "Session", "Frames:Threshold", "Frames:Delta", "Frames:Aggregate");
         selectWindowType.setValue("Time-based");
 
 
@@ -1052,9 +1048,8 @@ public class PlayToWin extends Composite<VerticalLayout> {
         ComboBox<String> selectAggregate = new ComboBox<>();
         selectAggregate.setLabel("Aggregate");
 
-        //TODO: we do not do max/min aggregation. Count also does not sound interesting
-        selectAggregate.setItems("count", "sum", "avg", "max", "min");
-        selectAggregate.setValue("count");
+        selectAggregate.setItems("sum", "avg");
+        selectAggregate.setValue("sum");
         selectAggregate.addValueChangeListener(event -> {
             Notification.show(event.getValue()).setPosition(Notification.Position.TOP_START);
         });
