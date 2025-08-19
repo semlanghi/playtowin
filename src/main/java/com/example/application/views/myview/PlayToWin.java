@@ -87,6 +87,8 @@ public class PlayToWin extends Composite<VerticalLayout> {
     private HorizontalLayout bottomRow;
     private HorizontalLayout upperCentralRow;
     private HorizontalLayout bottomCentralRow;
+
+
     private Class<?> sampleInputClass;
     private List<Tuple> inputGridList;
     private List<Tuple> inputGridListActual;
@@ -214,21 +216,21 @@ public class PlayToWin extends Composite<VerticalLayout> {
         bottomCentralColumn.setWidthFull();
         bottomCentralColumn.setHeightFull();
 
-        ComboBox<String> queryEditor = new ComboBox<>();
 
-        Map<String,String> nexMarkQueries = getNexMarkQueries();
+        Map<String,String> defaultQueries = getDefaultQueries(scenario);
+        ComboBox<String> queryEditor = new ComboBox<>();
         TextArea queryEditorText = new TextArea();
 
         queryEditorText.setSizeFull();
 
         bottomCentralColumn.add(queryEditor);
         bottomCentralColumn.add(queryEditorText);
-        queryEditor.setItems(nexMarkQueries.keySet());
+        queryEditor.setItems(defaultQueries.keySet());
         queryEditor.setValue("Query 1");
-        queryEditorText.setValue(nexMarkQueries.get("Query 1"));
+        queryEditorText.setValue(defaultQueries.get("Query 1"));
 
         queryEditor.addValueChangeListener(event -> {
-            String query = nexMarkQueries.get(event.getValue());
+            String query = defaultQueries.get(event.getValue());
             queryEditorText.setValue(query);
         });
         VerticalLayout windowEditor = new VerticalLayout();
@@ -955,9 +957,6 @@ public class PlayToWin extends Composite<VerticalLayout> {
         ComboBox<String> selectAttribute = new ComboBox<>();
         selectAttribute.setLabel("On Attribute");
 
-        /*Field[] fields = sampleInputClass.getDeclaredFields();
-
-        List<String> collect = Arrays.stream(fields).map(Field::getName).collect(Collectors.toList());*/
 
         //These are the columns shown on the dropdown menu "On Attribute"
         selectAttribute.setItems(columnsToShowForAggregation);
@@ -1181,26 +1180,16 @@ public class PlayToWin extends Composite<VerticalLayout> {
         return resultGrid;
     }
 
-    private Map<String,String> getNexMarkQueries() {
+    private Map<String,String> getDefaultQueries(String scenario) {
         Map<String, String> queries = new HashMap<>();
-
-        queries.put("Query 1", "SELECT *\nFROM [window]\nWHERE cons_A >= 0 AND cons_B >= 0");
-
-        queries.put("Query 2", "SELECT Istream(auction, DOLTOEUR(price), bidder, datetime)\nFROM [window]");
-
-        queries.put("Query 3", "SELECT Rstream(auction, price)\nFROM [window] \nWHERE auction = 1007 OR auction = 1020 OR auction = 2001 OR auction = 2019 OR auction = 2087");
-
-        queries.put("Query 4", "SELECT Istream(P.name, P.city, P.state, A.id)\nFROM Auction A [ROWS UNBOUNDED], Person P [ROWS UNBOUNDED]\nWHERE A.seller = P.id AND (P.state = 'OR' OR P.state = 'ID' OR P.state = 'CA') AND A.category = 10");
-
-        queries.put("Query 5", "SELECT Istream(AVG(Q.final))\nFROM Category C, (SELECT Rstream(MAX(B.price) AS final, A.category)\n                  FROM Auction A [ROWS UNBOUNDED], Bid B [ROWS UNBOUNDED]\n                  WHERE A.id=B.auction AND B.datetime < A.expires AND A.expires < CURRENT_TIME\n                  GROUP BY A.id, A.category) Q\nWHERE Q.category = C.id\nGROUP BY C.id");
-
-        queries.put("Query 6", "SELECT Rstream(auction)\nFROM (SELECT B1.auction, count(*) AS num\n      FROM Bid [RANGE 60 MINUTE SLIDE 1 MINUTE] B1\n      GROUP BY B1.auction)\nWHERE num >= ALL (SELECT count(*)\n                  FROM Bid [RANGE 60 MINUTE SLIDE 1 MINUTE] B2\n                  GROUP BY B2.auction)");
-
-        queries.put("Query 7", "SELECT Istream(AVG(Q.final), Q.seller)\nFROM (SELECT Rstream(MAX(B.price) AS final, A.seller)\n      FROM Auction A [ROWS UNBOUNDED], Bid B [ROWS UNBOUNDED]\n      WHERE A.id=B.auction AND B.datetime < A.expires AND A.expires < CURRENT_TIME\n      GROUP BY A.id, A.seller) [PARTITION BY A.seller ROWS 10] Q\nGROUP BY Q.seller;");
-
-        queries.put("Query 8", "SELECT Rstream(B.auction, B.price, B.bidder)\nFROM Bid [RANGE 1 MINUTE SLIDE 1 MINUTE] B\nWHERE B.price = (SELECT MAX(B1.price)\n                 FROM BID [RANGE 1 MINUTE SLIDE 1 MINUTE] B1);");
-
-        queries.put("Query 9", "SELECT Rstream(P.id, P.name, A.reserve)\nFROM Person [RANGE 12 HOUR] P, Auction [RANGE 12 HOUR] A\nWHERE P.id = A.seller;");
+        if(scenario.equals("Electric Grid"))
+            queries.put("Query 1", "SELECT *\nFROM [window]\nWHERE cons_A >= 10 AND cons_B >= 5");
+        else if(scenario.equals("Nexmark"))
+            queries.put("Query 1", "SELECT *\nFROM [window]\nWHERE price > 20");
+        else if(scenario.equals("Linear Road"))
+            queries.put("Query 1", "SELECT *\nFROM [window]\nWHERE speed > 15");
+        else if(scenario.equals("Taxi NYC"))
+            queries.put("Query 1", "SELECT *\nFROM [window]\nWHERE tip_amount < 10");
 
         return queries;
     }
@@ -1574,6 +1563,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
         }
 
 
+
         else {
             grid.setItems(query -> sampleGridService.list(
                             PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
@@ -1582,6 +1572,8 @@ public class PlayToWin extends Composite<VerticalLayout> {
             grid.removeColumn(grid.getColumnByKey("version"));
             grid.removeColumn(grid.getColumnByKey("cursor"));
         }
+
+
     }
 
 
