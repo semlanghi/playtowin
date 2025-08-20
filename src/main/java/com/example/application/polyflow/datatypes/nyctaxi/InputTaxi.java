@@ -10,8 +10,8 @@ public class InputTaxi extends Tuple {
 
     private String medallion;
     private String hack_license;
-    private double pickup_datetime;
-    private double dropoff_datetime;
+    private long pickup_datetime;
+    private long dropoff_datetime;
     private double trip_time_in_secs;
     private double trip_distance;
     private double pickup_longitude;
@@ -109,19 +109,19 @@ public class InputTaxi extends Tuple {
         this.hack_license = hack_license;
     }
 
-    public double getPickup_datetime() {
+    public long getPickup_datetime() {
         return pickup_datetime;
     }
 
-    public void setPickup_datetime(double pickup_datetime) {
+    public void setPickup_datetime(long pickup_datetime) {
         this.pickup_datetime = pickup_datetime;
     }
 
-    public double getDropoff_datetime() {
+    public long getDropoff_datetime() {
         return dropoff_datetime;
     }
 
-    public void setDropoff_datetime(double dropoff_datetime) {
+    public void setDropoff_datetime(long dropoff_datetime) {
         this.dropoff_datetime = dropoff_datetime;
     }
 

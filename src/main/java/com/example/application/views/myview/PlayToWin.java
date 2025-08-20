@@ -156,7 +156,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
                 case "NYC Taxi (DEBS 2015)":
                     sampleInputClass = InputTaxi.class;
                     columnsToShowForAggregation = new ArrayList<>();
-                    columnsToShowForAggregation.addAll(List.of("cons_A", "cons_B"));
+                    columnsToShowForAggregation.addAll(List.of("trip_distance", "fare_amount", "total_amount", "tip_amount", "tolls_amount"));
                     loadPage(selectScenarios, event.getValue());
                     break;
 
@@ -1188,7 +1188,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
             queries.put("Query 1", "SELECT *\nFROM [window]\nWHERE price > 20");
         else if(scenario.equals("Linear Road"))
             queries.put("Query 1", "SELECT *\nFROM [window]\nWHERE speed > 15");
-        else if(scenario.equals("Taxi NYC"))
+        else if(scenario.equals("NYC Taxi (DEBS 2015)"))
             queries.put("Query 1", "SELECT *\nFROM [window]\nWHERE tip_amount < 10");
 
         return queries;
@@ -1456,6 +1456,30 @@ public class PlayToWin extends Composite<VerticalLayout> {
         return inputLinearRoad;
     }
 
+    public InputTaxi createNycTaxi(String[] fields){
+        InputTaxi input = new InputTaxi();
+        input.setRecordId(fields[0]);
+        input.setTimestamp(Long.parseLong(fields[1]));
+        input.setMedallion(fields[2]);
+        input.setHack_license(fields[3]);
+        input.setPickup_datetime(Long.parseLong(fields[4]));
+        input.setDropoff_datetime(Long.parseLong(fields[5]));
+        input.setTrip_time_in_secs(Double.parseDouble(fields[6]));
+        input.setTrip_distance(Double.parseDouble(fields[7]));
+        input.setPickup_latitude(Double.parseDouble(fields[8]));
+        input.setPickup_longitude(Double.parseDouble(fields[9]));
+        input.setDropoff_latitude(Double.parseDouble(fields[10]));
+        input.setDropoff_longitude(Double.parseDouble(fields[11]));
+        input.setPayment_type(fields[12]);
+        input.setFare_amount(Double.parseDouble(fields[13]));
+        input.setSurcharge(Double.parseDouble(fields[14]));
+        input.setMta_tax(Double.parseDouble(fields[15]));
+        input.setTip_amount(Double.parseDouble(fields[16]));
+        input.setTolls_amount(Double.parseDouble(fields[17]));
+        input.setTotal_amount(Double.parseDouble(fields[18]));
+        return input;
+    }
+
 
 
     private void setGridSampleSimpleData(Grid grid, String scenario) {
@@ -1560,6 +1584,43 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
             grid.setItems(inputGridList);
 
+        }
+        else if(scenario.equals("NYC Taxi (DEBS 2015)")){
+            inputGridList = new ArrayList<>();
+            inputGridListActual = new ArrayList<>();
+
+            File file = new File(PlayToWin.class.getResource("/NYC_taxi_events.csv").getPath());
+            Scanner scanner = null;
+            try {
+                scanner = new Scanner(file);
+            }catch(FileNotFoundException e){
+            }
+
+            int rowCounter = 1;
+            while(scanner.hasNext()){
+                String[] columns = parseNycTaxi(scanner.nextLine(), rowCounter);
+                rowCounter+=1;
+                inputGridList.add(createNycTaxi(columns));
+            }
+
+            //Remove columns that are not relevant in the input stream columns
+            for (String s : columnsToRemoveForStream){
+                grid.removeColumn(grid.getColumnByKey(s));
+            }
+
+
+            List<Grid.Column> strings = Arrays.asList(grid.getColumnByKey("recordId"),
+                    grid.getColumnByKey("timestamp"), grid.getColumnByKey("medallion"),
+                    grid.getColumnByKey("hack_license"), grid.getColumnByKey("pickup_datetime"),
+                    grid.getColumnByKey("dropoff_datetime"), grid.getColumnByKey("trip_time_in_secs"),
+                    grid.getColumnByKey("trip_distance"), grid.getColumnByKey("pickup_longitude"), grid.getColumnByKey("pickup_latitude"),
+                    grid.getColumnByKey("dropoff_longitude"), grid.getColumnByKey("dropoff_latitude"), grid.getColumnByKey("payment_type"),
+                    grid.getColumnByKey("fare_amount"), grid.getColumnByKey("surcharge"),
+                    grid.getColumnByKey("mta_tax"), grid.getColumnByKey("tip_amount"), grid.getColumnByKey("tolls_amount"), grid.getColumnByKey("total_amount"));
+            grid.setColumnOrder(strings);
+
+
+            grid.setItems(inputGridList);
         }
 
 
@@ -1733,6 +1794,25 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
     }
 
+    public String[] parseNycTaxi(String line, int rowCounter){
 
+        String[] csvFields = line.split(",", -1); // -1 keeps empty fields
+
+        // Create a new array with 2 extra slots at the beginning
+        String[] result = new String[csvFields.length + 2];
+
+        // Insert the extra fields
+        result[0] = "r_"+rowCounter;
+        result[1] = String.valueOf(rowCounter);
+
+        // Copy the CSV fields into the new array
+        System.arraycopy(csvFields, 0, result, 2, csvFields.length);
+        Random rand = new Random();
+        result[4] = String.valueOf(rand.nextInt(10000)); //Timestamps in datetime can become random integers
+        result[5] = String.valueOf(rand.nextInt(10000));
+
+        return result;
+
+    }
 
 }

@@ -79,8 +79,8 @@ public class PolyflowService {
         String datatype = "";
         if(scenario.startsWith("Electric"))
             datatype = "electricity.InputElectricity";
-        else if(scenario.startsWith("Debs"))
-            datatype = "TODO";
+        else if(scenario.startsWith("NYC"))
+            datatype = "nyctaxi.InputTaxi";
         else if(scenario.startsWith("Nexmark"))
             datatype = "nexmark.InputBid";
         else if(scenario.startsWith("Linear"))
