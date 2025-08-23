@@ -156,7 +156,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
                 case "NYC Taxi (DEBS 2015)":
                     sampleInputClass = InputTaxi.class;
                     columnsToShowForAggregation = new ArrayList<>();
-                    columnsToShowForAggregation.addAll(List.of("trip_distance", "fare_amount", "total_amount", "tip_amount", "tolls_amount"));
+                    columnsToShowForAggregation.addAll(List.of("trip_distance", "total_amount",  "tolls_amount"));
                     loadPage(selectScenarios, event.getValue());
                     break;
 
@@ -205,6 +205,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
         leftColumn.add(selectScenarios);
 
         Grid basicGrid = new Grid<>(sampleInputClass);
+
 
 
 
@@ -1189,7 +1190,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
         else if(scenario.equals("Linear Road"))
             queries.put("Query 1", "SELECT *\nFROM [window]\nWHERE speed > 15");
         else if(scenario.equals("NYC Taxi (DEBS 2015)"))
-            queries.put("Query 1", "SELECT *\nFROM [window]\nWHERE tip_amount < 10");
+            queries.put("Query 1", "SELECT *\nFROM [window]\nWHERE tolls_amount < 10");
 
         return queries;
     }
@@ -1430,16 +1431,14 @@ public class PlayToWin extends Composite<VerticalLayout> {
         return gridInput;
     }
 
-    public InputBid createNexmarkBidRecord(String recordId, long auction, long bidder, long price, String channel, String url, long timestamp, String extra){
+    public InputBid createNexmarkBidRecord(String recordId, long auction, long bidder, long price, String channel,  long timestamp){
         InputBid inputBid = new InputBid();
         inputBid.setAuction(auction);
         inputBid.setBidder(bidder);
         inputBid.setRecordId(recordId);
         inputBid.setPrice(price);
         inputBid.setChannel(channel);
-        inputBid.setUrl(url);
         inputBid.setTimestamp(timestamp);
-        inputBid.setExtra(extra);
         return inputBid;
     }
 
@@ -1456,25 +1455,13 @@ public class PlayToWin extends Composite<VerticalLayout> {
         return inputLinearRoad;
     }
 
-    public InputTaxi createNycTaxi(String[] fields){
+    public InputTaxi createNycTaxi(String[] fields){ //We parsed the whole nyx file, so we have a lot of columns.. we only use a few
         InputTaxi input = new InputTaxi();
         input.setRecordId(fields[0]);
         input.setTimestamp(Long.parseLong(fields[1]));
-        input.setMedallion(fields[2]);
-        input.setHack_license(fields[3]);
         input.setPickup_datetime(Long.parseLong(fields[4]));
-        input.setDropoff_datetime(Long.parseLong(fields[5]));
-        input.setTrip_time_in_secs(Double.parseDouble(fields[6]));
         input.setTrip_distance(Double.parseDouble(fields[7]));
-        input.setPickup_latitude(Double.parseDouble(fields[8]));
-        input.setPickup_longitude(Double.parseDouble(fields[9]));
-        input.setDropoff_latitude(Double.parseDouble(fields[10]));
-        input.setDropoff_longitude(Double.parseDouble(fields[11]));
         input.setPayment_type(fields[12]);
-        input.setFare_amount(Double.parseDouble(fields[13]));
-        input.setSurcharge(Double.parseDouble(fields[14]));
-        input.setMta_tax(Double.parseDouble(fields[15]));
-        input.setTip_amount(Double.parseDouble(fields[16]));
         input.setTolls_amount(Double.parseDouble(fields[17]));
         input.setTotal_amount(Double.parseDouble(fields[18]));
         return input;
@@ -1530,7 +1517,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
             while(scanner.hasNext()){
                 String[] columns = parseNexmarkBid(scanner.nextLine(), rowCounter);
                 rowCounter+=1;
-                inputGridList.add(createNexmarkBidRecord(columns[0], Long.parseLong(columns[1]), Long.parseLong(columns[2]), Long.parseLong(columns[3]), columns[4], columns[5], Long.parseLong(columns[6]), columns[7]));
+                inputGridList.add(createNexmarkBidRecord(columns[0], Long.parseLong(columns[1]), Long.parseLong(columns[2]), Long.parseLong(columns[3]), columns[4], Long.parseLong(columns[5])));
             }
 
             //Remove columns that are not relevant in the input stream columns
@@ -1542,8 +1529,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
             List<Grid.Column> strings = Arrays.asList(grid.getColumnByKey("recordId"),
                     grid.getColumnByKey("timestamp"), grid.getColumnByKey("auction"),
                     grid.getColumnByKey("bidder"), grid.getColumnByKey("channel"),
-                    grid.getColumnByKey("price"), grid.getColumnByKey("url"),
-                    grid.getColumnByKey("extra"));
+                    grid.getColumnByKey("price"));
             grid.setColumnOrder(strings);
 
 
@@ -1610,13 +1596,9 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
 
             List<Grid.Column> strings = Arrays.asList(grid.getColumnByKey("recordId"),
-                    grid.getColumnByKey("timestamp"), grid.getColumnByKey("medallion"),
-                    grid.getColumnByKey("hack_license"), grid.getColumnByKey("pickup_datetime"),
-                    grid.getColumnByKey("dropoff_datetime"), grid.getColumnByKey("trip_time_in_secs"),
-                    grid.getColumnByKey("trip_distance"), grid.getColumnByKey("pickup_longitude"), grid.getColumnByKey("pickup_latitude"),
-                    grid.getColumnByKey("dropoff_longitude"), grid.getColumnByKey("dropoff_latitude"), grid.getColumnByKey("payment_type"),
-                    grid.getColumnByKey("fare_amount"), grid.getColumnByKey("surcharge"),
-                    grid.getColumnByKey("mta_tax"), grid.getColumnByKey("tip_amount"), grid.getColumnByKey("tolls_amount"), grid.getColumnByKey("total_amount"));
+                    grid.getColumnByKey("timestamp"), grid.getColumnByKey("pickup_datetime"),
+                    grid.getColumnByKey("trip_distance"), grid.getColumnByKey("payment_type"),
+                    grid.getColumnByKey("tolls_amount"), grid.getColumnByKey("total_amount"));
             grid.setColumnOrder(strings);
 
 
@@ -1632,6 +1614,11 @@ public class PlayToWin extends Composite<VerticalLayout> {
             grid.removeColumn(grid.getColumnByKey("id"));
             grid.removeColumn(grid.getColumnByKey("version"));
             grid.removeColumn(grid.getColumnByKey("cursor"));
+        }
+
+        for (Object c : grid.getColumns()) {
+            Grid.Column col = (Grid.Column) c;
+            col.setAutoWidth(true); //This makes the name of the column show entirely instead of being truncated 
         }
 
 
@@ -1778,18 +1765,14 @@ public class PlayToWin extends Composite<VerticalLayout> {
             fields.put(kv[0].trim(), kv[1].trim());
         }
 
-        // Build result array in fixed order (8 fields)
-        String[] row = new String[8];
+        // Build result array in fixed order (6 fields)
+        String[] row = new String[6];
         row[0] = "r_" + rowCounter;                 // recordId
         row[1] = fields.get("auction");                    // auction
         row[2] = fields.get("bidder");                     // bidder
         row[3] = fields.get("price");                      // price
         row[4] = fields.get("channel").replace("'", "");   // channel (remove quotes)
-        row[5] = fields.get("url").replace("'", "");       // url (remove quotes)
-        row[6] = String.valueOf(rowCounter);              // replace dateTime with counter
-        row[7] = fields.get("extra").replace("'", "");     // extra (remove quotes)
-
-
+        row[5] = String.valueOf(rowCounter);              // replace dateTime with counter
         return row;
 
     }
@@ -1809,7 +1792,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
         System.arraycopy(csvFields, 0, result, 2, csvFields.length);
         Random rand = new Random();
         result[4] = String.valueOf(rand.nextInt(10000)); //Timestamps in datetime can become random integers
-        result[5] = String.valueOf(rand.nextInt(10000));
+        result[17] = String.valueOf(Math.floor(rand.nextDouble(50)*100)/100); //Tolls are always 0 in the input file..
 
         return result;
 
