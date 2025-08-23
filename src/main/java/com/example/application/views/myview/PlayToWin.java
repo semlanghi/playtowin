@@ -222,13 +222,16 @@ public class PlayToWin extends Composite<VerticalLayout> {
         ComboBox<String> queryEditor = new ComboBox<>();
         TextArea queryEditorText = new TextArea();
 
-        queryEditorText.setSizeFull();
 
         bottomCentralColumn.add(queryEditor);
         bottomCentralColumn.add(queryEditorText);
         queryEditor.setItems(defaultQueries.keySet());
         queryEditor.setValue("Query 1");
         queryEditorText.setValue(defaultQueries.get("Query 1"));
+        queryEditorText.getStyle().set("font-size", "20px");
+
+        queryEditorText.setWidthFull();
+        queryEditorText.setHeightFull();
 
         queryEditor.addValueChangeListener(event -> {
             String query = defaultQueries.get(event.getValue());
@@ -1618,7 +1621,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
         for (Object c : grid.getColumns()) {
             Grid.Column col = (Grid.Column) c;
-            col.setAutoWidth(true); //This makes the name of the column show entirely instead of being truncated 
+            col.setAutoWidth(true); //This makes the name of the column show entirely instead of being truncated
         }
 
 
