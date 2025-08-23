@@ -226,8 +226,8 @@ public class PlayToWin extends Composite<VerticalLayout> {
         bottomCentralColumn.add(queryEditor);
         bottomCentralColumn.add(queryEditorText);
         queryEditor.setItems(defaultQueries.keySet());
-        queryEditor.setValue("Query 1");
-        queryEditorText.setValue(defaultQueries.get("Query 1"));
+        queryEditor.setValue("Query");
+        queryEditorText.setValue(defaultQueries.get("Query"));
         queryEditorText.getStyle().set("font-size", "20px");
 
         queryEditorText.setWidthFull();
@@ -1187,13 +1187,13 @@ public class PlayToWin extends Composite<VerticalLayout> {
     private Map<String,String> getDefaultQueries(String scenario) {
         Map<String, String> queries = new HashMap<>();
         if(scenario.equals("Electric Grid"))
-            queries.put("Query 1", "SELECT *\nFROM [window]\nWHERE cons_A >= 10 AND cons_B >= 5");
+            queries.put("Query", "SELECT *\nFROM [window]\nWHERE cons_A >= 10 AND cons_B >= 5");
         else if(scenario.equals("Nexmark"))
-            queries.put("Query 1", "SELECT *\nFROM [window]\nWHERE price > 20");
+            queries.put("Query", "SELECT *\nFROM [window]\nWHERE price > 20");
         else if(scenario.equals("Linear Road"))
-            queries.put("Query 1", "SELECT *\nFROM [window]\nWHERE speed > 15");
+            queries.put("Query", "SELECT *\nFROM [window]\nWHERE speed > 15");
         else if(scenario.equals("NYC Taxi (DEBS 2015)"))
-            queries.put("Query 1", "SELECT *\nFROM [window]\nWHERE tolls_amount < 10");
+            queries.put("Query", "SELECT *\nFROM [window]\nWHERE tolls_amount < 10");
 
         return queries;
     }
