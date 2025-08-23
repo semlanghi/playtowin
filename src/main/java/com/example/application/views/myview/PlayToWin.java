@@ -1187,13 +1187,13 @@ public class PlayToWin extends Composite<VerticalLayout> {
     private Map<String,String> getDefaultQueries(String scenario) {
         Map<String, String> queries = new HashMap<>();
         if(scenario.equals("Electric Grid"))
-            queries.put("Query", "SELECT *\nFROM [window]\nWHERE cons_A >= 10 AND cons_B >= 5");
+            queries.put("Query", "SELECT record_Id, cons_A\nFROM [window]\nWHERE cons_A >= 10 AND cons_B >= 5");
         else if(scenario.equals("Nexmark"))
-            queries.put("Query", "SELECT *\nFROM [window]\nWHERE price > 20");
+            queries.put("Query", "SELECT sum(price) \nFROM [window]\nLIMIT 1");
         else if(scenario.equals("Linear Road"))
-            queries.put("Query", "SELECT *\nFROM [window]\nWHERE speed > 15");
+            queries.put("Query", "SELECT car_id\nFROM [window]\nWHERE speed > 15");
         else if(scenario.equals("NYC Taxi (DEBS 2015)"))
-            queries.put("Query", "SELECT *\nFROM [window]\nWHERE tolls_amount < 10");
+            queries.put("Query", "SELECT sum(tolls_amount)\nFROM [window]\nLIMIT 1");
 
         return queries;
     }
@@ -1768,12 +1768,13 @@ public class PlayToWin extends Composite<VerticalLayout> {
             fields.put(kv[0].trim(), kv[1].trim());
         }
 
+        Random random = new Random();
         // Build result array in fixed order (6 fields)
         String[] row = new String[6];
         row[0] = "r_" + rowCounter;                 // record_Id
         row[1] = fields.get("auction");                    // auction
         row[2] = fields.get("bidder");                     // bidder
-        row[3] = fields.get("price");                      // price
+        row[3] = String.valueOf(random.nextInt(0, 1000));                     // prices are too high, we set them from 0 to 1k
         row[4] = fields.get("channel").replace("'", "");   // channel (remove quotes)
         row[5] = String.valueOf(rowCounter);              // replace dateTime with counter
         return row;
