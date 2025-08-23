@@ -6,7 +6,7 @@ import jakarta.persistence.Entity;
 @Entity
 public class InputElectricity extends Tuple {
 
-    private String recordId;
+    private String record_Id;
     private double cons_A;
     private double cons_B;
     private long timestamp;
@@ -22,19 +22,19 @@ public class InputElectricity extends Tuple {
         copy.setTimestamp(this.timestamp);
         copy.setOperatorId(this.operatorId);
         copy.setIntervalId(this.intervalId);
-        copy.setRecordId(this.recordId);
+        copy.setRecord_Id(this.record_Id);
         copy.setCons_B(this.cons_B);
         copy.setCons_A(this.cons_A);
         copy.setAttributeForComputation(this.attributeForComputation);
         return copy;
     }
 
-    public String getRecordId() {
-        return recordId;
+    public String getRecord_Id() {
+        return record_Id;
     }
 
-    public void setRecordId(String recordId) {
-        this.recordId = recordId;
+    public void setRecord_Id(String record_Id) {
+        this.record_Id = record_Id;
     }
 
     public String getOperatorId() {

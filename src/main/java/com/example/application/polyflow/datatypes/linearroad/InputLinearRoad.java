@@ -8,7 +8,7 @@ import java.lang.reflect.Field;
 @Entity
 public class InputLinearRoad extends Tuple {
 
-    private String recordId;
+    private String record_Id;
 
     private int car_id;
     private double speed;
@@ -31,7 +31,7 @@ public class InputLinearRoad extends Tuple {
         copy.setTimestamp(this.timestamp);
         copy.setOperatorId(this.operatorId);
         copy.setIntervalId(this.intervalId);
-        copy.setRecordId(this.recordId);
+        copy.setRecord_Id(this.record_Id);
         copy.setCar_id(this.car_id);
         copy.setSpeed(this.speed);
         copy.setExp_way(this.exp_way);
@@ -90,12 +90,12 @@ public class InputLinearRoad extends Tuple {
         this.x_pos = x_pos;
     }
 
-    public String getRecordId() {
-        return recordId;
+    public String getRecord_Id() {
+        return record_Id;
     }
 
-    public void setRecordId(String recordId) {
-        this.recordId = recordId;
+    public void setRecord_Id(String record_Id) {
+        this.record_Id = record_Id;
     }
 
     public String getOperatorId() {

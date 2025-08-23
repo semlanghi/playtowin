@@ -13,7 +13,7 @@ public class InputTaxi extends Tuple {
     private String payment_type;
     private double tolls_amount;
     private double total_amount;
-    private String recordId;
+    private String record_Id;
     private long timestamp;
     private String operatorId;
     private String intervalId;
@@ -27,7 +27,7 @@ public class InputTaxi extends Tuple {
         copy.setTimestamp(this.timestamp);
         copy.setOperatorId(this.operatorId);
         copy.setIntervalId(this.intervalId);
-        copy.setRecordId(this.recordId);
+        copy.setRecord_Id(this.record_Id);
         copy.setPickup_datetime(this.pickup_datetime);
         copy.setTrip_distance(this.trip_distance);
         copy.setPayment_type(this.payment_type);
@@ -37,12 +37,12 @@ public class InputTaxi extends Tuple {
         return copy;
     }
 
-    public String getRecordId() {
-        return recordId;
+    public String getRecord_Id() {
+        return record_Id;
     }
 
-    public void setRecordId(String recordId) {
-        this.recordId = recordId;
+    public void setRecord_Id(String record_Id) {
+        this.record_Id = record_Id;
     }
 
     public String getOperatorId() {

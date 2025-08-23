@@ -116,7 +116,7 @@ public class CompositeOperator implements StreamToRelationOperator<GridInputWind
         List<Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>>> res = new ArrayList<>();
         Content<GridInputWindowed, GridInputWindowed, List<GridInputWindowed>> intersection = cf.create();
 
-        active_frame_content.coalesce().forEach(e-> events.put(e.getRecordId(), e));
+        active_frame_content.coalesce().forEach(e-> events.put(e.getRecord_Id(), e));
 
         //get the last active window
         Optional<Window> max = active_sliding_windows.keySet().stream()
@@ -125,13 +125,13 @@ public class CompositeOperator implements StreamToRelationOperator<GridInputWind
         if(max.isPresent()){ //if max is not present, the intersection is empty
             active_sliding_windows.get(max.get()).coalesce().forEach(e->{
 
-                if(events.containsKey(e.getRecordId())){
+                if(events.containsKey(e.getRecord_Id())){
                     GridInputWindowed el = new GridInputWindowed();
-                    el.setIntervalId("sliding:"+e.getIntervalId()+" frame: "+events.get(e.getRecordId()).getIntervalId());
+                    el.setIntervalId("sliding:"+e.getIntervalId()+" frame: "+events.get(e.getRecord_Id()).getIntervalId());
                     el.setOperatorId(this.name);
                     el.setConsA(e.getConsA());
                     el.setConsB(e.getConsB());
-                    el.setRecordId(e.getRecordId());
+                    el.setRecord_Id(e.getRecord_Id());
                     el.setTimestamp(e.getTimestamp());
                     el.setCursor(e.getCursor());
                     intersection.add(el);
@@ -303,7 +303,7 @@ public class CompositeOperator implements StreamToRelationOperator<GridInputWind
                 el.setOperatorId(this.name);
                 el.setConsA(arg.getConsA());
                 el.setConsB(arg.getConsB());
-                el.setRecordId(arg.getRecordId());
+                el.setRecord_Id(arg.getRecord_Id());
                 el.setTimestamp(arg.getTimestamp());
                 el.setCursor(arg.getCursor());
 
@@ -318,7 +318,7 @@ public class CompositeOperator implements StreamToRelationOperator<GridInputWind
             el.setOperatorId(this.name);
             el.setConsA(arg.getConsA());
             el.setConsB(arg.getConsB());
-            el.setRecordId(arg.getRecordId());
+            el.setRecord_Id(arg.getRecord_Id());
             el.setTimestamp(arg.getTimestamp());
             el.setCursor(arg.getCursor());
 
@@ -353,7 +353,7 @@ public class CompositeOperator implements StreamToRelationOperator<GridInputWind
             el.setOperatorId(this.name);
             el.setConsA(arg.getConsA());
             el.setConsB(arg.getConsB());
-            el.setRecordId(arg.getRecordId());
+            el.setRecord_Id(arg.getRecord_Id());
             el.setTimestamp(arg.getTimestamp());
             el.setCursor(arg.getCursor());
             // add element to current window
@@ -373,7 +373,7 @@ public class CompositeOperator implements StreamToRelationOperator<GridInputWind
             el.setOperatorId(this.name);
             el.setConsA(arg.getConsA());
             el.setConsB(arg.getConsB());
-            el.setRecordId(arg.getRecordId());
+            el.setRecord_Id(arg.getRecord_Id());
             el.setTimestamp(arg.getTimestamp());
             el.setCursor(arg.getCursor());
             active_frame_content.add(el);
@@ -385,7 +385,7 @@ public class CompositeOperator implements StreamToRelationOperator<GridInputWind
             el.setOperatorId(this.name);
             el.setConsA(arg.getConsA());
             el.setConsB(arg.getConsB());
-            el.setRecordId(arg.getRecordId());
+            el.setRecord_Id(arg.getRecord_Id());
             el.setTimestamp(arg.getTimestamp());
             el.setCursor(arg.getCursor());
             throw_content.add(el);

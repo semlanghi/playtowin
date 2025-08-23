@@ -1152,16 +1152,16 @@ public class PlayToWin extends Composite<VerticalLayout> {
                         .filter(predicate -> {
                             String string = nodes.getString(finalI);
                             string = string.contains("@") ? string.split("@")[1] : string;
-                            return predicate.getRecordId().equals(string);
+                            return predicate.getRecord_Id().equals(string);
                         })
                         .forEach(consumer -> {
-                            if (recordMappings.containsKey(consumer.getRecordId())) {
-                                recordMappings.get(consumer.getRecordId()).add(consumer.getOperatorId(), consumer.getIntervalId());
+                            if (recordMappings.containsKey(consumer.getRecord_Id())) {
+                                recordMappings.get(consumer.getRecord_Id()).add(consumer.getOperatorId(), consumer.getIntervalId());
                             } else {
                                 GridOutputMapping g = new GridOutputMapping();
-                                g.setRecordId(consumer.getRecordId());
+                                g.setRecord_Id(consumer.getRecord_Id());
                                 g.add(consumer.getOperatorId(), consumer.getIntervalId());
-                                recordMappings.put(consumer.getRecordId(), g);
+                                recordMappings.put(consumer.getRecord_Id(), g);
                             }
                         });
             }
@@ -1172,8 +1172,8 @@ public class PlayToWin extends Composite<VerticalLayout> {
         resultGrid.setItems(recordMappings.values().stream().sorted(new Comparator<GridOutputMapping>() {
             @Override
             public int compare(GridOutputMapping o1, GridOutputMapping o2) {
-                String o1Id = o1.recordId;
-                String o2Id = o2.recordId;
+                String o1Id = o1.record_Id;
+                String o2Id = o2.record_Id;
 
                 Integer id1 = Integer.parseInt(o1Id.split("_")[1]);
                 Integer id2 = Integer.parseInt(o2Id.split("_")[1]);
@@ -1231,7 +1231,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
         inputAnnotatedGrid.addColumn(new ValueProvider<GridOutputMapping, String>() {
             @Override
             public String apply(GridOutputMapping gridOutputWindowedMapping) {
-                return gridOutputWindowedMapping.getRecordId();
+                return gridOutputWindowedMapping.getRecord_Id();
             }
         }).setHeader("Record Id");
 
@@ -1425,29 +1425,29 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
 
 
-    public InputElectricity createElectricGridRecord(String recordId, long ts, long consA, long consB){
+    public InputElectricity createElectricGridRecord(String record_Id, long ts, long consA, long consB){
         InputElectricity gridInput = new InputElectricity();
-        gridInput.setRecordId(recordId);
+        gridInput.setRecord_Id(record_Id);
         gridInput.setTimestamp(ts);
         gridInput.setCons_A((long) consA);
         gridInput.setCons_B((long) consB);
         return gridInput;
     }
 
-    public InputBid createNexmarkBidRecord(String recordId, long auction, long bidder, long price, String channel,  long timestamp){
+    public InputBid createNexmarkBidRecord(String record_Id, long auction, long bidder, long price, String channel,  long timestamp){
         InputBid inputBid = new InputBid();
         inputBid.setAuction(auction);
         inputBid.setBidder(bidder);
-        inputBid.setRecordId(recordId);
+        inputBid.setRecord_Id(record_Id);
         inputBid.setPrice(price);
         inputBid.setChannel(channel);
         inputBid.setTimestamp(timestamp);
         return inputBid;
     }
 
-    public InputLinearRoad createLinearRoad(String recordId, long ts, int car_id, double speed, int exp_way, int lane, int direction, double x_pos){
+    public InputLinearRoad createLinearRoad(String record_Id, long ts, int car_id, double speed, int exp_way, int lane, int direction, double x_pos){
         InputLinearRoad inputLinearRoad = new InputLinearRoad();
-        inputLinearRoad.setRecordId(recordId);
+        inputLinearRoad.setRecord_Id(record_Id);
         inputLinearRoad.setTimestamp(ts);
         inputLinearRoad.setCar_id(car_id);
         inputLinearRoad.setSpeed(speed);
@@ -1460,7 +1460,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
     public InputTaxi createNycTaxi(String[] fields){ //We parsed the whole nyx file, so we have a lot of columns.. we only use a few
         InputTaxi input = new InputTaxi();
-        input.setRecordId(fields[0]);
+        input.setRecord_Id(fields[0]);
         input.setTimestamp(Long.parseLong(fields[1]));
         input.setPickup_datetime(Long.parseLong(fields[4]));
         input.setTrip_distance(Double.parseDouble(fields[7]));
@@ -1495,7 +1495,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
             }
 
 
-            List<Grid.Column> strings = Arrays.asList(grid.getColumnByKey("recordId"),
+            List<Grid.Column> strings = Arrays.asList(grid.getColumnByKey("record_Id"),
                     grid.getColumnByKey("timestamp"), grid.getColumnByKey("cons_A"),
                     grid.getColumnByKey("cons_B"));
             grid.setColumnOrder(strings);
@@ -1529,7 +1529,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
             }
 
 
-            List<Grid.Column> strings = Arrays.asList(grid.getColumnByKey("recordId"),
+            List<Grid.Column> strings = Arrays.asList(grid.getColumnByKey("record_Id"),
                     grid.getColumnByKey("timestamp"), grid.getColumnByKey("auction"),
                     grid.getColumnByKey("bidder"), grid.getColumnByKey("channel"),
                     grid.getColumnByKey("price"));
@@ -1563,7 +1563,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
             }
 
 
-            List<Grid.Column> strings = Arrays.asList(grid.getColumnByKey("recordId"),
+            List<Grid.Column> strings = Arrays.asList(grid.getColumnByKey("record_Id"),
                     grid.getColumnByKey("timestamp"), grid.getColumnByKey("car_id"),
                     grid.getColumnByKey("speed"), grid.getColumnByKey("exp_way"),
                     grid.getColumnByKey("lane"), grid.getColumnByKey("direction"),
@@ -1598,7 +1598,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
             }
 
 
-            List<Grid.Column> strings = Arrays.asList(grid.getColumnByKey("recordId"),
+            List<Grid.Column> strings = Arrays.asList(grid.getColumnByKey("record_Id"),
                     grid.getColumnByKey("timestamp"), grid.getColumnByKey("pickup_datetime"),
                     grid.getColumnByKey("trip_distance"), grid.getColumnByKey("payment_type"),
                     grid.getColumnByKey("tolls_amount"), grid.getColumnByKey("total_amount"));
@@ -1641,13 +1641,13 @@ public class PlayToWin extends Composite<VerticalLayout> {
         results.forEach(result -> {
             if (!result.getIntervalId().equals("throw")){
                 Node eRecord;
-                if (!nodes.keySet().contains(result.getRecordId())){
-                    eRecord = new Node(result.getRecordId(), result.getRecordId());
+                if (!nodes.keySet().contains(result.getRecord_Id())){
+                    eRecord = new Node(result.getRecord_Id(), result.getRecord_Id());
                     eRecord.setShape(Shape.diamond);
                     eRecord.setColor("lightblue");
                     eRecord.setLabelHighlightBold(true);
-                    nodes.put(result.getRecordId(), eRecord);
-                } else eRecord = nodes.get(result.getRecordId());
+                    nodes.put(result.getRecord_Id(), eRecord);
+                } else eRecord = nodes.get(result.getRecord_Id());
 
 
 
@@ -1686,11 +1686,11 @@ public class PlayToWin extends Composite<VerticalLayout> {
                 e.setArrows(new Arrows(new ArrowHead()));
                 edges.add(e);
             } else if (!all) {
-                Node eRecord = new Node(result.getRecordId(), result.getRecordId());
+                Node eRecord = new Node(result.getRecord_Id(), result.getRecord_Id());
                 eRecord.setShape(Shape.square);
                 eRecord.setColor("red");
                 eRecord.setLabelHighlightBold(true);
-                nodes.put(result.getRecordId(), eRecord);
+                nodes.put(result.getRecord_Id(), eRecord);
             }
 
         });
@@ -1770,7 +1770,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
         // Build result array in fixed order (6 fields)
         String[] row = new String[6];
-        row[0] = "r_" + rowCounter;                 // recordId
+        row[0] = "r_" + rowCounter;                 // record_Id
         row[1] = fields.get("auction");                    // auction
         row[2] = fields.get("bidder");                     // bidder
         row[3] = fields.get("price");                      // price

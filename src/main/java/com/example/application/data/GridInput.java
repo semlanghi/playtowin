@@ -10,18 +10,18 @@ import java.util.List;
 public class GridInput extends AbstractEntity implements EventBean<Long> {
 
     private String Cursor;
-    private String recordId;
+    private String record_Id;
     private Long consA;
     private Long consB;
     private long timestamp;
 
 
-    public String getRecordId() {
-        return recordId;
+    public String getRecord_Id() {
+        return record_Id;
     }
 
-    public void setRecordId(String recordId) {
-        this.recordId = recordId;
+    public void setRecord_Id(String record_Id) {
+        this.record_Id = record_Id;
     }
 
     public String getCursor() {

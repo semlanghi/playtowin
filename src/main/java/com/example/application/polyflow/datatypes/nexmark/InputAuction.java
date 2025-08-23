@@ -17,7 +17,7 @@ public class InputAuction extends Tuple {
     private long seller;
     private long category;
     private String extra;
-    private String recordId;
+    private String record_Id;
     private String operatorId;
     private String intervalId;
     private String cursor;
@@ -35,12 +35,12 @@ public class InputAuction extends Tuple {
     }
 
     @Override
-    public String getRecordId() {
-        return recordId;
+    public String getRecord_Id() {
+        return record_Id;
     }
 
-    public void setRecordId(String recordId) {
-        this.recordId = recordId;
+    public void setRecord_Id(String record_Id) {
+        this.record_Id = record_Id;
     }
 
     public long getAuctionId() {

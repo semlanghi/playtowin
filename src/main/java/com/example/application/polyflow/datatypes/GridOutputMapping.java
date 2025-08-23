@@ -6,16 +6,16 @@ import jakarta.persistence.Entity;
 @Entity
 public class GridOutputMapping extends AbstractEntity {
 
-    public String recordId;
+    public String record_Id;
     public String opTointervalIds = "";
 
 
-    public String getRecordId() {
-        return recordId;
+    public String getRecord_Id() {
+        return record_Id;
     }
 
-    public void setRecordId(String recordId) {
-        this.recordId = recordId;
+    public void setRecord_Id(String record_Id) {
+        this.record_Id = record_Id;
     }
 
     public void add(String opId, String intId){

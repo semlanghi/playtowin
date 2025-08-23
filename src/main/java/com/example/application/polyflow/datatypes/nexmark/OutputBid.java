@@ -5,17 +5,17 @@ import jakarta.persistence.Entity;
 
 @Entity
 public class OutputBid extends AbstractEntity {
-    private String recordId;
+    private String record_Id;
     private long timestamp;
     public String operatorId;
     public String intervalId;
 
-    public String getRecordId() {
-        return recordId;
+    public String getRecord_Id() {
+        return record_Id;
     }
 
-    public void setRecordId(String recordId) {
-        this.recordId = recordId;
+    public void setRecord_Id(String record_Id) {
+        this.record_Id = record_Id;
     }
 
     public String getOperatorId() {

@@ -11,7 +11,7 @@ public class InputBid extends Tuple {
     private long price;
     private String channel;
     private long timestamp;
-    private String recordId;
+    private String record_Id;
     private String operatorId;
     private String intervalId;
     private String cursor;
@@ -20,7 +20,7 @@ public class InputBid extends Tuple {
     public InputBid copy(){
         InputBid copy = new InputBid();
         copy.setTimestamp(timestamp);
-        copy.setRecordId(recordId);
+        copy.setRecord_Id(record_Id);
         copy.setChannel(channel);
         copy.setPrice(price);
         copy.setBidder(bidder);
@@ -66,13 +66,13 @@ public class InputBid extends Tuple {
 
 
     @Override
-    public String getRecordId() {
-        return recordId;
+    public String getRecord_Id() {
+        return record_Id;
     }
 
     @Override
-    public void setRecordId(String recordId) {
-        this.recordId = recordId;
+    public void setRecord_Id(String record_Id) {
+        this.record_Id = record_Id;
     }
 
     @Override

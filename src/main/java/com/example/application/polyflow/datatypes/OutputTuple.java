@@ -7,10 +7,10 @@ import jakarta.persistence.Entity;
 public class OutputTuple extends AbstractEntity {
 
 
-    public String getRecordId() {
+    public String getRecord_Id() {
         return "";
     }
-    public void setRecordId(String recordId) {}
+    public void setRecord_Id(String record_Id) {}
 
     public String getOperatorId() {
         return "";

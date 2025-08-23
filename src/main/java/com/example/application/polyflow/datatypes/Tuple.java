@@ -9,9 +9,9 @@ import java.lang.reflect.Field;
 public class Tuple extends AbstractEntity {
 
     public Tuple copy(){return new Tuple();};
-    public String getRecordId(){return "";};
+    public String getRecord_Id(){return "";};
 
-    public void setRecordId(String recordId){};
+    public void setRecord_Id(String record_Id){};
     public String getOperatorId(){return "";};
     public String getIntervalId(){return "";};
     public String getCursor(){return "";};
