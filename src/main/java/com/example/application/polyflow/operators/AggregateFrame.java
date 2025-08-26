@@ -205,7 +205,8 @@ public class AggregateFrame implements StreamToRelationOperator<Tuple, Tuple, Tu
     }
 
     boolean open_pred(Tuple arg, long ts) {
-        double field = arg.getAttributeForComputation(attributeForComputation);
+        double field = 0;
+        if (frame_type != 3) field = arg.getAttributeForComputation(attributeForComputation);
         switch (frame_type) {
 
             case 0: return (comparator.compare(field, (double) frame_parameter) == 1 && context.count == 0); // threshold
@@ -218,7 +219,8 @@ public class AggregateFrame implements StreamToRelationOperator<Tuple, Tuple, Tu
     }
 
     boolean update_pred(Tuple arg, long ts) {
-        double field = arg.getAttributeForComputation(attributeForComputation);
+        double field = 0;
+        if (frame_type != 3) field = arg.getAttributeForComputation(attributeForComputation);
         switch (frame_type) {
 
             case 0: return (comparator.compare(field, (double) frame_parameter) == 1 && context.count > 0);
@@ -232,7 +234,8 @@ public class AggregateFrame implements StreamToRelationOperator<Tuple, Tuple, Tu
 
     //Frame closes if the comparator returns -1 ... based on the desired logic, define an appropriate comparator
     boolean close_pred(Tuple arg, long ts) {
-        double field = arg.getAttributeForComputation(attributeForComputation);
+        double field = 0;
+        if (frame_type != 3) field = arg.getAttributeForComputation(attributeForComputation);
         switch (frame_type) {
             case 0: return (comparator.compare(field, (double) frame_parameter) == -1 && context.count > 0);
             case 1: return (comparator.compare(Math.abs(context.v - field), (double) frame_parameter) == -1  && context.start);

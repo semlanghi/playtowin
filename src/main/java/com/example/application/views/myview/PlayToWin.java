@@ -905,6 +905,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
         } else if (windowTypeValue.equals("Session")){
             text.append(" with Timeout ").append(result.get(index).timeout().getValue());
             windowRowSummary.setTimeout(Long.parseLong(result.get(index).timeout().getValue()));
+            windowRowSummary.setAggregateFunction("");
         } else if (windowTypeValue.equals("Composite-Union")){
 
             Result result1 = result.get(index+1);

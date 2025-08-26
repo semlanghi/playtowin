@@ -8,7 +8,7 @@ def generate_events(count):
         cons_A = random.randint(0, 19) 
         cons_B = random.randint(0, 19)
         events.append((f"r_{event_id}", timestamp, cons_A, cons_B))
-        timestamp += random.randint(1, 1)  # timestamp strictly increasing, but can include gaps if needed 
+        timestamp += random.randint(1, 6)  # timestamp strictly increasing, but can include gaps if needed
     return events
 
 if __name__ == "__main__":

@@ -152,41 +152,42 @@ public class PolyflowService {
                 } else if (windowRowSummary.getName().contains("F") || windowRowSummary.getName().contains("SW")) {
                     int frameType = getFrameType(windowRowSummary.getName());
 
-                    Comparator<Double> comparator;
-                    if(windowRowSummary.getOperator().equals(">")){ //The frame closes on the "bigger than" condition
-                         comparator = (o1, o2) -> {
-                            if(o1 > o2)
-                                return -1;
-                            else return 1;
-                        };
-                    }
-                    else if(windowRowSummary.getOperator().equals("<")){ //The frame closes on the "smaller than" condition
-                         comparator = (o1, o2) -> {
-                            if(o1 < o2)
-                                return -1;
-                            else return 1;
-                        };
-                    }
-                    else if(windowRowSummary.getOperator().equals("<=")){ //The frame closes on the "smaller or equal than" condition
-                         comparator = (o1, o2) -> {
-                            if(o1 <= o2)
-                                return -1;
-                            else return 1;
-                        };
-                    }
-                    else if(windowRowSummary.getOperator().equals(">=")){ //The frame closes on the "bigger or equal than" condition
-                         comparator = (o1, o2) -> {
-                            if(o1 >= o2)
-                                return -1;
-                            else return 1;
-                        };
-                    }
-                    else{ //Frame closes on the "equal" condition
-                        comparator = (o1, o2) -> {
-                            if(Objects.equals(o1, o2))
-                                return -1;
-                            else return 1;
-                        };
+                    Comparator<Double> comparator = null;
+
+                    if (frameType != 3) {
+
+                        if (windowRowSummary.getOperator().equals(">")) { //The frame closes on the "bigger than" condition
+                            comparator = (o1, o2) -> {
+                                if (o1 > o2)
+                                    return -1;
+                                else return 1;
+                            };
+                        } else if (windowRowSummary.getOperator().equals("<")) { //The frame closes on the "smaller than" condition
+                            comparator = (o1, o2) -> {
+                                if (o1 < o2)
+                                    return -1;
+                                else return 1;
+                            };
+                        } else if (windowRowSummary.getOperator().equals("<=")) { //The frame closes on the "smaller or equal than" condition
+                            comparator = (o1, o2) -> {
+                                if (o1 <= o2)
+                                    return -1;
+                                else return 1;
+                            };
+                        } else if (windowRowSummary.getOperator().equals(">=")) { //The frame closes on the "bigger or equal than" condition
+                            comparator = (o1, o2) -> {
+                                if (o1 >= o2)
+                                    return -1;
+                                else return 1;
+                            };
+                        } else { //Frame closes on the "equal" condition
+                            comparator = (o1, o2) -> {
+                                if (Objects.equals(o1, o2))
+                                    return -1;
+                                else return 1;
+                            };
+                        }
+
                     }
 
 
