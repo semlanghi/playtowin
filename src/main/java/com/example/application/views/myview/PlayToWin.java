@@ -1464,7 +1464,8 @@ public class PlayToWin extends Composite<VerticalLayout> {
         input.setRecord_Id(fields[0]);
         //input.setTimestamp(Long.parseLong(fields[1]));
         input.setTimestamp(timestamp);
-        input.setPickup_datetime(Long.parseLong(fields[4]));
+        //input.setPickup_datetime(Long.parseLong(fields[4]));
+        input.setPickup_datetime(timestamp + 1420070400); // convert to datetime, starting from 1st Jan 2015
         input.setTrip_distance(Double.parseDouble(fields[7]));
         input.setPayment_type(fields[12]);
         input.setTolls_amount(Double.parseDouble(fields[17]));
@@ -1596,10 +1597,34 @@ public class PlayToWin extends Composite<VerticalLayout> {
             int rowCounter = 1;
             Long timestamp = 1L;
             Random r = new Random();
+
+            // Day: taxi every 0.5-2 hours
+            // Night: taxi every 1-6 hours
+            int tsDayMin = 1800;        // min increment during day
+            int tsDayMax = 7200;        // max increment during day
+            int tsNightMin = 3600;      // min increment during night
+            int tsNightMax = 21600;     // max increment during night
+
             while(scanner.hasNext()){
                 String[] columns = parseNycTaxi(scanner.nextLine(), rowCounter);
-                if (rowCounter >=2) timestamp += r.nextInt(1, ts_upper_bound);
-                rowCounter+=1;
+
+                if (rowCounter >= 2) {
+                    long timeOfDay = timestamp % 86400;
+                    int hour = (int)(timeOfDay / 3600);
+
+                    int increment;
+                    if (hour >= 10 && hour < 22) {
+                        // daytime
+                        increment = r.nextInt(tsDayMax - tsDayMin + 1) + tsDayMin;
+                    } else {
+                        // nighttime
+                        increment = r.nextInt(tsNightMax - tsNightMin + 1) + tsNightMin;
+                    }
+
+                    timestamp += increment;
+                }
+
+                rowCounter += 1;
                 inputGridList.add(createNycTaxi(columns, timestamp));
             }
 

@@ -208,14 +208,12 @@ public class AggregateFrame implements StreamToRelationOperator<Tuple, Tuple, Tu
         double field = 0;
         if (frame_type != 3) field = arg.getAttributeForComputation(attributeForComputation);
         switch (frame_type) {
-
             case 0: return (comparator.compare(field, (double) frame_parameter) == 1 && context.count == 0); // threshold
             case 1: return (!(context.start)); // delta
             case 2: return (!(context.start)); // aggregate
             case 3: return (ts - context.current_timestamp <= frame_parameter && !(context.start)); // session
         }
         throw new RuntimeException("error switching on frame type in window operator");
-
     }
 
     boolean update_pred(Tuple arg, long ts) {
