@@ -411,7 +411,10 @@ public class PlayToWin extends Composite<VerticalLayout> {
         bottomRow.setAlignSelf(Alignment.CENTER, windowButton);
         windowButton.setWidth("min-content");
         windowButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-//        queryButton.setText("Query");
+        windowButton.getStyle()
+                .set("margin-left", "40px");
+        windowButton.setHeight("130%");
+
         windowButton.addClickListener(new ComponentEventListener<ClickEvent<Button>>() {
             @Override
             public void onComponentEvent(ClickEvent<Button> buttonClickEvent) {
@@ -547,7 +550,9 @@ public class PlayToWin extends Composite<VerticalLayout> {
         });
 
         Button buttonNext = new Button();
-
+        buttonNext.getStyle()
+                .set("margin-left", "20px");
+        buttonNext.setHeight("130%");
 
         buttonNext.addClickListener(buttonClickEvent -> {
 
@@ -718,10 +723,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
             }
         });
 
-        Button buttonPrimary2 = new Button();
-        Button buttonPrimary3 = new Button();
 
-        Button buttonPrimary7 = new Button();
         H6 h6 = new H6();
         getContent().addClassName(Padding.XSMALL);
         getContent().setWidthFull();
@@ -795,21 +797,12 @@ public class PlayToWin extends Composite<VerticalLayout> {
         bottomRow.setAlignSelf(Alignment.CENTER, buttonNext);
         buttonNext.setWidth("min-content");
         buttonNext.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        buttonPrimary2.setText("Break Point");
-        bottomRow.setAlignSelf(Alignment.CENTER, buttonPrimary2);
-        buttonPrimary2.setWidth("min-content");
-        buttonPrimary2.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        buttonPrimary3.setText("Play");
-        bottomRow.setAlignSelf(Alignment.CENTER, buttonPrimary3);
-        buttonPrimary3.setWidth("min-content");
-        buttonPrimary3.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        buttonPrimary7.setText("Reset");
-        bottomRow.setAlignSelf(Alignment.CENTER, buttonPrimary7);
-        buttonPrimary7.setWidth("min-content");
-        buttonPrimary7.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         h6.setText("Alessandro Ferri, Mauro Fama, Samuele Langhi, Riccardo Tommasini, Angela Bonifati");
         bottomRow.setAlignSelf(Alignment.CENTER, h6);
         h6.setWidth("max-content");
+        h6.getStyle()
+                .set("margin-left", "auto")
+                .set("padding-right", "50px");
         getContent().add(mainRow);
         mainRow.add(leftColumn);
 
@@ -874,9 +867,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
         getContent().add(bottomRow);
         bottomRow.add(buttonNext);
-        bottomRow.add(buttonPrimary3);
         bottomRow.add(windowButton);
-        bottomRow.add(buttonPrimary7);
         bottomRow.add(h6);
     }
 
