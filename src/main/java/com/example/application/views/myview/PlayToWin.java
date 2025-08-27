@@ -1459,10 +1459,11 @@ public class PlayToWin extends Composite<VerticalLayout> {
         return inputLinearRoad;
     }
 
-    public InputTaxi createNycTaxi(String[] fields){ //We parsed the whole nyx file, so we have a lot of columns.. we only use a few
+    public InputTaxi createNycTaxi(String[] fields, Long timestamp){ // We parsed the whole nyx file, so we have a lot of columns.. we only use a few
         InputTaxi input = new InputTaxi();
         input.setRecord_Id(fields[0]);
-        input.setTimestamp(Long.parseLong(fields[1]));
+        //input.setTimestamp(Long.parseLong(fields[1]));
+        input.setTimestamp(timestamp);
         input.setPickup_datetime(Long.parseLong(fields[4]));
         input.setTrip_distance(Double.parseDouble(fields[7]));
         input.setPayment_type(fields[12]);
@@ -1474,6 +1475,9 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
 
     private void setGridSampleSimpleData(Grid grid, String scenario) {
+
+        int ts_upper_bound = 6; // used to generate timestamps for some datasets, the timestamp is incremented by a random value between 1 and ts_upper_bound
+
         if (scenario.equals("Electric Grid")){
             inputGridList = new ArrayList<>();
             inputGridListActual = new ArrayList<>();
@@ -1518,10 +1522,13 @@ public class PlayToWin extends Composite<VerticalLayout> {
             }
 
             int rowCounter = 1;
+            int timestamp = 1;
+            Random r = new Random();
             while(scanner.hasNext()){
                 String[] columns = parseNexmarkBid(scanner.nextLine(), rowCounter);
+                if (rowCounter >=2) timestamp += r.nextInt(1, ts_upper_bound);
                 rowCounter+=1;
-                inputGridList.add(createNexmarkBidRecord(columns[0], Long.parseLong(columns[1]), Long.parseLong(columns[2]), Long.parseLong(columns[3]), columns[4], Long.parseLong(columns[5])));
+                inputGridList.add(createNexmarkBidRecord(columns[0], Long.parseLong(columns[1]), Long.parseLong(columns[2]), Long.parseLong(columns[3]), columns[4], timestamp)); // Long.parseLong(columns[5]) instead of timestamp
             }
 
             //Remove columns that are not relevant in the input stream columns
@@ -1587,10 +1594,13 @@ public class PlayToWin extends Composite<VerticalLayout> {
             }
 
             int rowCounter = 1;
+            Long timestamp = 1L;
+            Random r = new Random();
             while(scanner.hasNext()){
                 String[] columns = parseNycTaxi(scanner.nextLine(), rowCounter);
+                if (rowCounter >=2) timestamp += r.nextInt(1, ts_upper_bound);
                 rowCounter+=1;
-                inputGridList.add(createNycTaxi(columns));
+                inputGridList.add(createNycTaxi(columns, timestamp));
             }
 
             //Remove columns that are not relevant in the input stream columns
