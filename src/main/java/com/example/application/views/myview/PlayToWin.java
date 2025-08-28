@@ -625,12 +625,12 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
                     updateWindowState(diagram, windowHistory.stream().filter(el -> el.getOperatorId()
                             .equals((tabSheetUpperRight.getTab(diagram)).getLabel().split(" ")[0]))
-                            .sorted(new Comparator<Tuple>() {
+                            /*.sorted(new Comparator<Tuple>() {
                                 @Override
                                 public int compare(Tuple o1, Tuple o2) {
                                     return Integer.compare(findFirstNumberInIntervalId(o1.getIntervalId()), findFirstNumberInIntervalId(o2.getIntervalId()));
                                 }
-                            })
+                            })*/
                             .collect(Collectors.toList()), colorGraphs, false);
 
 
@@ -1595,7 +1595,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
             int tsDayMin = 1800;        // min increment during day
             int tsDayMax = 7200;        // max increment during day
             int tsNightMin = 3600;      // min increment during night
-            int tsNightMax = 21600;     // max increment during night
+            int tsNightMax = 18000;     // max increment during night
 
             while(scanner.hasNext()){
                 String[] columns = parseNycTaxi(scanner.nextLine(), rowCounter);
@@ -1731,9 +1731,9 @@ public class PlayToWin extends Composite<VerticalLayout> {
 
     private String getIntervalRel(String operatorId) {
         if (operatorId.contains("TW")){
-            for (WindowRowSummary sumamry: windowRowSummaries){
-                if (operatorId.equals(sumamry.getName())){
-                    return sumamry.getSize() == sumamry.getSlide() ? "meet" : "overlap";
+            for (WindowRowSummary summary: windowRowSummaries){
+                if (operatorId.equals(summary.getName())){
+                    return summary.getSize() == summary.getSlide() ? "meet" : "overlap";
                 }
             }
         } else if (operatorId.contains("SW")){
@@ -1823,8 +1823,9 @@ public class PlayToWin extends Composite<VerticalLayout> {
         // Copy the CSV fields into the new array
         System.arraycopy(csvFields, 0, result, 2, csvFields.length);
         Random rand = new Random();
-        result[4] = String.valueOf(rand.nextInt(10000)); //Timestamps in datetime can become random integers
-        result[17] = String.valueOf(Math.floor(rand.nextDouble(50)*100)/100); //Tolls are always 0 in the input file..
+        result[4] = String.valueOf(rand.nextInt(10000)); // Timestamps in datetime can become random integers
+        double tolls = Math.floor(rand.nextDouble(2)*100)/100;
+        result[17] = tolls < 1 ? String.valueOf(0) : String.valueOf(tolls); //Tolls are always 0 in the input file
 
         return result;
 

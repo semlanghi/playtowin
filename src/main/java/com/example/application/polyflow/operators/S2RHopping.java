@@ -118,7 +118,12 @@ public class S2RHopping implements StreamToRelationOperator<Tuple, Tuple, Tuples
     public List<Content<Tuple, Tuple, TuplesOrResult>> getContents(long t_e) {
 
         List<Content<Tuple, Tuple, TuplesOrResult>> res = new ArrayList<>();
-        res.addAll(active_windows.values());
+
+        active_windows.keySet().stream()
+                .sorted(Comparator.comparingLong(Window::getO))
+                .forEach(w -> res.add(active_windows.get(w)));
+
+        // res.addAll(active_windows.values());
         res.add(throw_content);
         return res;
     }
