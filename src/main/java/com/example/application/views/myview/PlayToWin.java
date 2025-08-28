@@ -1456,7 +1456,8 @@ public class PlayToWin extends Composite<VerticalLayout> {
         //input.setTimestamp(Long.parseLong(fields[1]));
         input.setTimestamp(timestamp);
         //input.setPickup_datetime(Long.parseLong(fields[4]));
-        input.setPickup_datetime(timestamp + 1420070400); // convert to datetime, starting from 1st Jan 2015
+        //input.setPickup_datetime(timestamp + 1420070400); // convert to datetime, starting from 1st Jan 2015
+        input.setPickup_datetime(new Date((timestamp + 1420070400) * 1000));
         input.setTrip_distance(Double.parseDouble(fields[7]));
         input.setPayment_type(fields[12]);
         input.setTolls_amount(Double.parseDouble(fields[17]));

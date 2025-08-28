@@ -3,12 +3,12 @@ package com.example.application.polyflow.datatypes.nyctaxi;
 import com.example.application.polyflow.datatypes.Tuple;
 import jakarta.persistence.Entity;
 
-import java.lang.reflect.Field;
+import java.util.Date;
 
 @Entity
 public class InputTaxi extends Tuple {
 
-    private long pickup_datetime;
+    private Date pickup_datetime;
     private double trip_distance;
     private String payment_type;
     private double tolls_amount;
@@ -70,12 +70,13 @@ public class InputTaxi extends Tuple {
     }
 
 
-    public long getPickup_datetime() {
+    public Date getPickup_datetime() {
         return pickup_datetime;
     }
 
-    public void setPickup_datetime(long pickup_datetime) {
+    public void setPickup_datetime(Date pickup_datetime) {
         this.pickup_datetime = pickup_datetime;
+        // this.pickup_datetime = new Date(pickup_datetime_timestamp * 1000);
     }
 
 
