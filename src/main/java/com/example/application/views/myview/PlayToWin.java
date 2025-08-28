@@ -7,8 +7,6 @@ import com.example.application.polyflow.datatypes.nexmark.InputBid;
 import com.example.application.polyflow.datatypes.nyctaxi.InputTaxi;
 import com.example.application.polyflow.operators.TimeVaryingTuplesOrResult;
 import com.example.application.services.PolyflowService;
-import com.example.application.services.SampleGridService;
-import com.example.application.services.SampleStockService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
@@ -111,12 +109,6 @@ public class PlayToWin extends Composite<VerticalLayout> {
      * */
     private List<String> columnsToShowForAggregation = new ArrayList<>();
 
-
-    @Autowired()
-    private SampleGridService sampleGridService;
-
-    @Autowired()
-    private SampleStockService sampleStockService;
 
     @Autowired()
     private PolyflowService polyflowService;
@@ -1636,16 +1628,6 @@ public class PlayToWin extends Composite<VerticalLayout> {
             grid.setItems(inputGridList);
         }
 
-
-
-        else {
-            grid.setItems(query -> sampleGridService.list(
-                            PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
-                    .stream());
-            grid.removeColumn(grid.getColumnByKey("id"));
-            grid.removeColumn(grid.getColumnByKey("version"));
-            grid.removeColumn(grid.getColumnByKey("cursor"));
-        }
 
         for (Object c : grid.getColumns()) {
             Grid.Column col = (Grid.Column) c;
