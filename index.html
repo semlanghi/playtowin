@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Play2Win</title>
+  <style>
+    /* --- Page background using your poster --- */
+    :root {
+      --overlay: rgba(5, 8, 16, 0.55);    /* darken for readability */
+      --glass: rgba(255,255,255,0.08);    /* card fill */
+      --stroke: rgba(255,255,255,0.14);   /* card border */
+      --text: #e8ecff;
+      --muted: #aab3d9;
+    }
+    html, body { height: 100%; }
+    body {
+      font-family: system-ui, sans-serif;
+      color: var(--text);
+      margin: 0;
+      line-height: 1.5;
+      position: relative;
+      /* Fallback color while image loads */
+      background: #0b1020;
+    }
+    /* Full-bleed background image (poster) with a soft overlay for contrast */
+    body {
+        background:
+            linear-gradient(var(--overlay), var(--overlay)),
+            url("assets/poster2.jpeg") center top / cover no-repeat;
+        background-attachment: scroll; /* default, moves with page */
+        margin: 0;
+        font-family: system-ui, sans-serif;
+        color: var(--text);
+    }
+
+    header, footer {
+      text-align: center;
+      padding: 24px;
+      color: var(--muted);
+    }
+    main {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 16px;
+      display: grid;
+      gap: 24px;
+    }
+    .card {
+      background: var(--glass);
+      border: 1px solid var(--stroke);
+      border-radius: 16px;
+      padding: 16px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+    }
+    .card h2 { margin-top: 0; }
+
+    .embed-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #000;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+      background: transparent;
+    }
+    .pdf-wrap { aspect-ratio: 8.5/11; }
+
+    .actions { margin-top: 12px; }
+    .btn {
+      display: inline-block;
+      margin: 4px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .btn:hover { background: rgba(255,255,255,0.2); }
+
+    /* Small screens tweaks */
+    @media (max-width: 520px) {
+      header, footer { padding: 16px; }
+      .card { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Play2Win: A Windowing Playground for Continuous Queries</h1>
+    <p>Mauro Fama, Alessandro Ferri, Samuele Langhi, Riccardo Tommasini, Angela Bonifati</p>
+  </header>
+
+  <main>
+    <!-- Video Card -->
+    <section class="card">
+      <h2>🎬 YouTube Video</h2>
+      <div class="embed-wrap">
+        <!-- Replace YOUTUBE_VIDEO_ID with your actual video ID -->
+        <iframe
+          src="https://www.youtube.com/embed/kZzWweOmWVk"
+          title="YouTube video player"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen>
+        </iframe>
+      </div>
+    </section>
+
+    <!-- PDF Card -->
+    <section class="card">
+      <h2>📄 PDF Preview</h2>
+      <div class="embed-wrap pdf-wrap">
+        <iframe src="assets/handout.pdf#view=FitH" title="PDF preview"></iframe>
+      </div>
+      <div class="actions">
+        <a class="btn" href="assets/handout.pdf" target="_blank" rel="noopener">Open in new tab</a>
+        <a class="btn" href="assets/handout.pdf" download>Download PDF</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © <span id="y"></span> Hosted on GitHub Pages
+  </footer>
+
+  <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
