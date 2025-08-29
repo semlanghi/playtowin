@@ -1179,7 +1179,7 @@ public class PlayToWin extends Composite<VerticalLayout> {
     private Map<String,String> getDefaultQueries(String scenario) {
         Map<String, String> queries = new HashMap<>();
         if(scenario.equals("Electric Grid"))
-            queries.put("Query", "SELECT record_Id, cons_A\nFROM [window]\nWHERE cons_A >= 10 AND cons_B >= 5");
+            queries.put("Query", "SELECT sum(cons_A)\nFROM [window]\nLIMIT 1");
         else if(scenario.equals("Nexmark"))
             queries.put("Query", "SELECT sum(price) \nFROM [window]\nLIMIT 1");
         else if(scenario.equals("Linear Road"))
