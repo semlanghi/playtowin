@@ -113,7 +113,9 @@ public class AggregateFrame implements StreamToRelationOperator<Tuple, Tuple, Tu
     public List<Content<Tuple, Tuple, TuplesOrResult>> getContents(long l) {
 
         List<Content<Tuple, Tuple, TuplesOrResult>> res = new ArrayList<>();
-        res.addAll(expired_content.values());
+        expired_content.keySet().stream()
+                .sorted(Comparator.comparingLong(Window::getC))
+                .forEach(w -> res.add(expired_content.get(w)));
         res.add(active_content);
         res.add(throw_content);
         return res;
